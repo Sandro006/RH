@@ -10,6 +10,7 @@ use App\Libraries\Common\SessionUtilisateur;
 use App\Exceptions\StatutInvalideException;
 use App\Exceptions\ConflitException;
 use App\Exceptions\ObjetIntrouvableException;
+use App\Exceptions\AccesRefuseException;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class SalarieController extends BaseController
@@ -25,6 +26,7 @@ class SalarieController extends BaseController
         $this->service = service('salarieService');
     }
 
+    // GET /api/salaries — lister (filtres)
     public function index()
     {
         $filtre = [
@@ -34,6 +36,7 @@ class SalarieController extends BaseController
         return $this->response->setJSON($this->service->lister($filtre));
     }
 
+    // GET /api/salaries/{id} — fiche
     public function show(int $id)
     {
         $s = $this->service->consulter($id);
@@ -43,6 +46,7 @@ class SalarieController extends BaseController
         return $this->response->setJSON($s);
     }
 
+    // POST /api/salaries — créer depuis une candidature
     public function createDepuisCandidature()
     {
         $body = $this->request->getJSON(true) ?? [];
@@ -59,6 +63,9 @@ class SalarieController extends BaseController
                 SessionUtilisateur::courante()
             );
             return $this->response->setStatusCode(201)->setJSON(['idSalarie' => $id]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)
+                ->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
         } catch (StatutInvalideException $e) {
             return $this->response->setStatusCode(400)
                 ->setJSON(['error' => 'STATUT_INVALIDE', 'message' => $e->getMessage()]);
@@ -71,38 +78,84 @@ class SalarieController extends BaseController
         }
     }
 
+    // PATCH /api/salaries/{id} — modifier
     public function update(int $id)
     {
         $body = $this->request->getJSON(true) ?? [];
-        $this->service->modifier($id, $body, SessionUtilisateur::courante());
-        return $this->response->setStatusCode(200)->setJSON(['ok' => true]);
+
+        try {
+            $this->service->modifier($id, $body, SessionUtilisateur::courante());
+            return $this->response->setStatusCode(200)->setJSON(['ok' => true]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        }
     }
 
+    // POST /api/salaries/{id}/affectations — affecter à un poste
     public function affecter(int $id)
     {
         $body = $this->request->getJSON(true) ?? [];
+
         if (empty($body['idPoste']) || empty($body['dateDebut'])) {
             return $this->response->setStatusCode(400)
                 ->setJSON(['error' => 'DONNEES_INCOHERENTES', 'message' => 'idPoste et dateDebut requis']);
         }
 
-        $idAffectation = $this->service->affecter(
-            $id,
-            (int) $body['idPoste'],
-            (string) $body['dateDebut'],
-            $body['motif'] ?? null,
-            SessionUtilisateur::courante()
-        );
-        return $this->response->setStatusCode(201)->setJSON(['idAffectation' => $idAffectation]);
+        try {
+            $idAffectation = $this->service->affecter(
+                $id,
+                (int) $body['idPoste'],
+                (string) $body['dateDebut'],
+                $body['motif'] ?? null,
+                SessionUtilisateur::courante()
+            );
+            return $this->response->setStatusCode(201)->setJSON(['idAffectation' => $idAffectation]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        }
     }
 
+    // GET /api/salaries/{id}/affectations — historique des affectations
     public function listerAffectations(int $id)
     {
         return $this->response->setJSON($this->service->listerAffectations($id));
     }
 
+    // GET /api/salaries/{id}/historique — journal des statuts
     public function historique(int $id)
     {
         return $this->response->setJSON($this->service->historique($id));
+    }
+
+    // POST /api/salaries/{id}/statut — changer le statut
+    public function changerStatut(int $id)
+    {
+        $body = $this->request->getJSON(true) ?? [];
+        $statutCible = $body['statutCible'] ?? null;
+
+        if ($statutCible === null) {
+            return $this->response->setStatusCode(400)
+                ->setJSON(['error' => 'DONNEES_INCOHERENTES', 'message' => 'statutCible requis']);
+        }
+
+        try {
+            $this->service->changerStatut(
+                $id,
+                (string) $statutCible,
+                SessionUtilisateur::courante(),
+                $body['commentaire'] ?? null
+            );
+            return $this->response->setStatusCode(200)->setJSON(['ok' => true]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        } catch (StatutInvalideException $e) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'STATUT_INVALIDE', 'message' => $e->getMessage()]);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        }
     }
 }

@@ -4,30 +4,32 @@ declare(strict_types=1);
 
 namespace App\Services\Personnel;
 
-use App\Models\Personnel\ContratModel;
+use App\Models\Personnel\GrilleModel;
 use App\Exceptions\DonneesIncoherentesException;
 
 /**
  * Contrôle la rémunération par rapport à la grille salariale du poste.
+ * Consigne Contrat.md §6 : "salaire_base doit rester dans la grille_salariale".
  */
 class GrilleService
 {
     public function __construct(
-        private readonly ContratModel $contratModel,
+        private readonly GrilleModel $grilleModel,
     ) {}
 
     /**
      * @return array{min: float, max: float}
+     * @throws DonneesIncoherentesException si aucune grille active
      */
     public function fourchettePoste(int $idPoste): array
     {
-        $f = $this->contratModel->fourchetteSalariale($idPoste);
-        if ($f === null) {
+        $fourchette = $this->grilleModel->fourchettePoste($idPoste);
+        if ($fourchette === null) {
             throw new DonneesIncoherentesException(
                 "Aucune grille salariale active pour le poste #{$idPoste}"
             );
         }
-        return $f;
+        return $fourchette;
     }
 
     public function remunerationValide(int $idPoste, float $montant): bool
