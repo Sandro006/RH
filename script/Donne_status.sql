@@ -41,6 +41,7 @@ INSERT INTO status_entretien (designation) VALUES
 INSERT INTO status_proposition_embauche (designation) VALUES
 ('À envoyer'),
 ('Envoyée'),
+('En négociation'),
 ('Acceptée'),
 ('Refusée'),
 ('Expirée');
@@ -77,6 +78,23 @@ INSERT INTO status_onboarding_tache (designation) VALUES
 ('Bloquée'),
 ('Terminée'),
 ('Annulée');
+
+-- Natures de revendication (négociation d'une proposition d'embauche)
+INSERT INTO nature_revendication (designation) VALUES
+('Rémunération'),
+('Date d''embauche'),
+('Temps de travail'),
+('Avantages'),
+('Poste / Intitulé'),
+('Autre');
+
+-- Statuts d'une revendication
+INSERT INTO status_revendication (designation) VALUES
+('Soumise'),
+('En discussion'),
+('Acceptée'),
+('Refusée'),
+('Retirée');
 
 INSERT INTO type_contrat (designation) VALUES
 ('CDI'),
