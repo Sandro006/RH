@@ -9,11 +9,13 @@ use App\Models\Personnel\StatusContratModel;
 use App\Models\Personnel\ContratHistoriqueModel;
 use App\Models\Personnel\SalarieModel;
 use App\Models\Personnel\StatusSalarieModel;
+use App\Models\Personnel\AffectationModel;
 use App\Entities\Personnel\Contrat;
 use App\Exceptions\ObjetIntrouvableException;
 use App\Exceptions\StatutInvalideException;
 use App\Exceptions\DonneesIncoherentesException;
 use App\Exceptions\ConflitException;
+use App\Exceptions\AccesRefuseException;
 use App\Libraries\Common\AuditService;
 use App\Libraries\Common\SessionUtilisateur;
 use App\Libraries\Common\WorkflowService;
@@ -34,9 +36,10 @@ use App\Libraries\Common\WorkflowService;
  *  - Avenant = nouveau contrat lié
  *  - PostgreSQL (NUMERIC, DATE, TIMESTAMPTZ)
  */
+ 
 class ContratService
 {
-    private const TYPES_NON_PERMANENTS = [2, 3, 4, 7]; // CDD, Stage, Interim, Alternance
+    private const TYPES_NON_PERMANENTS = [2, 3, 4, 7];
     private const MAX_RENOUVELLEMENTS  = 2;
 
     public function __construct(
@@ -45,28 +48,30 @@ class ContratService
         private readonly ContratHistoriqueModel $historiqueModel,
         private readonly SalarieModel $salarieModel,
         private readonly StatusSalarieModel $statusSalarieModel,
+        private readonly AffectationModel $affectationModel,
         private readonly PeriodeEssaiService $periodeEssaiService,
         private readonly GrilleService $grilleService,
         private readonly AuditService $auditService,
         private readonly WorkflowService $workflowService,
     ) {}
 
-    // creer contrat
+    // creerContrat
     public function creerContrat(array $data, SessionUtilisateur $u): int
     {
-        // 1. Salarié
+        if (!$u->aLeRole(['rh', 'recruteur', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour créer un contrat');
+        }
+
         $idSalarie = (int) ($data['idSalarie'] ?? 0);
         if ($this->salarieModel->find($idSalarie) === null) {
             throw new ObjetIntrouvableException("Salarié #{$idSalarie} introuvable");
         }
 
-        // 2. Poste
         $idPoste = (int) ($data['idPoste'] ?? 0);
         if (!$this->contratModel->posteExiste($idPoste)) {
             throw new ObjetIntrouvableException("Poste #{$idPoste} introuvable");
         }
 
-        // 3. Dates
         $dateDebut = $data['dateDebut'] ?? null;
         if ($dateDebut === null) {
             throw new DonneesIncoherentesException('dateDebut obligatoire');
@@ -75,12 +80,10 @@ class ContratService
         $typeContratId = (int) ($data['typeContratId'] ?? 0);
         $dateFin       = $data['dateFin'] ?? null;
 
-        // 4. CDD/Stage/Interim/Alternance → dateFin obligatoire
         if (in_array($typeContratId, self::TYPES_NON_PERMANENTS, true) && $dateFin === null) {
             throw new DonneesIncoherentesException('dateFin obligatoire pour ce type de contrat');
         }
 
-        // 5. Salaire dans la grille
         $salaire = (float) ($data['salaireBase'] ?? 0);
         if ($salaire <= 0) {
             throw new DonneesIncoherentesException('salaireBase obligatoire et > 0');
@@ -92,12 +95,10 @@ class ContratService
             );
         }
 
-        // 6. Un seul contrat En cours par salarié
         if ($this->contratModel->contratEnCours($idSalarie) !== null) {
             throw new ConflitException("Un contrat est déjà En cours pour ce salarié");
         }
 
-        // 7. Période d'essai optionnelle
         $periodeEssai = null;
         if (!empty($data['avecPeriodeEssai'])) {
             $categorie = $data['categorie'] ?? $this->periodeEssaiService->categorieDepuisPoste($idPoste);
@@ -109,13 +110,21 @@ class ContratService
                         "Durée d'essai {$duree} jours > plafond légal pour la catégorie {$categorie}"
                     );
                 }
+                $dureeEffective = $this->periodeEssaiService->dureeEffective(
+                    $idSalarie, $typeContratId, $dateFin, $categorie, $duree
+                );
                 $periodeEssai = [
                     'debut' => $dateDebut,
-                    'fin'   => date('Y-m-d', strtotime($dateDebut . ' +' . $duree . ' days')),
+                    'fin'   => date('Y-m-d', strtotime($dateDebut . ' +' . $dureeEffective . ' days')),
                 ];
             } else {
-                $calc = $this->periodeEssaiService->calculer($typeContratId, $dateDebut, $dateFin, $categorie);
-                $periodeEssai = ['debut' => $calc['debut'], 'fin' => $calc['fin']];
+                $dureeEffective = $this->periodeEssaiService->dureeEffective(
+                    $idSalarie, $typeContratId, $dateFin, $categorie
+                );
+                $periodeEssai = [
+                    'debut' => $dateDebut,
+                    'fin'   => date('Y-m-d', strtotime($dateDebut . ' +' . $dureeEffective . ' days')),
+                ];
             }
         }
 
@@ -142,7 +151,6 @@ class ContratService
                 throw new \RuntimeException('Échec insertion contrat : ' . json_encode($this->contratModel->errors()));
             }
 
-            // WorkflowService centralisé (Iavo)
             $this->workflowService->changerStatut(
                 'contrat',
                 (int) $idContrat,
@@ -163,9 +171,13 @@ class ContratService
         }
     }
 
-    // modifier (uniquement en preparation)
+    // modifier
     public function modifier(int $idContrat, array $modifications, SessionUtilisateur $u): void
     {
+        if (!$u->aLeRole(['rh', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour modifier un contrat');
+        }
+
         $contrat = $this->contratModel->find($idContrat);
         if ($contrat === null) {
             throw new ObjetIntrouvableException("Contrat #{$idContrat} introuvable");
@@ -195,15 +207,23 @@ class ContratService
         );
     }
 
-    // soummettre signature
+    // soumettrePourSignature
     public function soumettrePourSignature(int $idContrat, SessionUtilisateur $u): void
     {
+        if (!$u->aLeRole(['rh', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour soumettre un contrat');
+        }
+
         $this->changerStatut($idContrat, 'En attente de signature', $u, 'Soumis pour signature');
     }
 
     // signer
     public function signer(int $idContrat, string $dateSignature, SessionUtilisateur $u): void
     {
+        if (!$u->aLeRole(['rh', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour signer un contrat');
+        }
+
         $contrat = $this->contratModel->find($idContrat);
         if ($contrat === null) {
             throw new ObjetIntrouvableException("Contrat #{$idContrat} introuvable");
@@ -218,9 +238,13 @@ class ContratService
         $this->changerStatut($idContrat, 'Signé', $u, 'Signature du contrat');
     }
 
-    // mettre a jour le status du salairer
+    // activer
     public function activer(int $idContrat, SessionUtilisateur $u): void
     {
+        if (!$u->aLeRole(['rh', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour activer un contrat');
+        }
+
         $contrat = $this->contratModel->find($idContrat);
         if ($contrat === null) {
             throw new ObjetIntrouvableException("Contrat #{$idContrat} introuvable");
@@ -237,9 +261,13 @@ class ContratService
         try {
             $this->changerStatut($idContrat, 'En cours', $u, 'Activation du contrat');
 
-            $statutSalarieCible = $contrat->periode_essai_debut !== null
-                ? "En période d'essai"
-                : 'Actif';
+            $statutSalarieCible = 'Actif';
+            if ($contrat->periode_essai_debut !== null
+                && $contrat->periode_essai_fin !== null
+                && $contrat->periode_essai_fin >= date('Y-m-d')
+            ) {
+                $statutSalarieCible = "En période d'essai";
+            }
 
             $statutSalarieId = $this->statusSalarieModel->idParDesignation($statutSalarieCible);
             $this->salarieModel->update((int) $contrat->id_salarie, ['statut' => $statutSalarieId]);
@@ -256,9 +284,13 @@ class ContratService
         }
     }
 
-    // mettre fin
+    // mettreFin
     public function mettreFin(int $idContrat, string $motif, SessionUtilisateur $u): void
     {
+        if (!$u->aLeRole(['rh', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour mettre fin à un contrat');
+        }
+
         $contrat = $this->contratModel->find($idContrat);
         if ($contrat === null) {
             throw new ObjetIntrouvableException("Contrat #{$idContrat} introuvable");
@@ -280,6 +312,18 @@ class ContratService
             $statutPartiId = $this->statusSalarieModel->idParDesignation('Parti');
             $this->salarieModel->update((int) $contrat->id_salarie, ['statut' => $statutPartiId]);
 
+            $affectationEnCours = $this->affectationModel->affectationEnCours((int) $contrat->id_salarie);
+            if ($affectationEnCours !== null) {
+                $this->affectationModel->update($affectationEnCours->id_affectation, [
+                    'date_fin' => date('Y-m-d'),
+                ]);
+            }
+
+            $this->auditService->journaliser(
+                $u->idUtilisateur, 'UPDATE', 'salarie', (int) $contrat->id_salarie,
+                'Statut → Parti', $u->adresseIp
+            );
+
             $db->transComplete();
         } catch (\Throwable $e) {
             $db->transRollback();
@@ -287,9 +331,13 @@ class ContratService
         }
     }
 
-    // renouvelle le contrat
+    // renouveler
     public function renouveler(int $idContrat, string $nouvelleDateFin, SessionUtilisateur $u): int
     {
+        if (!$u->aLeRole(['rh', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour renouveler un contrat');
+        }
+
         $contrat = $this->contratModel->find($idContrat);
         if ($contrat === null) {
             throw new ObjetIntrouvableException("Contrat #{$idContrat} introuvable");
@@ -322,9 +370,13 @@ class ContratService
         ], $u);
     }
 
-	//nouveau contrat liee
+    // creerAvenant
     public function creerAvenant(int $idContrat, array $modifications, SessionUtilisateur $u): int
     {
+        if (!$u->aLeRole(['rh', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour créer un avenant');
+        }
+
         $contrat = $this->contratModel->find($idContrat);
         if ($contrat === null) {
             throw new ObjetIntrouvableException("Contrat #{$idContrat} introuvable");
@@ -341,13 +393,13 @@ class ContratService
         ], $u);
     }
 
-    // consulter contrat
+    // consulter
     public function consulter(int $idContrat): ?Contrat
     {
         return $this->contratModel->find($idContrat);
     }
 
-	// lister les contrat
+    // lister
     public function lister(array $filtre = []): array
     {
         if (!empty($filtre['statut'])) {
@@ -361,13 +413,14 @@ class ContratService
         }
         return $this->contratModel->findAll();
     }
-	
-	// Historique
+
+    // historique
     public function historique(int $idContrat): array
     {
         return $this->historiqueModel->listerParContrat($idContrat);
     }
 
+    // contratsEnCours
     public function contratsEnCours(int $idSalarie): array
     {
         return $this->contratModel->where('id_salarie', $idSalarie)
@@ -375,7 +428,7 @@ class ContratService
                                    ->findAll();
     }
 
-    // function utils (changement de status via le Workflow de Iavo)
+    // changerStatut
     private function changerStatut(int $idContrat, string $statutCible, SessionUtilisateur $u, ?string $commentaire = null): void
     {
         $this->workflowService->changerStatut(
