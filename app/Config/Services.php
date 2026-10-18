@@ -31,6 +31,7 @@ class Services extends BaseService
      */
 }
 
+// fichier partager PR dediee
 public static function salarieService(bool $getShared = true)
 {
     if ($getShared) {
