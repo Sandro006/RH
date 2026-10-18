@@ -13,22 +13,27 @@ use App\Models\Personnel\ReadModels\StatusPropositionReadModel;
 use App\Models\Personnel\ReadModels\CandidatureReadModel;
 use App\Models\Personnel\ReadModels\CandidatReadModel;
 use App\Entities\Personnel\Salarie;
-use App\Entities\Personnel\Affectation;
 use App\Exceptions\StatutInvalideException;
 use App\Exceptions\ObjetIntrouvableException;
 use App\Exceptions\ConflitException;
+use App\Exceptions\AccesRefuseException;
 use App\Libraries\Common\AuditService;
 use App\Libraries\Common\SessionUtilisateur;
+use App\Libraries\Common\WorkflowService;
 
 /**
- * Service métier du module Salarié .
+ * Service métier du module Salarié (D1).
  *
- * Responsabilités :
- *  - créer un salarié à partir d'une proposition acceptée
- *  - modifier ses informations
- *  - l'affecter à un poste (historique)
- *  - changer son statut (appelé par le module Contrat)
- *  - consulter, lister, historiser
+ * Consignes respectées :
+ *  - Architecture Service → Models (pas de HTTP, pas de SQL direct hors référentiels)
+ *  - Pas d'appel aux services des autres pistes (lecture directe via ReadModels)
+ *  - WorkflowService centralisé (Iavo) pour tous les changements de statut
+ *  - AuditService (Iavo) pour la traçabilité
+ *  - Historique dans salarie_status_historique
+ *  - Un salarié par candidat (pas de doublon)
+ *  - Proposition Acceptée obligatoire
+ *  - Format matricule MAT-AAAA-00001 (via MatriculeService)
+ *  - PostgreSQL (NUMERIC, DATE, TIMESTAMPTZ)
  */
 class SalarieService
 {
@@ -43,11 +48,17 @@ class SalarieService
         private readonly CandidatureReadModel $candidatureReadModel,
         private readonly CandidatReadModel $candidatReadModel,
         private readonly AuditService $auditService,
+        private readonly WorkflowService $workflowService,
     ) {}
 
     // creerDepuisCandidature
     public function creerDepuisCandidature(int $idCandidature, SessionUtilisateur $u): int
     {
+        // 0. Rôle autorisé
+        if (!$u->aLeRole(['rh', 'recruteur', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour créer un salarié');
+        }
+
         // 1. La candidature doit exister
         $candidature = $this->candidatureReadModel->find($idCandidature);
         if ($candidature === null) {
@@ -79,9 +90,9 @@ class SalarieService
         }
 
         // 5. Préparer les données
-        $dateEmbauche   = $proposition->date_embauche_proposee ?? date('Y-m-d');
-        $matricule      = $this->matriculeService->genererMatricule($dateEmbauche);
-        $statutAttente  = $this->statusModel->idParDesignation("En attente d'embauche");
+        $dateEmbauche  = $proposition->date_embauche_proposee ?? date('Y-m-d');
+        $matricule     = $this->matriculeService->genererMatricule($dateEmbauche);
+        $statutAttente = $this->statusModel->idParDesignation("En attente d'embauche");
 
         // 6. Transaction
         $db = $this->salarieModel->db;
@@ -105,20 +116,20 @@ class SalarieService
                 );
             }
 
-            $this->historiqueModel->insert([
-                'id_salarie'      => $idSalarie,
-                'statut_ancien'   => $statutAttente, // pas d'antérieur => on répète
-                'statut_nouveau'  => $statutAttente,
-                'date_changement' => date('c'),
-                'id_utilisateur'  => $u->idUtilisateur,
-                'commentaire'     => 'Création du salarié depuis proposition acceptée',
-            ]);
+            
+            $this->workflowService->changerStatut(
+                'salarie',
+                (int) $idSalarie,
+                "En attente d'embauche",
+                $u,
+                'Création du salarié depuis proposition acceptée'
+            );
 
             $this->auditService->journaliser(
                 $u->idUtilisateur,
                 'CREATE',
                 'salarie',
-                $idSalarie,
+                (int) $idSalarie,
                 null,
                 $u->adresseIp
             );
@@ -131,16 +142,20 @@ class SalarieService
         }
     }
 
-    // modifier
+   // modifier
     public function modifier(int $idSalarie, array $modifications, SessionUtilisateur $u): void
     {
+        if (!$u->aLeRole(['rh', 'recruteur', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour modifier un salarié');
+        }
+
         if ($this->salarieModel->find($idSalarie) === null) {
             throw new ObjetIntrouvableException("Salarié #{$idSalarie} introuvable");
         }
 
-        // Champs modifiables uniquement (pas le matricule, pas le statut)
-        $autorises = ['nom', 'prenom', 'email', 'telephone', 'date_embauche'];
-        $payload = array_intersect_key($modifications, array_flip($autorises));
+        // Champs modifiables uniquement (pas matricule, pas statut, pas date_embauche)
+        $autorises = ['nom', 'prenom', 'email', 'telephone'];
+        $payload   = array_intersect_key($modifications, array_flip($autorises));
 
         if (empty($payload)) {
             return;
@@ -154,7 +169,7 @@ class SalarieService
         );
     }
 
-    // affecter
+	// afecter
     public function affecter(
         int $idSalarie,
         int $idPoste,
@@ -162,8 +177,20 @@ class SalarieService
         ?string $motif,
         SessionUtilisateur $u
     ): int {
+        if (!$u->aLeRole(['rh', 'recruteur', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour affecter un salarié');
+        }
+
         if ($this->salarieModel->find($idSalarie) === null) {
             throw new ObjetIntrouvableException("Salarié #{$idSalarie} introuvable");
+        }
+
+        // Vérifier que le poste existe (référentiel Iavo)
+        $posteExiste = $this->salarieModel->db->table('poste')
+                            ->where('id_poste', $idPoste)
+                            ->countAllResults() > 0;
+        if (!$posteExiste) {
+            throw new ObjetIntrouvableException("Poste #{$idPoste} introuvable");
         }
 
         $db = $this->affectationModel->db;
@@ -191,7 +218,7 @@ class SalarieService
             }
 
             $this->auditService->journaliser(
-                $u->idUtilisateur, 'UPDATE', 'affectation', $idAffectation,
+                $u->idUtilisateur, 'UPDATE', 'affectation', (int) $idAffectation,
                 null, $u->adresseIp
             );
 
@@ -203,56 +230,34 @@ class SalarieService
         }
     }
 
-    // listerAffectations
+    // lister affectation
     public function listerAffectations(int $idSalarie): array
     {
         return $this->affectationModel->listerParSalarie($idSalarie);
     }
 
-    // changer status
+    // changer status (delequer au WorkflowService)
     public function changerStatut(
         int $idSalarie,
         string $statutCible,
         SessionUtilisateur $u,
         ?string $commentaire = null
     ): void {
-        $salarie = $this->salarieModel->find($idSalarie);
-        if ($salarie === null) {
+        if (!$u->aLeRole(['rh', 'recruteur', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour changer le statut d\'un salarié');
+        }
+
+        if ($this->salarieModel->find($idSalarie) === null) {
             throw new ObjetIntrouvableException("Salarié #{$idSalarie} introuvable");
         }
 
-        $ancienId  = (int) $salarie->statut;
-        $nouveauId = $this->statusModel->idParDesignation($statutCible);
-
-        if ($ancienId === $nouveauId) {
-            return;
-        }
-
-        $db = $this->salarieModel->db;
-        $db->transStart();
-
-        try {
-            $this->salarieModel->update($idSalarie, ['statut' => $nouveauId]);
-
-            $this->historiqueModel->insert([
-                'id_salarie'      => $idSalarie,
-                'statut_ancien'   => $ancienId,
-                'statut_nouveau'  => $nouveauId,
-                'date_changement' => date('c'),
-                'id_utilisateur'  => $u->idUtilisateur,
-                'commentaire'     => $commentaire,
-            ]);
-
-            $this->auditService->journaliser(
-                $u->idUtilisateur, 'UPDATE', 'salarie', $idSalarie,
-                $commentaire, $u->adresseIp
-            );
-
-            $db->transComplete();
-        } catch (\Throwable $e) {
-            $db->transRollback();
-            throw $e;
-        }
+        $this->workflowService->changerStatut(
+            'salarie',
+            $idSalarie,
+            $statutCible,
+            $u,
+            $commentaire
+        );
     }
 
     // consulter
@@ -261,14 +266,15 @@ class SalarieService
         return $this->salarieModel->find($idSalarie);
     }
 
-    // liste
+    // lister
     public function lister(array $filtre = []): array
     {
+        $this->salarieModel->resetQuery();
+
         if (!empty($filtre['statut'])) {
             $this->salarieModel->where('statut', $filtre['statut']);
         }
         if (!empty($filtre['id_poste'])) {
-            // filtre via affectation en cours (jointure simple côté service)
             $ids = array_column(
                 $this->affectationModel
                      ->select('id_salarie')
