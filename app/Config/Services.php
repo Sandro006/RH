@@ -29,4 +29,29 @@ class Services extends BaseService
      *     return new \CodeIgniter\Example();
      * }
      */
+
+
+	// fichier partager PR dediee
+	public static function salarieService(bool $getShared = true)
+	{
+		if ($getShared) {
+			return static::getSharedInstance('salarieService');
+		}
+
+		return new \App\Services\Personnel\SalarieService(         
+			model(\App\Models\Personnel\SalarieModel::class),
+			model(\App\Models\Personnel\StatusSalarieModel::class),
+			model(\App\Models\Personnel\SalarieHistoriqueModel::class),
+			model(\App\Models\Personnel\AffectationModel::class),
+			new \App\Services\Personnel\MatriculeService(
+				model(\App\Models\Personnel\SalarieModel::class)
+			),
+			model(\App\Models\Personnel\ReadModels\PropositionEmbaucheReadModel::class),
+			model(\App\Models\Personnel\ReadModels\StatusPropositionReadModel::class),
+			model(\App\Models\Personnel\ReadModels\CandidatureReadModel::class),
+			model(\App\Models\Personnel\ReadModels\CandidatReadModel::class),
+			service('auditService'),
+		);
+	}
+
 }

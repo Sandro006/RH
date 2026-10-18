@@ -134,9 +134,9 @@ employés, statuts). **Aucune dépendance externe.**
 « Acceptée »** (+ candidature Retenue, candidat, offre).
 **Aucune dépendance au code d'Elisa** : Princio lit `proposition_embauche`/`candidature` via ses repos.
 
-- [ ] **D1** — `SalarieService` : `creerDepuisCandidature` (contrôle proposition **Acceptée** direct en base),
+- [x] **D1** — `SalarieService` : `creerDepuisCandidature` (contrôle proposition **Acceptée** direct en base),
   `modifier`, `affecter`, `listerAffectations`, `changerStatut`, `consulter`, `lister`, `historique`.
-- [ ] **D2** — `MatriculeService.genererMatricule` (`MAT-AAAA-00001`, unicité).
+- [x] **D2** — `MatriculeService.genererMatricule` (`MAT-AAAA-00001`, unicité).
 - [ ] **D3** — `ContratService` : `creerContrat`, `modifier`, `soumettrePourSignature`, `signer`,
   `activer`, `mettreFin`, `renouveler`, `creerAvenant`.
 - [ ] **D4** — `PeriodeEssaiService` : `categorieDepuisPoste`, `calculer`, `dureeMaxJours`,
