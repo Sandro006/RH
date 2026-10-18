@@ -137,9 +137,9 @@ employés, statuts). **Aucune dépendance externe.**
 - [x] **D1** — `SalarieService` : `creerDepuisCandidature` (contrôle proposition **Acceptée** direct en base),
   `modifier`, `affecter`, `listerAffectations`, `changerStatut`, `consulter`, `lister`, `historique`.
 - [x] **D2** — `MatriculeService.genererMatricule` (`MAT-AAAA-00001`, unicité).
-- [ ] **D3** — `ContratService` : `creerContrat`, `modifier`, `soumettrePourSignature`, `signer`,
+- [x] **D3** — `ContratService` : `creerContrat`, `modifier`, `soumettrePourSignature`, `signer`,
   `activer`, `mettreFin`, `renouveler`, `creerAvenant`.
-- [ ] **D4** — `PeriodeEssaiService` : `categorieDepuisPoste`, `calculer`, `dureeMaxJours`,
+- [] **D4** — `PeriodeEssaiService` : `categorieDepuisPoste`, `calculer`, `dureeMaxJours`,
   `deduireStages`, `validerDuree` (essai **optionnel**, plafonds CDD/CDI).
 - [ ] **D5** — `activer` → salarié **En période d'essai** ou **Actif** ; `mettreFin` → **Parti**.
 - [ ] **D6** — `OnboardingService` : `demarrer`, `creerTachesParDefaut`, `creerTache`, `demarrerTache`,
