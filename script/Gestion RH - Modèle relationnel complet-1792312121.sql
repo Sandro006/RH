@@ -121,9 +121,28 @@ CREATE TABLE IF NOT EXISTS proposition_embauche (
 	id_candidature bigint NOT NULL,
 	date_proposition date NOT NULL,
 	remuneration_proposee numeric(12,2),
+	date_embauche_proposee date,
 	date_reponse date,
 	reponse text,
 	PRIMARY KEY (id_proposition)
+);
+-- Revendications (contre-propositions) formulées par le candidat ou l'entreprise
+-- lors de la négociation d'une proposition d'embauche, avant l'acceptation.
+CREATE TABLE IF NOT EXISTS revendication (
+	id_revendication bigserial NOT NULL,
+	id_proposition bigint NOT NULL,
+	sens varchar(20) NOT NULL,
+	id_candidat bigint,
+	id_utilisateur bigint,
+	nature_id bigint NOT NULL,
+	valeur_demandee varchar(255),
+	commentaire text,
+	statut_id bigint NOT NULL,
+	date_creation timestamp with time zone NOT NULL DEFAULT now(),
+	id_repondant bigint,
+	reponse text,
+	date_reponse timestamp with time zone,
+	PRIMARY KEY (id_revendication)
 );
 CREATE TABLE IF NOT EXISTS salarie (
 	id_salarie bigserial NOT NULL,
@@ -280,6 +299,18 @@ CREATE TABLE IF NOT EXISTS status_proposition_embauche (
 	designation varchar(255) NOT NULL,
 	PRIMARY KEY (id)
 );
+-- Référentiel des natures de revendication (objet de la négociation).
+CREATE TABLE IF NOT EXISTS nature_revendication (
+	id bigserial NOT NULL,
+	designation varchar(255) NOT NULL,
+	PRIMARY KEY (id)
+);
+-- Référentiel des statuts d'une revendication.
+CREATE TABLE IF NOT EXISTS status_revendication (
+	id bigserial NOT NULL,
+	designation varchar(255) NOT NULL,
+	PRIMARY KEY (id)
+);
 -- Référentiel des statuts pour salarie.
 CREATE TABLE IF NOT EXISTS status_salarie (
 	id bigserial NOT NULL,
@@ -330,6 +361,17 @@ CREATE TABLE IF NOT EXISTS entretien_status_historique (
 CREATE TABLE IF NOT EXISTS proposition_embauche_status_historique (
 	id_historique bigserial NOT NULL,
 	id_proposition bigint NOT NULL,
+	statut_ancien bigint NOT NULL,
+	statut_nouveau bigint NOT NULL,
+	date_changement timestamp with time zone NOT NULL,
+	id_utilisateur bigint,
+	commentaire text,
+	PRIMARY KEY (id_historique)
+);
+-- Historique des changements de statut pour revendication.
+CREATE TABLE IF NOT EXISTS revendication_status_historique (
+	id_historique bigserial NOT NULL,
+	id_revendication bigint NOT NULL,
 	statut_ancien bigint NOT NULL,
 	statut_nouveau bigint NOT NULL,
 	date_changement timestamp with time zone NOT NULL,
@@ -422,6 +464,12 @@ ALTER TABLE evaluation_candidat ADD CONSTRAINT evaluation_candidat_fk1 FOREIGN K
 ALTER TABLE evaluation_candidat ADD CONSTRAINT evaluation_candidat_fk2 FOREIGN KEY (id_evaluateur) REFERENCES employe(id);
 ALTER TABLE proposition_embauche ADD CONSTRAINT proposition_embauche_fk0 FOREIGN KEY (statut) REFERENCES status_proposition_embauche(id);
 ALTER TABLE proposition_embauche ADD CONSTRAINT proposition_embauche_fk2 FOREIGN KEY (id_candidature) REFERENCES candidature(id_candidature);
+ALTER TABLE revendication ADD CONSTRAINT revendication_fk1 FOREIGN KEY (id_proposition) REFERENCES proposition_embauche(id_proposition);
+ALTER TABLE revendication ADD CONSTRAINT revendication_fk2 FOREIGN KEY (id_candidat) REFERENCES candidat(id_candidat);
+ALTER TABLE revendication ADD CONSTRAINT revendication_fk3 FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur);
+ALTER TABLE revendication ADD CONSTRAINT revendication_fk4 FOREIGN KEY (nature_id) REFERENCES nature_revendication(id);
+ALTER TABLE revendication ADD CONSTRAINT revendication_fk5 FOREIGN KEY (statut_id) REFERENCES status_revendication(id);
+ALTER TABLE revendication ADD CONSTRAINT revendication_fk6 FOREIGN KEY (id_repondant) REFERENCES utilisateur(id_utilisateur);
 ALTER TABLE salarie ADD CONSTRAINT salarie_fk1 FOREIGN KEY (id_candidat) REFERENCES candidat(id_candidat);
 ALTER TABLE salarie ADD CONSTRAINT salarie_fk8 FOREIGN KEY (statut) REFERENCES status_salarie(id);
 ALTER TABLE contrat ADD CONSTRAINT contrat_fk1 FOREIGN KEY (id_salarie) REFERENCES salarie(id_salarie);
@@ -451,6 +499,8 @@ ALTER TABLE entretien_status_historique ADD CONSTRAINT entretien_status_historiq
 ALTER TABLE entretien_status_historique ADD CONSTRAINT entretien_status_historique_fk5 FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur);
 ALTER TABLE proposition_embauche_status_historique ADD CONSTRAINT proposition_embauche_status_historique_fk1 FOREIGN KEY (id_proposition) REFERENCES proposition_embauche(id_proposition);
 ALTER TABLE proposition_embauche_status_historique ADD CONSTRAINT proposition_embauche_status_historique_fk5 FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur);
+ALTER TABLE revendication_status_historique ADD CONSTRAINT revendication_status_historique_fk1 FOREIGN KEY (id_revendication) REFERENCES revendication(id_revendication);
+ALTER TABLE revendication_status_historique ADD CONSTRAINT revendication_status_historique_fk5 FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur);
 ALTER TABLE salarie_status_historique ADD CONSTRAINT salarie_status_historique_fk1 FOREIGN KEY (id_salarie) REFERENCES salarie(id_salarie);
 ALTER TABLE salarie_status_historique ADD CONSTRAINT salarie_status_historique_fk5 FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur);
 ALTER TABLE contrat_status_historique ADD CONSTRAINT contrat_status_historique_fk1 FOREIGN KEY (id_contrat) REFERENCES contrat(id_contrat);
@@ -464,6 +514,8 @@ CREATE INDEX idx_cand_hist_candidature_date ON candidature_status_historique USI
 CREATE INDEX idx_offre_hist_demande_date ON offre_emploi_status_historique USING btree (id_offre, date_changement);
 CREATE INDEX idx_entretien_hist_date ON entretien_status_historique USING btree (id_entretien, date_changement);
 CREATE INDEX idx_prop_embauche_hist_date ON proposition_embauche_status_historique USING btree (id_proposition, date_changement);
+CREATE INDEX idx_revendication_hist_date ON revendication_status_historique USING btree (id_revendication, date_changement);
+CREATE INDEX idx_revendication_proposition ON revendication USING btree (id_proposition);
 CREATE INDEX idx_salarie_hist_date ON salarie_status_historique USING btree (id_salarie, date_changement);
 CREATE INDEX idx_contrat_hist_date ON contrat_status_historique USING btree (id_contrat, date_changement);
 CREATE INDEX idx_onboarding_hist_date ON onboarding_status_historique USING btree (id_onboarding, date_changement);
@@ -480,6 +532,10 @@ COMMENT ON TABLE status_onboarding_tache IS 'Référentiel des statuts pour onbo
 COMMENT ON TABLE offre_emploi_status_historique IS 'Historique des changements de statut pour offre_emploi.';
 COMMENT ON TABLE entretien_status_historique IS 'Historique des changements de statut pour entretien.';
 COMMENT ON TABLE proposition_embauche_status_historique IS 'Historique des changements de statut pour proposition_embauche.';
+COMMENT ON TABLE revendication IS 'Revendications (contre-propositions) lors de la négociation d''une proposition d''embauche.';
+COMMENT ON TABLE nature_revendication IS 'Référentiel des natures de revendication.';
+COMMENT ON TABLE status_revendication IS 'Référentiel des statuts d''une revendication.';
+COMMENT ON TABLE revendication_status_historique IS 'Historique des changements de statut pour revendication.';
 COMMENT ON TABLE salarie_status_historique IS 'Historique des changements de statut pour salarie.';
 COMMENT ON TABLE contrat_status_historique IS 'Historique des changements de statut pour contrat.';
 COMMENT ON TABLE onboarding_status_historique IS 'Historique des changements de statut pour onboarding.';
