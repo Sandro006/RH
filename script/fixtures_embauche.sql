@@ -345,3 +345,13 @@ SELECT setval(pg_get_serial_sequence('utilisateur', 'id_utilisateur'),
               GREATEST((SELECT MAX(id_utilisateur) FROM utilisateur), 1));
 
 COMMIT;
+
+-- verification
+SELECT 'salarie' AS t, COUNT(*) FROM salarie
+UNION ALL SELECT 'employe', COUNT(*) FROM employe
+UNION ALL SELECT 'demande_recrutement', COUNT(*) FROM demande_recrutement
+UNION ALL SELECT 'candidat', COUNT(*) FROM candidat
+UNION ALL SELECT 'offre_emploi', COUNT(*) FROM offre_emploi
+UNION ALL SELECT 'candidature', COUNT(*) FROM candidature
+UNION ALL SELECT 'proposition_embauche', COUNT(*) FROM proposition_embauche
+UNION ALL SELECT 'utilisateur', COUNT(*) FROM utilisateur;
