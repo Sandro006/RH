@@ -1,12 +1,42 @@
 -- ============================================================================
--- Fixtures Massives Piste D — Princio (Embauche) : 50 enregistrements par table
+-- Fixtures Piste D — Princio (Embauche) : 50 enregistrements par table
+-- Prérequis : Donne_status.sql exécuté (statuts + référentiels + départements/services/postes)
 -- Idempotente
 -- ============================================================================
 
 BEGIN;
 
 -- ----------------------------------------------------------------------------
--- 1. Insertion de 50 Candidats (IDs 1002 à 1051)
+-- 0. Données "support" obligatoires pour satisfaire les FK
+-- ----------------------------------------------------------------------------
+
+-- 0.1 Salarié support (nécessaire pour employe.id_salarie)
+--     statut 2 = "Actif" dans status_salarie
+INSERT INTO salarie (id_salarie, id_candidat, matricule, nom, prenom, email, telephone, date_embauche, statut)
+VALUES (1, NULL, 'MAT-0000-00001', 'Support', 'Salarié', 'support@test.com', '0000000000', CURRENT_DATE, 2)
+ON CONFLICT (id_salarie) DO NOTHING;
+
+-- 0.2 Employé support (nécessaire pour demande_recrutement.id_demandeur)
+INSERT INTO employe (id, nom, date_de_naissance, poste_id, id_salarie)
+VALUES (1, 'Employé Support', '1990-01-01', 1, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 0.3 Demande de recrutement support (nécessaire pour offre_emploi.id_demande)
+--     statut 6 = "Validée" dans status
+INSERT INTO demande_recrutement (
+    id_demande, id_poste, id_demandeur, motif, id_profil,
+    nom_personne_remplacee, type_contrat, duree_contrat, missions,
+    date_souhaitee, remuneration_min, remuneration_max, statut, date_creation
+)
+VALUES (
+    1, 1, 1, 'Création', NULL,
+    NULL, 1, NULL, 'Demande support pour fixtures Piste D',
+    CURRENT_DATE, 30000.00, 80000.00, 6, NOW()
+)
+ON CONFLICT (id_demande) DO NOTHING;
+
+-- ----------------------------------------------------------------------------
+-- 1. 50 Candidats (IDs 1002 à 1051)
 -- ----------------------------------------------------------------------------
 INSERT INTO candidat (id_candidat, nom, prenom, email, telephone, adresse, date_creation)
 VALUES 
@@ -63,65 +93,66 @@ VALUES
 ON CONFLICT (id_candidat) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- 2. Insertion de 50 Offres d'Emploi (IDs 1002 à 1051)
+-- 2. 50 Offres d'Emploi (IDs 1002 à 1051)
+--    Toutes rattachées à id_demande = 1 (demande support créée au §0.3)
 -- ----------------------------------------------------------------------------
 INSERT INTO offre_emploi (id_offre, statut, id_demande, titre, description,
                           date_publication, date_cloture, canal_diffusion, date_creation)
 VALUES 
-(1002, 2, 2, 'Lead Dev Python', 'Offre Python', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1003, 2, 3, 'Chef de Projet Digital', 'Offre Management', CURRENT_DATE, CURRENT_DATE + 45, 'Site Interne', NOW()),
-(1004, 1, 4, 'Data Analyst Junior', 'Offre Data', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
-(1005, 2, 5, 'DevOps Engineer', 'Offre Cloud', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1006, 2, 6, 'UX/UI Designer', 'Offre Design', CURRENT_DATE, CURRENT_DATE + 20, 'Behance', NOW()),
-(1007, 1, 7, 'Scrum Master', 'Offre Agile', CURRENT_DATE, CURRENT_DATE + 25, 'LinkedIn', NOW()),
-(1008, 2, 8, 'Architecte Logiciel', 'Offre Architecture', CURRENT_DATE, CURRENT_DATE + 60, 'Site', NOW()),
-(1009, 2, 9, 'Administrateur Systèmes', 'Offre SysAdmin', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
-(1010, 1, 10, 'Community Manager', 'Offre Marketing', CURRENT_DATE, CURRENT_DATE + 15, 'Réseaux', NOW()),
-(1011, 2, 11, 'Dev Fullstack JS', 'Offre JS', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1012, 2, 12, 'Product Owner', 'Offre PO', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1013, 2, 13, 'Testeur QA', 'Offre QA', CURRENT_DATE, CURRENT_DATE + 20, 'JobBoard', NOW()),
-(1014, 1, 14, 'SecOps Specialist', 'Offre Sécurité', CURRENT_DATE, CURRENT_DATE + 40, 'LinkedIn', NOW()),
-(1015, 2, 15, 'Data Engineer', 'Offre Data', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1016, 2, 16, 'Développeur Mobile', 'Offre Mobile', CURRENT_DATE, CURRENT_DATE + 25, 'JobBoard', NOW()),
-(1017, 1, 17, 'Tech Lead Java', 'Offre Java', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1018, 2, 18, 'Consultant BI', 'Offre BI', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1019, 2, 19, 'Support IT N2', 'Offre Support', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
-(1020, 1, 20, 'Administrateur BDD', 'Offre DBA', CURRENT_DATE, CURRENT_DATE + 45, 'LinkedIn', NOW()),
-(1021, 2, 21, 'Dev C++', 'Offre C++', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1022, 2, 22, 'Analyste Financier', 'Offre Finance', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
-(1023, 1, 23, 'Responsable RH', 'Offre RH', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1024, 2, 24, 'Rédacteur Web', 'Offre Content', CURRENT_DATE, CURRENT_DATE + 15, 'Site', NOW()),
-(1025, 2, 25, 'Growth Hacker', 'Offre Marketing', CURRENT_DATE, CURRENT_DATE + 20, 'JobBoard', NOW()),
-(1026, 1, 26, 'Dev Ruby', 'Offre Ruby', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1027, 2, 27, 'Ingénieur IA', 'Offre AI', CURRENT_DATE, CURRENT_DATE + 50, 'Site', NOW()),
-(1028, 2, 28, 'Traffic Manager', 'Offre Marketing', CURRENT_DATE, CURRENT_DATE + 25, 'JobBoard', NOW()),
-(1029, 1, 29, 'Architecte Cloud', 'Offre Cloud', CURRENT_DATE, CURRENT_DATE + 40, 'LinkedIn', NOW()),
-(1030, 2, 30, 'Dev PHP / Symfony', 'Offre PHP', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1031, 2, 31, 'Business Analyst', 'Offre BA', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
-(1032, 1, 32, 'Account Manager', 'Offre Sales', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1033, 2, 33, 'Dev Go', 'Offre Go', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1034, 2, 34, 'Chargé de Recrutement', 'Offre RH', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
-(1035, 1, 35, 'Ingénieur Réseau', 'Offre Réseau', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1036, 2, 36, 'Dev Rust', 'Offre Rust', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1037, 2, 37, 'Chief Technical Officer', 'Offre Direction', CURRENT_DATE, CURRENT_DATE + 90, 'Cabinet', NOW()),
-(1038, 1, 38, 'Agronome Digital', 'Offre Agrotech', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
-(1039, 2, 39, 'Dev .NET', 'Offre .NET', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1040, 2, 40, 'Auditeur Informatique', 'Offre Audit', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1041, 1, 41, 'Formateur IT', 'Offre Formation', CURRENT_DATE, CURRENT_DATE + 20, 'JobBoard', NOW()),
-(1042, 2, 42, 'Consultant Cybersécurité', 'Offre Sec', CURRENT_DATE, CURRENT_DATE + 45, 'LinkedIn', NOW()),
-(1043, 2, 43, 'Dev Swift', 'Offre iOS', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1044, 1, 44, 'Dev Kotlin', 'Offre Android', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
-(1045, 2, 45, 'Chef de Produit', 'Offre Produit', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
-(1046, 2, 46, 'Analyste SOC', 'Offre Sec', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1047, 1, 47, 'Technical Writer', 'Offre Doc', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
-(1048, 2, 48, 'Data Architect', 'Offre Data', CURRENT_DATE, CURRENT_DATE + 60, 'LinkedIn', NOW()),
-(1049, 2, 49, 'SysAdmin Linux', 'Offre Linux', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
-(1050, 1, 50, 'Helpdesk Manager', 'Offre Support', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
-(1051, 2, 51, 'Directeur des Systèmes d’Information', 'Offre DSI', CURRENT_DATE, CURRENT_DATE + 90, 'Cabinet', NOW())
+(1002, 2, 1, 'Lead Dev Python', 'Offre Python', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1003, 2, 1, 'Chef de Projet Digital', 'Offre Management', CURRENT_DATE, CURRENT_DATE + 45, 'Site Interne', NOW()),
+(1004, 1, 1, 'Data Analyst Junior', 'Offre Data', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
+(1005, 2, 1, 'DevOps Engineer', 'Offre Cloud', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1006, 2, 1, 'UX/UI Designer', 'Offre Design', CURRENT_DATE, CURRENT_DATE + 20, 'Behance', NOW()),
+(1007, 1, 1, 'Scrum Master', 'Offre Agile', CURRENT_DATE, CURRENT_DATE + 25, 'LinkedIn', NOW()),
+(1008, 2, 1, 'Architecte Logiciel', 'Offre Architecture', CURRENT_DATE, CURRENT_DATE + 60, 'Site', NOW()),
+(1009, 2, 1, 'Administrateur Systèmes', 'Offre SysAdmin', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
+(1010, 1, 1, 'Community Manager', 'Offre Marketing', CURRENT_DATE, CURRENT_DATE + 15, 'Réseaux', NOW()),
+(1011, 2, 1, 'Dev Fullstack JS', 'Offre JS', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1012, 2, 1, 'Product Owner', 'Offre PO', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1013, 2, 1, 'Testeur QA', 'Offre QA', CURRENT_DATE, CURRENT_DATE + 20, 'JobBoard', NOW()),
+(1014, 1, 1, 'SecOps Specialist', 'Offre Sécurité', CURRENT_DATE, CURRENT_DATE + 40, 'LinkedIn', NOW()),
+(1015, 2, 1, 'Data Engineer', 'Offre Data', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1016, 2, 1, 'Développeur Mobile', 'Offre Mobile', CURRENT_DATE, CURRENT_DATE + 25, 'JobBoard', NOW()),
+(1017, 1, 1, 'Tech Lead Java', 'Offre Java', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1018, 2, 1, 'Consultant BI', 'Offre BI', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1019, 2, 1, 'Support IT N2', 'Offre Support', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
+(1020, 1, 1, 'Administrateur BDD', 'Offre DBA', CURRENT_DATE, CURRENT_DATE + 45, 'LinkedIn', NOW()),
+(1021, 2, 1, 'Dev C++', 'Offre C++', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1022, 2, 1, 'Analyste Financier', 'Offre Finance', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
+(1023, 1, 1, 'Responsable RH', 'Offre RH', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1024, 2, 1, 'Rédacteur Web', 'Offre Content', CURRENT_DATE, CURRENT_DATE + 15, 'Site', NOW()),
+(1025, 2, 1, 'Growth Hacker', 'Offre Marketing', CURRENT_DATE, CURRENT_DATE + 20, 'JobBoard', NOW()),
+(1026, 1, 1, 'Dev Ruby', 'Offre Ruby', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1027, 2, 1, 'Ingénieur IA', 'Offre AI', CURRENT_DATE, CURRENT_DATE + 50, 'Site', NOW()),
+(1028, 2, 1, 'Traffic Manager', 'Offre Marketing', CURRENT_DATE, CURRENT_DATE + 25, 'JobBoard', NOW()),
+(1029, 1, 1, 'Architecte Cloud', 'Offre Cloud', CURRENT_DATE, CURRENT_DATE + 40, 'LinkedIn', NOW()),
+(1030, 2, 1, 'Dev PHP / Symfony', 'Offre PHP', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1031, 2, 1, 'Business Analyst', 'Offre BA', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
+(1032, 1, 1, 'Account Manager', 'Offre Sales', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1033, 2, 1, 'Dev Go', 'Offre Go', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1034, 2, 1, 'Chargé de Recrutement', 'Offre RH', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
+(1035, 1, 1, 'Ingénieur Réseau', 'Offre Réseau', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1036, 2, 1, 'Dev Rust', 'Offre Rust', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1037, 2, 1, 'Chief Technical Officer', 'Offre Direction', CURRENT_DATE, CURRENT_DATE + 90, 'Cabinet', NOW()),
+(1038, 1, 1, 'Agronome Digital', 'Offre Agrotech', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
+(1039, 2, 1, 'Dev .NET', 'Offre .NET', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1040, 2, 1, 'Auditeur Informatique', 'Offre Audit', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1041, 1, 1, 'Formateur IT', 'Offre Formation', CURRENT_DATE, CURRENT_DATE + 20, 'JobBoard', NOW()),
+(1042, 2, 1, 'Consultant Cybersécurité', 'Offre Sec', CURRENT_DATE, CURRENT_DATE + 45, 'LinkedIn', NOW()),
+(1043, 2, 1, 'Dev Swift', 'Offre iOS', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1044, 1, 1, 'Dev Kotlin', 'Offre Android', CURRENT_DATE, CURRENT_DATE + 30, 'JobBoard', NOW()),
+(1045, 2, 1, 'Chef de Produit', 'Offre Produit', CURRENT_DATE, CURRENT_DATE + 30, 'LinkedIn', NOW()),
+(1046, 2, 1, 'Analyste SOC', 'Offre Sec', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1047, 1, 1, 'Technical Writer', 'Offre Doc', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
+(1048, 2, 1, 'Data Architect', 'Offre Data', CURRENT_DATE, CURRENT_DATE + 60, 'LinkedIn', NOW()),
+(1049, 2, 1, 'SysAdmin Linux', 'Offre Linux', CURRENT_DATE, CURRENT_DATE + 30, 'Site', NOW()),
+(1050, 1, 1, 'Helpdesk Manager', 'Offre Support', CURRENT_DATE, CURRENT_DATE + 15, 'JobBoard', NOW()),
+(1051, 2, 1, 'Directeur des Systèmes d''Information', 'Offre DSI', CURRENT_DATE, CURRENT_DATE + 90, 'Cabinet', NOW())
 ON CONFLICT (id_offre) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- 3. Insertion de 50 Candidatures (IDs 1002 à 1051)
+-- 3. 50 Candidatures (IDs 1002 à 1051)
 -- ----------------------------------------------------------------------------
 INSERT INTO candidature (id_candidature, id_candidat, id_offre, date_candidature,
                          cv, lettre_motivation, origine_candidature, statut)
@@ -179,7 +210,7 @@ VALUES
 ON CONFLICT (id_candidature) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- 4. Insertion de 50 Propositions d'Embauche (IDs 1002 à 1051)
+-- 4. 50 Propositions d'Embauche (IDs 1002 à 1051)
 -- ----------------------------------------------------------------------------
 INSERT INTO proposition_embauche (id_proposition, statut, id_candidature, date_proposition,
                                  remuneration_proposee, date_embauche_proposee, date_reponse, reponse)
@@ -237,65 +268,71 @@ VALUES
 ON CONFLICT (id_proposition) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- 5. Insertion de 50 Utilisateurs (IDs 1002 à 1051) avec mot de passe en commentaire
+-- 5. 50 Utilisateurs (IDs 1002 à 1051) avec mot de passe en commentaire
 -- ----------------------------------------------------------------------------
 INSERT INTO utilisateur (id_utilisateur, id_employe, identifiant, mot_de_passe_hash, role, actif, date_creation)
 VALUES 
-(1002, NULL, 'user_1002', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1002
-(1003, NULL, 'user_1003', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1003
-(1004, NULL, 'user_1004', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1004
-(1005, NULL, 'user_1005', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1005
-(1006, NULL, 'user_1006', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1006
-(1007, NULL, 'user_1007', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1007
-(1008, NULL, 'user_1008', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1008
-(1009, NULL, 'user_1009', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1009
-(1010, NULL, 'user_1010', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1010
-(1011, NULL, 'user_1011', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1011
-(1012, NULL, 'user_1012', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1012
-(1013, NULL, 'user_1013', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1013
-(1014, NULL, 'user_1014', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1014
-(1015, NULL, 'user_1015', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1015
-(1016, NULL, 'user_1016', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1016
-(1017, NULL, 'user_1017', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1017
-(1018, NULL, 'user_1018', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1018
-(1019, NULL, 'user_1019', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1019
-(1020, NULL, 'user_1020', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1020
-(1021, NULL, 'user_1021', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1021
-(1022, NULL, 'user_1022', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1022
-(1023, NULL, 'user_1023', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1023
-(1024, NULL, 'user_1024', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1024
-(1025, NULL, 'user_1025', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1025
-(1026, NULL, 'user_1026', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1026
-(1027, NULL, 'user_1027', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1027
-(1028, NULL, 'user_1028', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1028
-(1029, NULL, 'user_1029', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1029
-(1030, NULL, 'user_1030', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1030
-(1031, NULL, 'user_1031', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1031
-(1032, NULL, 'user_1032', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1032
-(1033, NULL, 'user_1033', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1033
-(1034, NULL, 'user_1034', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1034
-(1035, NULL, 'user_1035', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1035
-(1036, NULL, 'user_1036', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1036
-(1037, NULL, 'user_1037', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1037
-(1038, NULL, 'user_1038', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1038
-(1039, NULL, 'user_1039', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1039
-(1040, NULL, 'user_1040', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1040
-(1041, NULL, 'user_1041', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1041
-(1042, NULL, 'user_1042', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1042
-(1043, NULL, 'user_1043', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1043
-(1044, NULL, 'user_1044', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1044
-(1045, NULL, 'user_1045', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1045
-(1046, NULL, 'user_1046', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1046
-(1047, NULL, 'user_1047', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1047
-(1048, NULL, 'user_1048', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()), -- mot_de_passe : password1048
-(1049, NULL, 'user_1049', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()), -- mot_de_passe : password1049
-(1050, NULL, 'user_1050', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()), -- mot_de_passe : password1050
-(1051, NULL, 'user_1051', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW())  -- mot_de_passe : password1051
+(1002, NULL, 'user_1002', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1002
+(1003, NULL, 'user_1003', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1003
+(1004, NULL, 'user_1004', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1004
+(1005, NULL, 'user_1005', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1005
+(1006, NULL, 'user_1006', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1006
+(1007, NULL, 'user_1007', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1007
+(1008, NULL, 'user_1008', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1008
+(1009, NULL, 'user_1009', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1009
+(1010, NULL, 'user_1010', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1010
+(1011, NULL, 'user_1011', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1011
+(1012, NULL, 'user_1012', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1012
+(1013, NULL, 'user_1013', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1013
+(1014, NULL, 'user_1014', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1014
+(1015, NULL, 'user_1015', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1015
+(1016, NULL, 'user_1016', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1016
+(1017, NULL, 'user_1017', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1017
+(1018, NULL, 'user_1018', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1018
+(1019, NULL, 'user_1019', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1019
+(1020, NULL, 'user_1020', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1020
+(1021, NULL, 'user_1021', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1021
+(1022, NULL, 'user_1022', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1022
+(1023, NULL, 'user_1023', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1023
+(1024, NULL, 'user_1024', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1024
+(1025, NULL, 'user_1025', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1025
+(1026, NULL, 'user_1026', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1026
+(1027, NULL, 'user_1027', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1027
+(1028, NULL, 'user_1028', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1028
+(1029, NULL, 'user_1029', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1029
+(1030, NULL, 'user_1030', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1030
+(1031, NULL, 'user_1031', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1031
+(1032, NULL, 'user_1032', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1032
+(1033, NULL, 'user_1033', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1033
+(1034, NULL, 'user_1034', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1034
+(1035, NULL, 'user_1035', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1035
+(1036, NULL, 'user_1036', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1036
+(1037, NULL, 'user_1037', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1037
+(1038, NULL, 'user_1038', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1038
+(1039, NULL, 'user_1039', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1039
+(1040, NULL, 'user_1040', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1040
+(1041, NULL, 'user_1041', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1041
+(1042, NULL, 'user_1042', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1042
+(1043, NULL, 'user_1043', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1043
+(1044, NULL, 'user_1044', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1044
+(1045, NULL, 'user_1045', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1045
+(1046, NULL, 'user_1046', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1046
+(1047, NULL, 'user_1047', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1047
+(1048, NULL, 'user_1048', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW()),  -- mot_de_passe : password1048
+(1049, NULL, 'user_1049', '$2y$10$abcdefghijklmnopqrstuv', 'rh', TRUE, NOW()),       -- mot_de_passe : password1049
+(1050, NULL, 'user_1050', '$2y$10$abcdefghijklmnopqrstuv', 'admin', TRUE, NOW()),    -- mot_de_passe : password1050
+(1051, NULL, 'user_1051', '$2y$10$abcdefghijklmnopqrstuv', 'manager', TRUE, NOW())   -- mot_de_passe : password1051
 ON CONFLICT (id_utilisateur) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- Mise à jour des séquences PostgreSQL
+-- 6. Mise à jour des séquences PostgreSQL
 -- ----------------------------------------------------------------------------
+SELECT setval(pg_get_serial_sequence('salarie', 'id_salarie'),
+              GREATEST((SELECT MAX(id_salarie) FROM salarie), 1));
+SELECT setval(pg_get_serial_sequence('employe', 'id'),
+              GREATEST((SELECT MAX(id) FROM employe), 1));
+SELECT setval(pg_get_serial_sequence('demande_recrutement', 'id_demande'),
+              GREATEST((SELECT MAX(id_demande) FROM demande_recrutement), 1));
 SELECT setval(pg_get_serial_sequence('candidat', 'id_candidat'),
               GREATEST((SELECT MAX(id_candidat) FROM candidat), 1));
 SELECT setval(pg_get_serial_sequence('offre_emploi', 'id_offre'),
