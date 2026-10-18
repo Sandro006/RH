@@ -53,5 +53,38 @@ class Services extends BaseService
 			service('auditService'),
 		);
 	}
+	
+	public static function grilleService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('grilleService');
+		return new \App\Services\Personnel\GrilleService(
+			model(\App\Models\Personnel\ContratModel::class),
+		);
+	}
+
+	public static function periodeEssaiService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('periodeEssaiService');
+		return new \App\Services\Personnel\PeriodeEssaiService(
+			model(\App\Models\Personnel\ContratModel::class),
+		);
+	}
+
+	public static function contratService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('contratService');
+
+		return new \App\Services\Personnel\ContratService(
+			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Personnel\StatusContratModel::class),
+			model(\App\Models\Personnel\ContratHistoriqueModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			model(\App\Models\Personnel\StatusSalarieModel::class),
+			service('periodeEssaiService'),
+			service('grilleService'),
+			service('auditService'),
+			service('workflowService'),
+		);
+	}
 
 }
