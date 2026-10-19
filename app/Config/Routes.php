@@ -1,5 +1,11 @@
 <?php
+// selection 
+$routes->get('entretiens', 'Selection\EntretienController::page');
 
+$routes->group('api/entretiens', ['namespace' => 'App\Controllers\Selection'], static function ($routes) {
+    $routes->get('/', 'EntretienController::index');
+    $routes->post('(:num)/confirmer', 'EntretienController::confirmer/$1');
+});
 
 // salaire
 $routes->group('api/salaries', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
