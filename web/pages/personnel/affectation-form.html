@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Affectation | Gestion RH</title>
+    <link rel="stylesheet" href="../../css/personnel.css">
+</head>
+
+<body>
+    <header class="app-header"><a href="../../dashboard.html">Gestion RH</a>
+        <nav><a href="salaires.html">Salariés</a></nav>
+    </header>
+    <main class="main">
+        <div class="breadcrumb"><a href="salaires.html">Salariés</a> / Affectation</div>
+        <div class="page-heading">
+            <h1>Affecter à un poste</h1>
+        </div>
+        <section class="card">
+            <form id="assignment-form" class="form-grid"><label>Poste <input name="idPoste" type="number"
+                        required></label><label>Date de début <input name="dateDebut" type="date"
+                        required></label><label class="field-wide">Motif <textarea name="motif"
+                        placeholder="Nomination, mobilité…"></textarea></label>
+                <div class="actions field-wide"><a class="button button-secondary"
+                        href="salaires.html">Annuler</a><button class="button-primary">Affecter</button></div>
+            </form>
+        </section>
+    </main>
+    <script src="../../js/api.js"></script>
+    <script src="../../js/ui.js"></script>
+    <script src="../../js/pages/personnel/affectation-form.js"></script>
+</body>
+
+</html>
