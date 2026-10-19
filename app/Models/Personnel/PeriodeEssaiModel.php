@@ -6,18 +6,15 @@ namespace App\Models\Personnel;
 
 use CodeIgniter\Model;
 
-
 class PeriodeEssaiModel extends Model
 {
-    protected $table         = 'salarie'; // table "support" (jamais écrite ici)
+    protected $table         = 'salarie';
     protected $primaryKey    = 'id_salarie';
     protected $returnType    = 'object';
     protected $allowedFields = [];
     protected $useTimestamps = false;
 
-    /**
-     * Lit la désignation du rang d'un poste.
-     */
+    // rangDuPoste
     public function rangDuPoste(int $idPoste): ?string
     {
         $row = $this->db->table('poste')
@@ -29,44 +26,23 @@ class PeriodeEssaiModel extends Model
         return $row?->designation;
     }
 
-    /**
-     * Somme des jours de stage antérieurs d'un salarié.
-     *  Nécessite la table `stage` (migration).
-     * Retourne 0 si la table n'existe pas (fallback sûr).
-     */
-    public function joursStageAnterieurs(int $idSalarie): int
+    // joursStageAnterieurs
+    public function joursStageAnterieurs(int $idSalarie, ?string $dateDebutContratActuel = null): int
     {
-        try {
-            $row = $this->db->table('stage')
+        $typeStage = 3; // type_contrat "Stage"
+
+        $builder = $this->db->table('contrat')
                             ->selectSum('(date_fin - date_debut)', 'total_jours')
                             ->where('id_salarie', $idSalarie)
-                            ->get()
-                            ->getRow();
-            return (int) ($row->total_jours ?? 0);
-        } catch (\Throwable $e) {
-            // Table `stage` absente : fallback à 0
-            return 0;
+                            ->where('type_contrat_id', $typeStage)
+                            ->where('date_fin IS NOT NULL');
+
+        if ($dateDebutContratActuel !== null) {
+            $builder->where('date_fin <', $dateDebutContratActuel);
         }
+
+        $row = $builder->get()->getRow();
+
+        return (int) ($row->total_jours ?? 0);
     }
-	
-	// joursStageAnterieurs
-	public function joursStageAnterieurs(int $idSalarie, ?string $dateDebutContratActuel = null): int
-	{
-		$typeStage = 3;
-
-		$builder = $this->db->table('contrat')
-							->selectSum('(date_fin - date_debut)', 'total_jours')
-							->where('id_salarie', $idSalarie)
-							->where('type_contrat_id', $typeStage)
-							->where('date_fin IS NOT NULL');
-
-		// Ne compter que les stages ANTÉRIEURS au contrat actuel
-		if ($dateDebutContratActuel !== null) {
-			$builder->where('date_fin <', $dateDebutContratActuel);
-		}
-
-		$row = $builder->get()->getRow();
-
-		return (int) ($row->total_jours ?? 0);
-	}
 }

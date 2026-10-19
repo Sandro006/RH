@@ -86,5 +86,34 @@ class Services extends BaseService
 			service('workflowService'),
 		);
 	}
+	
+	public static function onboardingService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('onboardingService');
+
+		return new \App\Services\Personnel\OnboardingService(
+			model(\App\Models\Personnel\OnboardingModel::class),
+			model(\App\Models\Personnel\StatusOnboardingModel::class),
+			model(\App\Models\Personnel\OnboardingHistoriqueModel::class),
+			model(\App\Models\Personnel\TacheModel::class),
+			model(\App\Models\Personnel\StatusTacheModel::class),
+			model(\App\Models\Personnel\TacheHistoriqueModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			service('auditService'),
+			service('workflowService'),
+		);
+	}
+	
+	public static function documentService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('documentService');
+
+		return new \App\Services\Personnel\DocumentService(
+			model(\App\Models\Personnel\DocumentModel::class),
+			model(\App\Models\Personnel\TypeDocumentModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			service('auditService'),
+		);
+	}
 
 }
