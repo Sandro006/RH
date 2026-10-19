@@ -48,4 +48,25 @@ class PeriodeEssaiModel extends Model
             return 0;
         }
     }
+	
+	// joursStageAnterieurs
+	public function joursStageAnterieurs(int $idSalarie, ?string $dateDebutContratActuel = null): int
+	{
+		$typeStage = 3;
+
+		$builder = $this->db->table('contrat')
+							->selectSum('(date_fin - date_debut)', 'total_jours')
+							->where('id_salarie', $idSalarie)
+							->where('type_contrat_id', $typeStage)
+							->where('date_fin IS NOT NULL');
+
+		// Ne compter que les stages ANTÉRIEURS au contrat actuel
+		if ($dateDebutContratActuel !== null) {
+			$builder->where('date_fin <', $dateDebutContratActuel);
+		}
+
+		$row = $builder->get()->getRow();
+
+		return (int) ($row->total_jours ?? 0);
+	}
 }
