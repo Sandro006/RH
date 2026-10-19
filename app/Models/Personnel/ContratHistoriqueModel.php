@@ -17,6 +17,7 @@ class ContratHistoriqueModel extends Model
     ];
     protected $useTimestamps = false;
 
+    // listerParContrat
     public function listerParContrat(int $idContrat): array
     {
         return $this->where('id_contrat', $idContrat)
