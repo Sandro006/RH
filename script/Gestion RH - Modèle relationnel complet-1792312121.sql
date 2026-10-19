@@ -1,4 +1,7 @@
-CREATE DATABASE gestion_rh;
+CREATE DATABASE gestion_rh
+			WITH ENCODING = 'UTF8'
+			LC_COLLATE = 'fr_FR.utf8'
+			LC_CTYPE = 'fr.FR.utf8';
 \c gestion_rh
 
 CREATE TABLE IF NOT EXISTS departement (
