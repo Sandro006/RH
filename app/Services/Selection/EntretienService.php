@@ -1,17 +1,22 @@
 <?php
-namespace App\Services;
+namespace App\Services\Selection;
+
+use App\Repositories\EntretienRepository;
+use App\Repositories\HistoriqueRepository;
 
 class EntretienService
 {
     protected $db;
-    protected $repo;
+    protected EntretienRepository $repo;
+    protected HistoriqueRepository $historique;
     protected $workflow;
     protected $candidatures;   // CandidatureLectureRepository (lecture/écriture directe)
 
     public function __construct()
     {
         $this->db           = \Config\Database::connect();
-        $this->repo         = new \App\Repositories\EntretienRepository($this->db);
+        $this->repo         = new EntretienRepository($this->db);
+        $this->historique   = new HistoriqueRepository($this->db);
         $this->workflow     = new WorkflowService();
         $this->candidatures = new \App\Repositories\CandidatureLectureRepository($this->db);
     }
@@ -39,7 +44,7 @@ class EntretienService
         ]);
 
         // 1re ligne d'historique (aucun → Planifié)
-        $this->db->table('entretien_status_historique')->insert([
+        $this->historique->inserer([
             'id_entretien' => $id, 'statut_ancien' => null,
             'statut_nouveau' => $this->workflow->idStatut('PLANIFIE'),
             'date_changement' => date('Y-m-d H:i:s'),

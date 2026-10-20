@@ -1,7 +1,8 @@
 <?php
-namespace App\Services;
+namespace App\Services\Selection;
 
 use App\Repositories\EntretienRepository;
+use App\Repositories\HistoriqueRepository;
 use CodeIgniter\Database\BaseConnection;
 
 class WorkflowService
@@ -22,11 +23,13 @@ class WorkflowService
 
     protected BaseConnection $db;
     protected EntretienRepository $repo;
+    protected HistoriqueRepository $historique;
 
     public function __construct()
     {
         $this->db   = \Config\Database::connect();
         $this->repo = new EntretienRepository($this->db);
+        $this->historique = new HistoriqueRepository($this->db);
     }
 
     public function idStatut(string $code): int
@@ -61,7 +64,7 @@ class WorkflowService
         $nouvelId = $this->idStatut($cible);
         $this->repo->mettreAJourStatut($idEntretien, $nouvelId);
 
-        $this->db->table('entretien_status_historique')->insert([
+        $this->historique->inserer([
             'id_entretien'    => $idEntretien,
             'statut_ancien'   => $e['statut'],
             'statut_nouveau'  => $nouvelId,

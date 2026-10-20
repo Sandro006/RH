@@ -2,7 +2,7 @@
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
-use App\Services\EntretienService;
+use App\Services\Selection\EntretienService;
 
 class EntretienController extends ResourceController
 {
