@@ -1,10 +1,15 @@
 <?php
 // selection 
-$routes->get('entretiens', 'Selection\EntretienController::page');
-
-$routes->group('api/entretiens', ['namespace' => 'App\Controllers\Selection'], static function ($routes) {
-    $routes->get('/', 'EntretienController::index');
-    $routes->post('(:num)/confirmer', 'EntretienController::confirmer/$1');
+$routes->group('api', ['namespace' => 'App\Controllers'], static function ($routes) {
+    $routes->get('entretiens',                      'EntretienController::lister');
+    $routes->post('entretiens',                     'EntretienController::planifier');
+    $routes->get('entretiens/(:num)',               'EntretienController::fiche/$1');
+    $routes->post('entretiens/(:num)/confirmer',    'EntretienController::confirmer/$1');
+    $routes->post('entretiens/(:num)/reporter',     'EntretienController::reporter/$1');
+    $routes->post('entretiens/(:num)/realiser',     'EntretienController::realiser/$1');
+    $routes->post('entretiens/(:num)/annuler',      'EntretienController::annuler/$1');
+    $routes->get('entretiens/(:num)/historique',    'EntretienController::historique/$1');
+    $routes->post('offres/(:num)/planifier-entretiens', 'EntretienController::planifierPourOffre/$1');
 });
 
 // salaire
