@@ -118,41 +118,32 @@ class PeriodeEssaiService
         return $dureeJours > 0 && $dureeJours <= $max;
     }
 
-    /**
-     * Déduit les périodes de stage antérieures (RH.md §III).
-     *
-     * Lit la table `stage` (si migration appliquée) et retourne le nombre
-     * de jours à déduire de la durée d'essai. Retourne 0 si la table n'existe pas.
-     *
-     * @param int $idSalarie       Le salarié concerné
-     * @param int $dureeEssaiJours La durée d'essai initiale (en jours)
-     * @return int Le nombre de jours à déduire (≤ $dureeEssaiJours)
-     */
-    public function deduireStages(int $idSalarie, int $dureeEssaiJours): int
-    {
-        $joursStage = $this->periodeEssaiModel->joursStageAnterieurs($idSalarie);
+    // deduireStages
+	public function deduireStages(int $idSalarie, int $dureeEssaiJours, ?string $dateDebutContratActuel = null): int
+	{
+		$joursStage = $this->periodeEssaiModel->joursStageAnterieurs($idSalarie, $dateDebutContratActuel);
 
-        // La déduction ne peut pas dépasser la durée d'essai demandée
-        return min($dureeEssaiJours, max(0, $joursStage));
-    }
+		return min($dureeEssaiJours, max(0, $joursStage));
+	}
 
     /**
      * Calcule la durée d'essai effective après déduction des stages.
      */
-    public function dureeEffective(
-        int $idSalarie,
-        int $typeContratId,
-        ?string $dateFin,
-        string $categorie,
-        ?int $dureeDemandeeJours = null
-    ): int {
-        $dureeInitiale = $dureeDemandeeJours
-            ?? $this->dureeMaxJours($typeContratId, $dateFin, $categorie);
+	public function dureeEffective(
+		int $idSalarie,
+		int $typeContratId,
+		?string $dateFin,
+		string $categorie,
+		?int $dureeDemandeeJours = null,
+		?string $dateDebutContratActuel = null
+	): int {
+		$dureeInitiale = $dureeDemandeeJours
+			?? $this->dureeMaxJours($typeContratId, $dateFin, $categorie);
 
-        $deduction = $this->deduireStages($idSalarie, $dureeInitiale);
+		$deduction = $this->deduireStages($idSalarie, $dureeInitiale, $dateDebutContratActuel);
 
-        return max(0, $dureeInitiale - $deduction);
-    }
+		return max(0, $dureeInitiale - $deduction);
+	}
 
     private function dureeContratEnJours(?string $dateFin): ?int
     {
