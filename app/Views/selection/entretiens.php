@@ -56,6 +56,7 @@
         .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem 1rem; }
         .form-grid label.full-width { grid-column: 1 / -1; }
         .required::after { content: ' *'; color: #b42318; }
+        .status-final { background: #e5e7eb; color: #374151; }
         .message { padding: 1rem; color: #52606d; }
         .error { color: #b42318; }
         @media (max-width: 760px) { .table-wrap { overflow-x: auto; } table { min-width: 850px; } }
@@ -83,6 +84,11 @@
         </label>
         <label>Offre
             <select id="idOffre"><option value="">Toutes</option></select>
+        <label>Recruteur (ID)
+            <input id="idRecruteur" type="number" min="1">
+        </label>
+        <label>Offre (ID)
+            <input id="idOffre" type="number" min="1">
         </label>
         <label>Du
             <input id="dateDebut" type="date">
@@ -101,6 +107,8 @@
 
     <div id="message" class="message" role="status">Chargement...</div>
     <div class="table-wrap" id="conteneur-liste">
+    <div id="message" class="message" role="status">Chargement...</div>
+    <div class="table-wrap">
         <table>
             <thead><tr>
                 <th>Date</th><th>Candidat</th><th>Offre</th><th>Recruteur</th>
@@ -235,6 +243,7 @@ function afficherStatut(ligne, entretien) {
     const cellule = document.createElement('td');
     const badge = document.createElement('span');
     const classe = classeStatut(entretien.statut);
+    const classe = (entretien.statut || '').toLowerCase().replaceAll('é', 'e');
     badge.className = `status status-${classe}`;
     badge.textContent = entretien.statut || 'Inconnu';
     cellule.appendChild(badge);
@@ -252,6 +261,14 @@ function afficherActions(ligne, entretien) {
     }
     if (['Planifié', 'Confirmé', 'Reporté'].includes(entretien.statut)) {
         ajouterAction(cellule, 'Annuler', () => ouvrirAction('annuler', entretien.id_entretien), 'secondary');
+    if (entretien.statut === 'Planifié') {
+        const bouton = document.createElement('button');
+        bouton.type = 'button';
+        bouton.textContent = 'Confirmer';
+        bouton.addEventListener('click', () => confirmer(entretien.id_entretien));
+        cellule.appendChild(bouton);
+    } else {
+        cellule.textContent = 'Aucune';
     }
     ligne.appendChild(cellule);
 }
@@ -616,6 +633,7 @@ async function chargerEntretiens() {
         const response = await fetch(`/api/entretiens?${params}`);
         if (!response.ok) throw new Error('Impossible de charger les entretiens.');
         entretiens = await response.json();
+        const entretiens = await response.json();
         message.textContent = entretiens.length ? `${entretiens.length} entretien(s)` : 'Aucun entretien trouvé.';
         entretiens.forEach(entretien => {
             const ligne = document.createElement('tr');
@@ -647,6 +665,12 @@ async function confirmer(id) {
     } catch (error) {
         window.alert(error.message);
     }
+    const response = await fetch(`/api/entretiens/${id}/confirmer`, { method: 'POST' });
+    if (!response.ok) {
+        window.alert('La confirmation a échoué.');
+        return;
+    }
+    await chargerEntretiens();
 }
 
 form.addEventListener('submit', event => { event.preventDefault(); chargerEntretiens(); });
@@ -693,6 +717,7 @@ Promise.all([chargerReferentiels(), chargerEntretiens()]).catch(error => {
     message.className = 'message error';
     message.textContent = error.message;
 });
+chargerEntretiens();
 </script>
 </body>
 </html>

@@ -98,35 +98,35 @@ class ContratService
         if ($this->contratModel->contratEnCours($idSalarie) !== null) {
             throw new ConflitException("Un contrat est déjà En cours pour ce salarié");
         }
+		
+		$periodeEssai = null;
+		if (!empty($data['avecPeriodeEssai'])) {
+			$categorie = $data['categorie'] ?? $this->periodeEssaiService->categorieDepuisPoste($idPoste);
 
-        $periodeEssai = null;
-        if (!empty($data['avecPeriodeEssai'])) {
-            $categorie = $data['categorie'] ?? $this->periodeEssaiService->categorieDepuisPoste($idPoste);
-
-            if (!empty($data['dureeEssaiJours'])) {
-                $duree = (int) $data['dureeEssaiJours'];
-                if (!$this->periodeEssaiService->validerDuree($typeContratId, $duree, $categorie)) {
-                    throw new DonneesIncoherentesException(
-                        "Durée d'essai {$duree} jours > plafond légal pour la catégorie {$categorie}"
-                    );
-                }
-                $dureeEffective = $this->periodeEssaiService->dureeEffective(
-                    $idSalarie, $typeContratId, $dateFin, $categorie, $duree
-                );
-                $periodeEssai = [
-                    'debut' => $dateDebut,
-                    'fin'   => date('Y-m-d', strtotime($dateDebut . ' +' . $dureeEffective . ' days')),
-                ];
-            } else {
-                $dureeEffective = $this->periodeEssaiService->dureeEffective(
-                    $idSalarie, $typeContratId, $dateFin, $categorie
-                );
-                $periodeEssai = [
-                    'debut' => $dateDebut,
-                    'fin'   => date('Y-m-d', strtotime($dateDebut . ' +' . $dureeEffective . ' days')),
-                ];
-            }
-        }
+			if (!empty($data['dureeEssaiJours'])) {
+				$duree = (int) $data['dureeEssaiJours'];
+				if (!$this->periodeEssaiService->validerDuree($typeContratId, $duree, $categorie)) {
+					throw new DonneesIncoherentesException(
+						"Durée d'essai {$duree} jours > plafond légal pour la catégorie {$categorie}"
+					);
+				}
+				$dureeEffective = $this->periodeEssaiService->dureeEffective(
+					$idSalarie, $typeContratId, $dateFin, $categorie, $duree, $dateDebut  // ← AJOUT $dateDebut
+				);
+				$periodeEssai = [
+					'debut' => $dateDebut,
+					'fin'   => date('Y-m-d', strtotime($dateDebut . ' +' . $dureeEffective . ' days')),
+				];
+			} else {
+				$dureeEffective = $this->periodeEssaiService->dureeEffective(
+					$idSalarie, $typeContratId, $dateFin, $categorie, null, $dateDebut  // ← AJOUT $dateDebut
+				);
+				$periodeEssai = [
+					'debut' => $dateDebut,
+					'fin'   => date('Y-m-d', strtotime($dateDebut . ' +' . $dureeEffective . ' days')),
+				];
+			}
+		}
 
         $statutPreparation = $this->statusModel->idParDesignation('En préparation');
 
