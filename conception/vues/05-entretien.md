@@ -24,7 +24,7 @@ Endpoints utilisés :
 
 ## Écran : Agenda des entretiens
 
-- **Fichier** : `pages/recrutement/entretiens.html`
+- **Fichier** : `app/Views/selection/entretiens.php`
 - **Rôle(s)** : recruteur, rh, admin
 - **Objectif** : visualiser et gérer les entretiens (vue liste + calendrier).
 
@@ -51,7 +51,7 @@ Endpoints utilisés :
 | Action | Déclencheur | Appel API | Résultat |
 |---|---|---|---|
 | Filtrer | change/submit | `GET /api/entretiens?…` | rafraîchit liste/agenda |
-| Ouvrir | ligne/clic | — | ouvre `entretien.html` |
+| Ouvrir | ligne/clic | — | ouvre `app/Views/selection/entretien.php` |
 | Planifier en lot | bouton (offre clôturée) | `POST /api/offres/{id}/planifier-entretiens` | confirme + liste mise à jour |
 
 - **États** : vide, chargement, erreur.
@@ -61,7 +61,7 @@ Endpoints utilisés :
 
 ## Écran : Planifier un entretien
 
-- **Fichier** : `pages/recrutement/entretien-form.html` (ou modal)
+- **Fichier** : `app/Views/selection/entretien-form.php` (ou modal)
 - **Rôle(s)** : recruteur, rh
 - **Objectif** : créer un entretien pour une candidature présélectionnée.
 
@@ -84,7 +84,7 @@ Endpoints utilisés :
 
 ## Écran : Fiche entretien
 
-- **Fichier** : `pages/recrutement/entretien.html`
+- **Fichier** : `app/Views/selection/entretien.php`
 - **Rôle(s)** : recruteur, rh, admin
 - **Objectif** : suivre l'entretien et saisir le compte rendu.
 
