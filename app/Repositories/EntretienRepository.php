@@ -77,6 +77,9 @@ class EntretienRepository
         if (!empty($f['idRecruteur'])) {
             $b->where('e.id_recruteur', $f['idRecruteur']);
         }
+        if (!empty($f['idCandidature'])) {
+            $b->where('e.id_candidature', $f['idCandidature']);
+        }
         if (!empty($f['statut'])) {
             $b->where('se.designation', $f['statut']);
         }
@@ -88,6 +91,44 @@ class EntretienRepository
         }
 
         return $b->orderBy('e.date_entretien')->get()->getResultArray();
+    }
+
+    public function listerRecruteurs(): array
+    {
+        return $this->db->table('employe')
+            ->select('id, nom')
+            ->orderBy('nom')
+            ->get()
+            ->getResultArray();
+    }
+
+    public function listerTypes(): array
+    {
+        return $this->db->table('type_entrentien')
+            ->select('id, designation')
+            ->orderBy('designation')
+            ->get()
+            ->getResultArray();
+    }
+
+    public function listerOffresCloturees(): array
+    {
+        return $this->db->table('offre_emploi o')
+            ->select('o.id_offre, o.titre')
+            ->join('status_offre_emploi so', 'so.id = o.statut')
+            ->where('so.designation', 'Clôturée')
+            ->orderBy('o.titre')
+            ->get()
+            ->getResultArray();
+    }
+
+    public function listerOffres(): array
+    {
+        return $this->db->table('offre_emploi')
+            ->select('id_offre, titre')
+            ->orderBy('titre')
+            ->get()
+            ->getResultArray();
     }
 
     public function mettreAJourCompteRendu(int $id, string $cr): void

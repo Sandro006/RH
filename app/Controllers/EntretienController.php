@@ -118,11 +118,40 @@ class EntretienController extends ResourceController
     {
         return $this->respond((new EntretienService())->lister([
             'idOffre' => $this->request->getGet('idOffre'),
+            'idCandidature' => $this->request->getGet('idCandidature'),
             'idRecruteur' => $this->request->getGet('idRecruteur'),
             'statut' => $this->request->getGet('statut'),
             'dateDebut' => $this->request->getGet('dateDebut'),
             'dateFin' => $this->request->getGet('dateFin'),
         ]));
+    }
+
+    public function candidatures()
+    {
+        $idOffre = $this->request->getGet('idOffre');
+        return $this->respond((new EntretienService())->candidaturesPreselectionnees(
+            $idOffre === null || $idOffre === '' ? null : (int) $idOffre
+        ));
+    }
+
+    public function recruteurs()
+    {
+        return $this->respond((new EntretienService())->recruteurs());
+    }
+
+    public function types()
+    {
+        return $this->respond((new EntretienService())->types());
+    }
+
+    public function offresCloturees()
+    {
+        return $this->respond((new EntretienService())->offresCloturees());
+    }
+
+    public function offres()
+    {
+        return $this->respond((new EntretienService())->offres());
     }
 
     public function fiche($id)

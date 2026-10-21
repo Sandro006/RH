@@ -144,6 +144,31 @@ class EntretienService
         return $this->repo->lister($filtres);
     }
 
+    public function candidaturesPreselectionnees(?int $idOffre = null): array
+    {
+        return $this->candidatures->listerPreselectionnees($idOffre);
+    }
+
+    public function recruteurs(): array
+    {
+        return $this->repo->listerRecruteurs();
+    }
+
+    public function types(): array
+    {
+        return $this->repo->listerTypes();
+    }
+
+    public function offresCloturees(): array
+    {
+        return $this->repo->listerOffresCloturees();
+    }
+
+    public function offres(): array
+    {
+        return $this->repo->listerOffres();
+    }
+
     public function fiche(int $id): ?array
     {
         return $this->repo->trouverFiche($id);
@@ -164,6 +189,17 @@ class EntretienService
             if (!isset($donnees[$champ]) || $donnees[$champ] === '') {
                 throw new \DomainException("{$champ} obligatoire");
             }
+        }
+
+        $offre = $this->db->table('offre_emploi o')
+            ->select('o.id_offre')
+            ->join('status_offre_emploi so', 'so.id = o.statut')
+            ->where('o.id_offre', $idOffre)
+            ->where('so.designation', 'Clôturée')
+            ->get()
+            ->getRowArray();
+        if ($offre === null) {
+            throw new \DomainException('OFFRE_NON_CLOTUREE');
         }
 
         $candidatures = $this->db->table('candidature c')

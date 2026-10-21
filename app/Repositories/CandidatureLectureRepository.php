@@ -43,4 +43,19 @@ class CandidatureLectureRepository
             throw new \RuntimeException('Candidature introuvable');
         }
     }
+
+    public function listerPreselectionnees(?int $idOffre = null): array
+    {
+        $builder = $this->db->table('candidature c')
+            ->select('c.id_candidature, c.id_offre, ca.prenom, ca.nom')
+            ->join('candidat ca', 'ca.id_candidat = c.id_candidat')
+            ->join('status_candidature sc', 'sc.id = c.statut')
+            ->where('sc.designation', 'Présélectionnée');
+
+        if ($idOffre !== null) {
+            $builder->where('c.id_offre', $idOffre);
+        }
+
+        return $builder->orderBy('ca.nom')->orderBy('ca.prenom')->get()->getResultArray();
+    }
 }

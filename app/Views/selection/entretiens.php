@@ -65,6 +65,7 @@
 <main>
     <h1>Agenda des entretiens</h1>
     <button type="button" id="ouvrir-planification">Planifier un entretien</button>
+    <button type="button" class="secondary" id="ouvrir-planification-lot">Planifier pour une offre clôturée</button>
 
     <form id="filtres" class="toolbar">
         <label>Statut
@@ -77,11 +78,11 @@
                 <option>Annulé</option>
             </select>
         </label>
-        <label>Recruteur (ID)
-            <input id="idRecruteur" type="number" min="1">
+        <label>Recruteur
+            <select id="idRecruteur"><option value="">Tous</option></select>
         </label>
-        <label>Offre (ID)
-            <input id="idOffre" type="number" min="1">
+        <label>Offre
+            <select id="idOffre"><option value="">Toutes</option></select>
         </label>
         <label>Du
             <input id="dateDebut" type="date">
@@ -145,21 +146,49 @@
             <p class="message">Les identifiants doivent correspondre aux références présentes en base.</p>
             <div class="form-grid">
                 <label class="required">Candidature
-                    <input type="number" name="idCandidature" min="1" required>
+                    <select name="idCandidature" id="candidature-planification" required><option value="">Choisir une candidature</option></select>
                 </label>
                 <label class="required">Recruteur
-                    <input type="number" name="idRecruteur" min="1" required>
+                    <select name="idRecruteur" id="recruteur-planification" required><option value="">Choisir un recruteur</option></select>
                 </label>
                 <label class="required">Date et heure
                     <input type="datetime-local" name="dateEntretien" id="date-planification" required>
                 </label>
                 <label class="required">Type d’entretien
-                    <input type="number" name="typeEntretien" min="1" required>
+                    <select name="typeEntretien" id="type-planification" required><option value="">Choisir un type</option></select>
                 </label>
             </div>
             <div class="modal-actions">
                 <button type="submit">Planifier</button>
                 <button type="button" class="secondary" id="annuler-planification">Annuler</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-backdrop" id="planification-lot-modal" hidden>
+        <form class="modal" id="planification-lot-form">
+            <div class="modal-header">
+                <h2>Planifier pour une offre clôturée</h2>
+                <button type="button" class="modal-close" id="fermer-planification-lot" aria-label="Fermer">×</button>
+            </div>
+            <p class="message">Seules les candidatures présélectionnées de l’offre seront planifiées.</p>
+            <div class="form-grid">
+                <label class="required">Offre clôturée
+                    <select name="idOffre" id="offre-lot" required><option value="">Choisir une offre</option></select>
+                </label>
+                <label class="required">Recruteur
+                    <select name="idRecruteur" id="recruteur-lot" required><option value="">Choisir un recruteur</option></select>
+                </label>
+                <label class="required">Date et heure
+                    <input type="datetime-local" name="dateEntretien" id="date-lot" required>
+                </label>
+                <label class="required">Type d’entretien
+                    <select name="typeEntretien" id="type-lot" required><option value="">Choisir un type</option></select>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit">Planifier les entretiens</button>
+                <button type="button" class="secondary" id="annuler-planification-lot">Annuler</button>
             </div>
         </form>
     </div>
@@ -181,6 +210,16 @@ const actionTitre = document.querySelector('#action-titre');
 const actionChamps = document.querySelector('#action-champs');
 const planificationModal = document.querySelector('#planification-modal');
 const planificationForm = document.querySelector('#planification-form');
+const planificationLotModal = document.querySelector('#planification-lot-modal');
+const planificationLotForm = document.querySelector('#planification-lot-form');
+const selectRecruteur = document.querySelector('#idRecruteur');
+const selectOffre = document.querySelector('#idOffre');
+const selectOffreLot = document.querySelector('#offre-lot');
+const selectRecruteurLot = document.querySelector('#recruteur-lot');
+const selectTypeLot = document.querySelector('#type-lot');
+const selectCandidaturePlanification = document.querySelector('#candidature-planification');
+const selectRecruteurPlanification = document.querySelector('#recruteur-planification');
+const selectTypePlanification = document.querySelector('#type-planification');
 let actionEnCours = null;
 let entretiens = [];
 
@@ -195,7 +234,7 @@ function afficherCellule(ligne, texte) {
 function afficherStatut(ligne, entretien) {
     const cellule = document.createElement('td');
     const badge = document.createElement('span');
-    const classe = (entretien.statut || '').toLowerCase().replaceAll('é', 'e');
+    const classe = classeStatut(entretien.statut);
     badge.className = `status status-${classe}`;
     badge.textContent = entretien.statut || 'Inconnu';
     cellule.appendChild(badge);
@@ -478,6 +517,77 @@ async function planifier(event) {
         window.alert('La date de l’entretien doit être dans le futur.');
         return;
     }
+
+    function remplirSelect(select, lignes, valeur, libelle, placeholder) {
+        select.replaceChildren();
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = placeholder;
+        select.appendChild(option);
+        lignes.forEach(ligne => {
+            const element = document.createElement('option');
+            element.value = ligne[valeur];
+            element.textContent = ligne[libelle];
+            select.appendChild(element);
+        });
+    }
+
+    async function chargerReferentiels() {
+        const [recruteurs, offres, offresCloturees, types, candidatures] = await Promise.all([
+            fetch('/api/employes'),
+            fetch('/api/offres'),
+            fetch('/api/offres/cloturees'),
+            fetch('/api/referentiels/types-entretien'),
+            fetch('/api/candidatures/preselectionnees'),
+        ]);
+        if (!recruteurs.ok || !offres.ok || !offresCloturees.ok || !types.ok || !candidatures.ok) {
+            throw new Error('Impossible de charger les référentiels.');
+        }
+        const [recruteurData, offreData, offreClotureeData, typeData, candidatureData] = await Promise.all([
+            recruteurs.json(), offres.json(), offresCloturees.json(), types.json(), candidatures.json(),
+        ]);
+        remplirSelect(selectRecruteur, recruteurData, 'id', 'nom', 'Tous');
+        remplirSelect(selectRecruteurLot, recruteurData, 'id', 'nom', 'Choisir un recruteur');
+        remplirSelect(selectRecruteurPlanification, recruteurData, 'id', 'nom', 'Choisir un recruteur');
+        remplirSelect(selectOffre, offreData, 'id_offre', 'titre', 'Toutes');
+        remplirSelect(selectOffreLot, offreClotureeData, 'id_offre', 'titre', 'Choisir une offre');
+        remplirSelect(selectTypeLot, typeData, 'id', 'designation', 'Choisir un type');
+        remplirSelect(selectTypePlanification, typeData, 'id', 'designation', 'Choisir un type');
+        candidatureData.forEach(candidature => {
+            const option = document.createElement('option');
+            option.value = candidature.id_candidature;
+            option.textContent = `#${candidature.id_candidature} — ${candidature.prenom} ${candidature.nom}`;
+            selectCandidaturePlanification.appendChild(option);
+        });
+    }
+
+    async function planifierLot(event) {
+        event.preventDefault();
+        const donnees = Object.fromEntries(new FormData(planificationLotForm).entries());
+        if (new Date(donnees.dateEntretien) <= new Date()) {
+            window.alert('La date des entretiens doit être dans le futur.');
+            return;
+        }
+        try {
+            const idOffre = donnees.idOffre;
+            delete donnees.idOffre;
+            const response = await fetch(`/api/offres/${idOffre}/planifier-entretiens`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(donnees),
+            });
+            if (!response.ok) throw new Error('La planification en lot a échoué.');
+            const resultat = await response.json();
+            if (!resultat.idsEntretien || !resultat.idsEntretien.length) {
+                window.alert('Aucune candidature présélectionnée à planifier.');
+            }
+            fermerModal(planificationLotModal);
+            planificationLotForm.reset();
+            await chargerEntretiens();
+        } catch (error) {
+            window.alert(error.message);
+        }
+    }
     try {
         const response = await fetch('/api/entretiens', {
             method: 'POST',
@@ -557,6 +667,16 @@ document.querySelector('#ouvrir-planification').addEventListener('click', () => 
 document.querySelector('#fermer-planification').addEventListener('click', () => fermerModal(planificationModal));
 document.querySelector('#annuler-planification').addEventListener('click', () => fermerModal(planificationModal));
 planificationForm.addEventListener('submit', planifier);
+document.querySelector('#ouvrir-planification-lot').addEventListener('click', () => {
+    const date = document.querySelector('#date-lot');
+    const maintenant = new Date();
+    maintenant.setMinutes(maintenant.getMinutes() - maintenant.getTimezoneOffset());
+    date.min = maintenant.toISOString().slice(0, 16);
+    planificationLotModal.hidden = false;
+});
+document.querySelector('#fermer-planification-lot').addEventListener('click', () => fermerModal(planificationLotModal));
+document.querySelector('#annuler-planification-lot').addEventListener('click', () => fermerModal(planificationLotModal));
+planificationLotForm.addEventListener('submit', planifierLot);
 ficheModal.addEventListener('click', event => {
     if (event.target === ficheModal) fermerModal(ficheModal);
 });
@@ -566,7 +686,13 @@ actionModal.addEventListener('click', event => {
 planificationModal.addEventListener('click', event => {
     if (event.target === planificationModal) fermerModal(planificationModal);
 });
-chargerEntretiens();
+planificationLotModal.addEventListener('click', event => {
+    if (event.target === planificationLotModal) fermerModal(planificationLotModal);
+});
+Promise.all([chargerReferentiels(), chargerEntretiens()]).catch(error => {
+    message.className = 'message error';
+    message.textContent = error.message;
+});
 </script>
 </body>
 </html>

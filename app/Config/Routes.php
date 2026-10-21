@@ -2,6 +2,16 @@
 // selection 
 $routes->group('api', ['namespace' => 'App\Controllers'], static function ($routes) {
     $routes->get('entretiens',                      'EntretienController::lister');
+    $routes->get('entretiens/referentiels/candidatures', 'EntretienController::candidatures');
+    $routes->get('entretiens/referentiels/recruteurs', 'EntretienController::recruteurs');
+    $routes->get('entretiens/referentiels/types', 'EntretienController::types');
+    $routes->get('entretiens/referentiels/offres-cloturees', 'EntretienController::offresCloturees');
+    $routes->get('entretiens/referentiels/offres', 'EntretienController::offres');
+    $routes->get('candidatures/preselectionnees', 'EntretienController::candidatures');
+    $routes->get('employes', 'EntretienController::recruteurs');
+    $routes->get('offres', 'EntretienController::offres');
+    $routes->get('offres/cloturees', 'EntretienController::offresCloturees');
+    $routes->get('referentiels/types-entretien', 'EntretienController::types');
     $routes->post('entretiens',                     'EntretienController::planifier');
     $routes->get('entretiens/(:num)',               'EntretienController::fiche/$1');
     $routes->post('entretiens/(:num)/confirmer',    'EntretienController::confirmer/$1');
