@@ -28,15 +28,32 @@ class EntretienController extends ResourceController
 
     public function realiser($id)
     {
-        $cr = $this->request->getJsonVar('compteRendu');
-        if (!$cr) return $this->failValidationErrors('compteRendu obligatoire');
+        if (!is_numeric($id) || (int) $id <= 0) {
+            return $this->failValidationErrors('Identifiant entretien invalide');
+        }
+
+        $body = $this->request->getJSON(true) ?? [];
+        $cr = is_string($body['compteRendu'] ?? null)
+            ? trim($body['compteRendu'])
+            : '';
+        if ($cr === '') {
+            return $this->failValidationErrors('compteRendu obligatoire');
+        }
+        if (mb_strlen($cr) < 10 || mb_strlen($cr) > 5000) {
+            return $this->failValidationErrors('compteRendu doit contenir entre 10 et 5000 caractères');
+        }
+        if (preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $cr)) {
+            return $this->failValidationErrors('compteRendu contient des caractères invalides');
+        }
+
         try {
             (new EntretienService())->realiser((int) $id, $cr, $this->idUtilisateur());
             return $this->respond(['ok' => true]);
         } catch (\DomainException $e) {
             return $this->fail($e->getMessage(), 409);
         } catch (\RuntimeException $e) {
-            return $this->failNotFound($e->getMessage());
+            $status = $e->getMessage() === 'OBJET_INTROUVABLE' ? 404 : 403;
+            return $this->fail($e->getMessage(), $status);
         }
     }
 
@@ -54,23 +71,28 @@ class EntretienController extends ResourceController
 
     public function reporter($id)
     {
+        if (!is_numeric($id) || (int) $id <= 0) {
+            return $this->failValidationErrors('Identifiant entretien invalide');
+        }
+
         $body = $this->request->getJSON(true) ?? [];
-        if (empty($body['dateEntretien'])) {
+        if (!is_string($body['dateEntretien'] ?? null) || trim($body['dateEntretien']) === '') {
             return $this->failValidationErrors('dateEntretien obligatoire');
         }
 
         try {
             (new EntretienService())->reporter(
                 (int) $id,
-                (string) $body['dateEntretien'],
+                trim($body['dateEntretien']),
                 isset($body['motif']) ? (string) $body['motif'] : null,
                 $this->idUtilisateur()
             );
             return $this->respond(['ok' => true]);
         } catch (\DomainException $e) {
-            return $this->fail($e->getMessage(), 409);
+            return $this->failValidationErrors($e->getMessage());
         } catch (\RuntimeException $e) {
-            return $this->failNotFound($e->getMessage());
+            $status = $e->getMessage() === 'OBJET_INTROUVABLE' ? 404 : 403;
+            return $this->fail($e->getMessage(), $status);
         }
     }
 

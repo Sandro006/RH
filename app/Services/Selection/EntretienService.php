@@ -62,6 +62,33 @@ class EntretienService
 
     public function realiser(int $idEntretien, string $compteRendu, int $idUtilisateur): void
     {
+        if ($idEntretien <= 0) {
+            throw new \DomainException('IDENTIFIANT_ENTRETIEN_INVALIDE');
+        }
+        if ($idUtilisateur <= 0) {
+            throw new \RuntimeException('UTILISATEUR_NON_AUTHENTIFIE');
+        }
+
+        $compteRendu = trim($compteRendu);
+        if ($compteRendu === '' || mb_strlen($compteRendu) < 10 || mb_strlen($compteRendu) > 5000) {
+            throw new \DomainException('COMPTE_RENDU_INVALIDE');
+        }
+        if (preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $compteRendu)) {
+            throw new \DomainException('COMPTE_RENDU_INVALIDE');
+        }
+
+        $utilisateur = $this->db->table('utilisateur')
+            ->select('role, actif')
+            ->where('id_utilisateur', $idUtilisateur)
+            ->get()
+            ->getRowArray();
+        if ($utilisateur === null || !(bool) $utilisateur['actif']) {
+            throw new \RuntimeException('UTILISATEUR_NON_AUTORISE');
+        }
+        if (!in_array(strtolower((string) $utilisateur['role']), ['admin', 'rh', 'recruteur'], true)) {
+            throw new \RuntimeException('ROLE_INSUFFISANT');
+        }
+
         $e = $this->repo->trouverParId($idEntretien)
             ?? throw new \RuntimeException('OBJET_INTROUVABLE');
 
@@ -76,7 +103,18 @@ class EntretienService
 
     public function reporter(int $id, string $nouvelleDate, ?string $motif, int $idUtilisateur): void
     {
-        if (strtotime($nouvelleDate) === false || strtotime($nouvelleDate) < time()) {
+        if ($id <= 0) {
+            throw new \DomainException('IDENTIFIANT_ENTRETIEN_INVALIDE');
+        }
+        if ($idUtilisateur <= 0) {
+            throw new \RuntimeException('UTILISATEUR_NON_AUTHENTIFIE');
+        }
+        if ($this->repo->trouverParId($id) === null) {
+            throw new \RuntimeException('OBJET_INTROUVABLE');
+        }
+
+        $timestamp = strtotime($nouvelleDate);
+        if ($timestamp === false || $timestamp <= time()) {
             throw new \DomainException('DATE_INVALIDE');
         }
 
