@@ -76,10 +76,76 @@ class EntretienService
 
     public function reporter(int $id, string $nouvelleDate, ?string $motif, int $idUtilisateur): void
     {
+        if (strtotime($nouvelleDate) === false || strtotime($nouvelleDate) < time()) {
+            throw new \DomainException('DATE_INVALIDE');
+        }
+
         $this->db->transStart();
         $this->workflow->changerStatut($id, 'REPORTE', $idUtilisateur, $motif);
         $this->repo->mettreAJourDate($id, $nouvelleDate);
         $this->workflow->changerStatut($id, 'PLANIFIE', $idUtilisateur, 'Re-planifié');
         $this->db->transComplete();
+
+        if (!$this->db->transStatus()) {
+            throw new \RuntimeException('Échec du report');
+        }
+    }
+
+    public function confirmer(int $id, int $idUtilisateur): void
+    {
+        $this->workflow->changerStatut($id, 'CONFIRME', $idUtilisateur, 'Entretien confirmé');
+    }
+
+    public function annuler(int $id, ?string $motif, int $idUtilisateur): void
+    {
+        $this->workflow->changerStatut($id, 'ANNULE', $idUtilisateur, $motif ?? 'Entretien annulé');
+    }
+
+    public function lister(array $filtres): array
+    {
+        return $this->repo->lister($filtres);
+    }
+
+    public function fiche(int $id): ?array
+    {
+        return $this->repo->trouverFiche($id);
+    }
+
+    public function historique(int $id): array
+    {
+        if ($this->repo->trouverParId($id) === null) {
+            throw new \RuntimeException('OBJET_INTROUVABLE');
+        }
+
+        return $this->historique->listerParEntretien($id);
+    }
+
+    public function planifierPourOffre(int $idOffre, array $donnees, int $idUtilisateur): array
+    {
+        foreach (['idRecruteur', 'dateEntretien', 'typeEntretien'] as $champ) {
+            if (!isset($donnees[$champ]) || $donnees[$champ] === '') {
+                throw new \DomainException("{$champ} obligatoire");
+            }
+        }
+
+        $candidatures = $this->db->table('candidature c')
+            ->select('c.id_candidature')
+            ->join('status_candidature sc', 'sc.id = c.statut')
+            ->where('c.id_offre', $idOffre)
+            ->where('sc.designation', 'Présélectionnée')
+            ->get()
+            ->getResultArray();
+
+        $ids = [];
+        foreach ($candidatures as $candidature) {
+            $ids[] = $this->planifier([
+                'idCandidature' => (int) $candidature['id_candidature'],
+                'idRecruteur' => (int) $donnees['idRecruteur'],
+                'dateEntretien' => $donnees['dateEntretien'],
+                'typeEntretien' => (int) $donnees['typeEntretien'],
+            ], $idUtilisateur);
+        }
+
+        return $ids;
     }
 }

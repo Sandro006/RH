@@ -36,6 +36,21 @@ class EntretienRepository
             ->getRowArray();
     }
 
+    public function trouverFiche(int $id): ?array
+    {
+        return $this->db->table('entretien e')
+            ->select('e.*, c.id_candidat, c.id_offre, ca.nom AS nom_candidat, ca.prenom AS prenom_candidat, o.titre AS offre, emp.nom AS recruteur, te.designation AS type_entretien, se.designation AS statut')
+            ->join('candidature c', 'c.id_candidature = e.id_candidature')
+            ->join('candidat ca', 'ca.id_candidat = c.id_candidat')
+            ->join('offre_emploi o', 'o.id_offre = c.id_offre')
+            ->join('employe emp', 'emp.id = e.id_recruteur')
+            ->join('type_entrentien te', 'te.id = e.type_entretien', 'left')
+            ->join('status_entretien se', 'se.id = e.statut', 'left')
+            ->where('e.id_entretien', $id)
+            ->get()
+            ->getRowArray();
+    }
+
     public function listerParCandidature(int $idCandidature): array
     {
         return $this->db->table('entretien')
@@ -48,8 +63,13 @@ class EntretienRepository
     public function lister(array $f): array
     {
         $b = $this->db->table('entretien e')
-            ->select('e.*, c.id_offre')
-            ->join('candidature c', 'c.id_candidature = e.id_candidature');
+            ->select('e.*, c.id_offre, ca.nom AS nom_candidat, ca.prenom AS prenom_candidat, o.titre AS offre, emp.nom AS recruteur, te.designation AS type_entretien, se.designation AS statut')
+            ->join('candidature c', 'c.id_candidature = e.id_candidature')
+            ->join('candidat ca', 'ca.id_candidat = c.id_candidat')
+            ->join('offre_emploi o', 'o.id_offre = c.id_offre')
+            ->join('employe emp', 'emp.id = e.id_recruteur')
+            ->join('type_entrentien te', 'te.id = e.type_entretien', 'left')
+            ->join('status_entretien se', 'se.id = e.statut', 'left');
 
         if (!empty($f['idOffre'])) {
             $b->where('c.id_offre', $f['idOffre']);
@@ -58,7 +78,7 @@ class EntretienRepository
             $b->where('e.id_recruteur', $f['idRecruteur']);
         }
         if (!empty($f['statut'])) {
-            $b->where('e.statut', $f['statut']);
+            $b->where('se.designation', $f['statut']);
         }
         if (!empty($f['dateDebut'])) {
             $b->where('e.date_entretien >=', $f['dateDebut']);
