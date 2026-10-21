@@ -99,7 +99,7 @@ employés, statuts). **Aucune dépendance externe.**
 **Livrable démontrable** : parcours complet demande → offre publiée → candidatures.
 
 ---
-
+ 
 ## Piste C — Elisa : Sélection (Entretien → Évaluation → Proposition + Négociation)
 
 **Données d'entrée** : `script/fixtures_selection.sql` — insère elle-même une **candidature
@@ -110,7 +110,6 @@ employés, statuts). **Aucune dépendance externe.**
   `consulter`, `lister`, `historique`, `planifierPourOffre`.
 - [ ] **C2** — Lien candidature (lecture/écriture directe en base) : `Présélectionnée → Entretien prévu` ;
   `realiser` → `En évaluation`.
-- [ ] **C3** — `EvaluationService` : `evaluer`, `calculerNote`, `noteMoyenne`, `synthese`,
   `listerParCandidature`, `classerPourOffre` (+ convention JSON des critères).
 - [ ] **C4** — `SelectionService` : `seuilRetention`, `candidatsEligibles`, `retenir`, `refuser`, `decider`.
 - [ ] **C5** — `PropositionEmbaucheService` : `creerDepuisCandidature` (contrôle **Retenue** direct en base),
