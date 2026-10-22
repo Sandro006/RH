@@ -9,14 +9,20 @@
 </head>
 
 <body>
-    <header class="app-header"><a href="../../dashboard.html">Gestion RH</a>
-        <nav><a href="salaires.html">Salariés</a><a href="contrats.html">Contrats</a><a
-                href="onboardings.html">Onboarding</a></nav>
-    </header>
+    <header class="app-header"><a class="brand" href="../../dashboard.html"><span class="brand-mark">RH</span>Gestion RH</a></header>
     <div class="app-shell">
         <aside class="sidebar">
-            <nav><a href="salaires.html">Effectif</a><a href="contrats.html">Contrats</a><a
-                    href="onboardings.html">Onboardings</a></nav>
+            <div class="sidebar-label">Pilotage</div>
+            <nav>
+                <a href="../../dashboard.html">Tableau de bord</a>
+                <a href="../recrutement/demandes.html">Demandes de recrutement</a>
+                <a href="../recrutement/offres.html">Offres d'emploi</a>
+                <a href="../recrutement/candidatures.html">Candidatures</a>
+                <div class="sidebar-label">Équipe</div>
+                <a href="salaires.html">Salariés</a>
+                <a class="active" href="contrats.html">Contrats</a>
+                <a href="onboardings.html">Onboarding</a>
+            </nav>
         </aside>
         <main class="main">
             <div class="breadcrumb">Personnel / Contrats</div>
@@ -42,6 +48,8 @@
         </main>
     </div>
     <script src="../../js/api.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/page-auth.js"></script>
     <script src="../../js/ui.js"></script>
     <script src="../../js/pages/personnel/contrats.js"></script>
 </body>

@@ -24,6 +24,6 @@ class OffreEmploiService extends RecruitmentService
     public function clore(int $id,?array $u=null):void{$this->change($id,'Clôturée',$u,'Clôture');}
     public function annuler(int $id,?array $u=null):void{$this->change($id,'Annulée',$u,'Annulation');}
     public function consulter(int $id):?array{return $this->model->find($id);}
-    public function lister(array $filter=[]):array{$q=$this->model; foreach(['statut','id_demande'] as $f)if(isset($filter[$f]))$q->where($f,$filter[$f]); return $q->orderBy('id_offre','DESC')->findAll();}
+    public function lister(array $filter=[]):array{$q=$this->db->table('offre_emploi o')->select('o.*, st.designation AS statut_designation')->join('status_offre_emploi st','st.id=o.statut','left'); foreach(['statut','id_demande'] as $f)if(isset($filter[$f])&&$filter[$f]!=='')$q->where('o.'.$f,$filter[$f]); return $q->orderBy('o.id_offre','DESC')->get()->getResultArray();}
     public function offresOuvertes():array{$id=$this->id('status_offre_emploi','Publiée'); return $this->model->where('statut',$id)->groupStart()->where('date_cloture',null)->orWhere('date_cloture >=',date('Y-m-d'))->groupEnd()->findAll();}
 }

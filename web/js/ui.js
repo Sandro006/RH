@@ -1,15 +1,47 @@
 const ui = {
-    escape(value = '') { return String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character])); },
+    escape(value = '') {
+        return String(value).replace(/[&<>"']/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[character]));
+    },
     status(value = '') {
-        const label = String(value), status = label.toLowerCase(); let tone = '';
-        if (/valid|retenue|actif|termin|sign/.test(status)) tone = 'success';
-        else if (/refus|annul|retir|résili|parti/.test(status)) tone = 'danger';
-        else if (/contrôle|validation|consultation|corriger|suspend|entretien|évaluation|cours|attente/.test(status)) tone = 'warning';
+        const label = String(value || '—');
+        const normalized = label.toLocaleLowerCase('fr-FR');
+        let tone = '';
+        if (/valid|retenue|actif|termin|sign/.test(normalized)) tone = 'success';
+        else if (/refus|annul|retir|résili|parti/.test(normalized)) tone = 'danger';
+        else if (/contrôle|validation|consultation|corriger|suspend|entretien|évaluation|cours|attente/.test(normalized)) tone = 'warning';
         return `<span class="badge ${tone}">${ui.escape(label)}</span>`;
     },
-    date(value) { return value ? new Intl.DateTimeFormat('fr-FR').format(new Date(value)) : '—'; },
-    money(value) { return value == null ? '—' : new Intl.NumberFormat('fr-FR').format(value); },
-    state(message, error = false) { return `<div class="state ${error ? 'state-error' : ''}">${ui.escape(message)}</div>`; },
-    toast(message) { const element = document.createElement('div'); element.className = 'toast'; element.textContent = message; document.body.append(element); setTimeout(() => element.remove(), 3200); },
-    error(error) { const element = document.querySelector('[data-error]'); if (element) { element.textContent = error.message || error; element.hidden = false; } }
+    badge(value = '') { return ui.status(value); },
+    date(value) {
+        if (!value) return '—';
+        const raw = String(value);
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T12:00:00`) : new Date(raw);
+        return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('fr-FR').format(date);
+    },
+    money(value) {
+        if (value == null || value === '') return '—';
+        return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(Number(value))} €`;
+    },
+    state(message, error = false) {
+        return `<div class="state ${error ? 'state-error' : ''}">${ui.escape(message)}</div>`;
+    },
+    toast(message) {
+        const element = document.createElement('div');
+        element.className = 'toast';
+        element.textContent = message;
+        document.body.append(element);
+        setTimeout(() => element.remove(), 3200);
+    },
+    error(error) {
+        const message = error?.message || String(error);
+        const element = document.querySelector('[data-error]');
+        if (element) {
+            element.textContent = message;
+            element.hidden = false;
+            return;
+        }
+        ui.toast(message);
+    }
 };

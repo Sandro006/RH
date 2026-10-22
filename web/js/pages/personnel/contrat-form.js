@@ -1,5 +1,8 @@
 const contractForm = document.querySelector('#contract-form');
 const trial = document.querySelector('#with-trial');
+const contractParams = new URLSearchParams(location.search);
+const salaryField = contractForm.elements.idSalarie;
+if (contractParams.get('idSalarie')) salaryField.value = contractParams.get('idSalarie');
 trial.addEventListener('change', () => document.querySelector('#trial-fields').classList.toggle('hidden', !trial.checked));
 contractForm.addEventListener('submit', async event => {
     event.preventDefault();

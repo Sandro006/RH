@@ -20,6 +20,6 @@ class CandidatureService extends RecruitmentService
     public function retenir(int $id,?array $u=null):void{$this->change($id,'Retenue',$u);}
     public function refuser(int $id,?string $motif=null,?array $u=null):void{$this->change($id,'Refusée',$u,$motif);}
     public function consulter(int $id):?array{return$this->model->find($id);}
-    public function lister(array $f=[]):array{$q=$this->model;foreach(['id_offre','statut','origine_candidature']as$x)if(isset($f[$x]))$q->where($x,$f[$x]);return$q->orderBy('id_candidature','DESC')->findAll();}
+    public function lister(array $f=[]):array{$q=$this->db->table('candidature c')->select('c.*, sc.designation AS statut_designation, ca.nom, ca.prenom, o.titre AS offre_titre')->join('status_candidature sc','sc.id=c.statut','left')->join('candidat ca','ca.id_candidat=c.id_candidat','left')->join('offre_emploi o','o.id_offre=c.id_offre','left');foreach(['id_offre','statut','origine_candidature']as$x)if(isset($f[$x])&&$f[$x]!=='')$q->where('c.'.$x,$f[$x]);return$q->orderBy('c.id_candidature','DESC')->get()->getResultArray();}
     public function historique(int $id):array{return$this->db->table('candidature_status_historique')->where('id_candidature',$id)->orderBy('date_changement')->get()->getResultArray();}
 }

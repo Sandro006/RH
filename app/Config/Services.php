@@ -65,7 +65,15 @@ class Services extends BaseService
 	public static function workflowService(bool $getShared = true)
 	{
 		if ($getShared) return static::getSharedInstance('workflowService');
-		return new \App\Libraries\Common\WorkflowService();
+		return new \App\Libraries\Common\WorkflowService(db_connect());
+	}
+
+	public static function referentielService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('referentielService');
+		return new \App\Services\Common\ReferentielService(
+			model(\App\Models\Common\ReferentielModel::class),
+		);
 	}
 
     /*
@@ -100,6 +108,7 @@ class Services extends BaseService
 			model(\App\Models\Personnel\ReadModels\CandidatureReadModel::class),
 			model(\App\Models\Personnel\ReadModels\CandidatReadModel::class),
 			service('auditService'),
+			service('workflowService'),
 		);
 	}
 	

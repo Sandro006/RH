@@ -1,1 +1,32 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Candidatures</title><link rel="stylesheet" href="../../css/personnel.css"></head><body><header class="app-header"><a class="brand" href="../../dashboard.html"><span class="brand-mark">RH</span>Gestion RH</a></header><main class="main"><div class="breadcrumb"><a href="../../dashboard.html">Tableau de bord</a> / Recrutement</div><div class="page-heading"><h1>Candidatures</h1><button class="button-primary" id="refresh">Actualiser</button></div><section class="card"><div id="list" class="state">Chargement…</div></section></main><script src="../../js/api.js"></script><script src="../../js/ui.js"></script><script>async function load(){const list=document.querySelector('#list');list.innerHTML=ui.state('Chargement…');try{const rows=await api.get('/api/candidatures');const data=Array.isArray(rows)?rows:(rows.data||[]);list.innerHTML=data.length?`<div class="table-wrap"><table><thead><tr><th>Candidat</th><th>Offre</th><th>Origine</th><th>Statut</th></tr></thead><tbody>${data.map(x=>`<tr><td>${ui.escape([x.prenom,x.nom].filter(Boolean).join(' ')||x.id_candidat)}</td><td>${x.id_offre||'—'}</td><td>${ui.escape(x.origine_candidature||'—')}</td><td>${ui.status(x.statut||'—')}</td></tr>`).join('')}</tbody></table></div>`:ui.state('Aucune candidature disponible.')}catch(e){list.innerHTML=ui.state(e.message,true)}}document.querySelector('#refresh').onclick=load;load();</script></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Candidatures | Gestion RH</title>
+    <link rel="stylesheet" href="../../css/personnel.css">
+</head>
+<body>
+    <header class="app-header"><a class="brand" href="../../dashboard.html"><span class="brand-mark">RH</span>Gestion RH</a></header>
+    <div class="app-shell">
+        <aside class="sidebar"><div class="sidebar-label">Pilotage</div><nav>
+            <a href="../../dashboard.html">Tableau de bord</a>
+            <a href="demandes.html">Demandes de recrutement</a>
+            <a href="offres.html">Offres d'emploi</a>
+            <a class="active" href="candidatures.html">Candidatures</a>
+            <div class="sidebar-label">Équipe</div>
+            <a href="../personnel/salaires.html">Salariés</a><a href="../personnel/contrats.html">Contrats</a><a href="../personnel/onboardings.html">Onboarding</a>
+        </nav></aside>
+        <main class="main">
+            <div class="breadcrumb"><a href="../../dashboard.html">Tableau de bord</a> / Recrutement</div>
+            <div class="page-heading"><h1>Candidatures</h1><button class="button-primary" id="refresh">Actualiser</button></div>
+            <section class="card"><div id="list" class="state">Chargement…</div></section>
+        </main>
+    </div>
+    <script src="../../js/api.js"></script><script src="../../js/auth.js"></script><script src="../../js/page-auth.js"></script><script src="../../js/ui.js"></script>
+    <script>
+        async function load() { const list = document.querySelector('#list'); list.innerHTML = ui.state('Chargement…'); try { const rows = await api.get('/api/candidatures'); const data = Array.isArray(rows) ? rows : (rows.data || []); list.innerHTML = data.length ? `<div class="table-wrap"><table><thead><tr><th>Candidat</th><th>Offre</th><th>Origine</th><th>Statut</th></tr></thead><tbody>${data.map(x => `<tr><td>${ui.escape([x.prenom, x.nom].filter(Boolean).join(' ') || x.id_candidat)}</td><td>${x.id_offre || '—'}</td><td>${ui.escape(x.origine_candidature || '—')}</td><td>${ui.status(x.statut || '—')}</td></tr>`).join('')}</tbody></table></div>` : ui.state('Aucune candidature disponible.'); } catch (e) { list.innerHTML = ui.state(e.message, true); } }
+        document.querySelector('#refresh').onclick = load; load();
+    </script><script src="../../js/pages/recrutement-status.js"></script>
+</body>
+</html>

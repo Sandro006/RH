@@ -1,5 +1,6 @@
 const documentForm = document.querySelector('#document-form');
 const documentSalaryId = new URLSearchParams(location.search).get('idSalarie') || new URLSearchParams(location.search).get('id');
+if (documentSalaryId) documentForm.dataset.salaryId = documentSalaryId;
 async function loadDocumentTypes() {
     try {
         const result = await api.get('/api/referentiels/types-document');

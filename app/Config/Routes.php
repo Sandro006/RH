@@ -100,9 +100,17 @@ $routes->group('api/salaries/(:num)/documents', ['namespace' => 'App\Controllers
 });
 
 // referentiels
-$routes->group('api/referentiels', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
-    $routes->get('types-document', 'DocumentController::listerTypes');
+$routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('departements', 'ReferentielController::departements');
+    $routes->get('services', 'ReferentielController::services');
+    $routes->get('postes', 'ReferentielController::postes');
+    $routes->get('rangs', 'ReferentielController::rangs');
+    $routes->get('types-contrat', 'ReferentielController::typesContrat');
+    $routes->get('types-entretien', 'ReferentielController::typesEntretien');
+    $routes->get('statuts/(:segment)', 'ReferentielController::statuts/$1');
 });
+
+$routes->get('api/referentiels/types-document', 'Personnel\DocumentController::listerTypes', ['filter' => 'auth']);
 
 // supprimer
 $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {

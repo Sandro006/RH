@@ -31,7 +31,8 @@ class SalarieController extends BaseController
     {
         $filtre = [
             'statut'   => $this->request->getGet('statut'),
-            'id_poste' => $this->request->getGet('id_poste'),
+            'id_poste' => $this->request->getGet('idPoste') ?? $this->request->getGet('id_poste'),
+            'id_departement' => $this->request->getGet('idDepartement') ?? $this->request->getGet('id_departement'),
         ];
         return $this->response->setJSON($this->service->lister($filtre));
     }

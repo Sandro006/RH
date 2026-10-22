@@ -261,34 +261,41 @@ class SalarieService
     }
 
     // consulter
-    public function consulter(int $idSalarie): ?Salarie
+    public function consulter(int $idSalarie): ?object
     {
-        return $this->salarieModel->find($idSalarie);
+        return $this->requeteSalaries()
+            ->where('s.id_salarie', $idSalarie)
+            ->get()
+            ->getRow();
     }
 
     // lister
     public function lister(array $filtre = []): array
     {
-        $this->salarieModel->resetQuery();
+        $requete = $this->requeteSalaries()->orderBy('s.matricule', 'ASC');
 
         if (!empty($filtre['statut'])) {
-            $this->salarieModel->where('statut', $filtre['statut']);
+            $requete->where('s.statut', (int) $filtre['statut']);
         }
         if (!empty($filtre['id_poste'])) {
-            $ids = array_column(
-                $this->affectationModel
-                     ->select('id_salarie')
-                     ->where('id_poste', $filtre['id_poste'])
-                     ->where('date_fin', null)
-                     ->findAll(),
-                'id_salarie'
-            );
-            if (empty($ids)) {
-                return [];
-            }
-            $this->salarieModel->whereIn('id_salarie', $ids);
+            $requete->where('p.id_poste', (int) $filtre['id_poste']);
         }
-        return $this->salarieModel->findAll();
+        if (!empty($filtre['id_departement'])) {
+            $requete->where('d.id_departement', (int) $filtre['id_departement']);
+        }
+
+        return $requete->get()->getResultArray();
+    }
+
+    private function requeteSalaries()
+    {
+        return $this->salarieModel->db->table('salarie s')
+            ->select('s.id_salarie, s.id_candidat, s.matricule, s.nom, s.prenom, s.email, s.telephone, s.date_embauche, s.statut, ss.designation AS statut_designation, p.id_poste, p.intitule AS poste')
+            ->join('status_salarie ss', 'ss.id = s.statut', 'left')
+            ->join('affectation a', 'a.id_salarie = s.id_salarie AND a.date_fin IS NULL', 'left')
+            ->join('poste p', 'p.id_poste = a.id_poste', 'left')
+            ->join('service sv', 'sv.id_service = p.id_service', 'left')
+            ->join('departement d', 'd.id_departement = sv.id_departement', 'left');
     }
 
     // historique

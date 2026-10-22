@@ -105,6 +105,12 @@ INSERT INTO utilisateur (id_employe, identifiant, mot_de_passe_hash, role, actif
 SELECT NULL, 'salarie', '$2y$10$ObzZ9nBNCg.ZU.3Rag7sh.P5hPrFl7VSRWPp7hy72kOSynTes0A3u', 'salarie', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateur WHERE identifiant = 'salarie');
 
+-- Les comptes de démonstration sont directement utilisables.
+-- Un compte réinitialisé par un administrateur doit, lui, rester à true.
+UPDATE utilisateur
+SET doit_changer_mot_de_passe = false
+WHERE identifiant IN ('admin', 'rh', 'manager', 'recruteur', 'direction', 'controle', 'salarie');
+
 INSERT INTO action (action) VALUES
     ('LOGIN'),
     ('LOGOUT'),
