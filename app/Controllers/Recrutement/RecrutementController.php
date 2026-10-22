@@ -5,12 +5,6 @@ use App\Controllers\BaseController;
 use App\Services\Recrutement\{DemandeRecrutementService, OffreEmploiService, CandidatureService, EligibiliteService};
 class RecrutementController extends BaseController
 {
-    public function page(string $page = 'demandes')
-    {
-        $allowed = ['demandes','demande-form','demande','demandes-a-traiter','offres','offre-form','offre','candidatures','candidature','vitrine-offres','candidature-form','suivi-candidature'];
-        if (!in_array($page, $allowed, true)) return $this->response->setStatusCode(404);
-        return view('recrutement/' . $page);
-    }
     private function data(): array
     {
         return $this->request->getJSON(true) ?? $this->request->getPost();

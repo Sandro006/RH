@@ -1,27 +1,15 @@
-const ui={escape(v=''){
-    return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))},
-    status(v=''){const s=String(v),
-    low=s.toLowerCase();
-    let c='';
-    if(/valid|retenue|actif/.test(low))c='success';
-    else if(/refus|annul|retir/.test(low))c='danger';
-    else if(/contrôle|validation|consultation|corriger|suspend|entretien|évaluation/.test(low))c='warning';
-    return `<span class="badge ${c}">${ui.escape(s)}</span>`},
-    date(v){
-        return v?new Intl.DateTimeFormat('fr-FR').format(new Date(v)): '—'},
-    money(v){
-        return v==null?'—':new Intl.NumberFormat('fr-FR').format(v)
+const ui = {
+    escape(value = '') { return String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character])); },
+    status(value = '') {
+        const label = String(value), status = label.toLowerCase(); let tone = '';
+        if (/valid|retenue|actif|termin|sign/.test(status)) tone = 'success';
+        else if (/refus|annul|retir|résili|parti/.test(status)) tone = 'danger';
+        else if (/contrôle|validation|consultation|corriger|suspend|entretien|évaluation|cours|attente/.test(status)) tone = 'warning';
+        return `<span class="badge ${tone}">${ui.escape(label)}</span>`;
     },
-        toast(message){
-            const e=document.createElement('div');
-            e.className='toast';
-            e.textContent=message;
-            document.body.append(e);
-            setTimeout(()=>e.remove(),3000)
-        },
-            error(e){const x=document.querySelector('[data-error]');
-                if(x){
-                    x.textContent=e.message||e;x.hidden=false
-                }
-            }
+    date(value) { return value ? new Intl.DateTimeFormat('fr-FR').format(new Date(value)) : '—'; },
+    money(value) { return value == null ? '—' : new Intl.NumberFormat('fr-FR').format(value); },
+    state(message, error = false) { return `<div class="state ${error ? 'state-error' : ''}">${ui.escape(message)}</div>`; },
+    toast(message) { const element = document.createElement('div'); element.className = 'toast'; element.textContent = message; document.body.append(element); setTimeout(() => element.remove(), 3200); },
+    error(error) { const element = document.querySelector('[data-error]'); if (element) { element.textContent = error.message || error; element.hidden = false; } }
 };

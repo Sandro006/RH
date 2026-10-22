@@ -9,9 +9,6 @@ use App\Libraries\Auth\ResultatAuthentification;
 use App\Libraries\Common\SessionUtilisateur;
 use App\Services\Auth\AuthService;
 use CodeIgniter\HTTP\ResponseInterface;
-use CodeIgniter\HTTP\reponse;
-
-use Config\View;
 
 class AuthController extends ApiController
 {

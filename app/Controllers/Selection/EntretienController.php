@@ -10,7 +10,7 @@ class EntretienController extends BaseController
 {
     public function page()
     {
-        return view('selection/entretiens');
+        return redirect()->to('/web/pages/selection/entretiens.html');
     }
 
     /**
@@ -107,6 +107,69 @@ class EntretienController extends BaseController
             ->getResultArray();
 
         return $this->response->setJSON($entretiens);
+    }
+
+    public function planifier()
+    {
+        $data = $this->request->getJSON(true) ?? $this->request->getPost();
+        foreach (['idCandidature', 'idRecruteur', 'dateEntretien', 'typeEntretien'] as $field) {
+            if (empty($data[$field])) {
+                return $this->response->setStatusCode(400)->setJSON(['error' => 'DONNEES_INCOHERENTES', 'message' => "{$field} est requis"]);
+            }
+        }
+        $status = $this->statusId('Planifié');
+        if ($status === null) return $this->response->setStatusCode(500)->setJSON(['error' => 'STATUT_ABSENT']);
+        $model = new EntretienModel();
+        $id = $model->insert([
+            'id_candidature' => (int) $data['idCandidature'], 'id_recruteur' => (int) $data['idRecruteur'],
+            'date_entretien' => $data['dateEntretien'], 'type_entretien' => (int) $data['typeEntretien'], 'statut' => $status,
+        ], true);
+        return $this->response->setStatusCode(201)->setJSON(['idEntretien' => (int) $id]);
+    }
+
+    public function show(int $id)
+    {
+        $row = (new EntretienModel())->find($id);
+        return $row === null ? $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND']) : $this->response->setJSON($row);
+    }
+
+    public function reporter(int $id)
+    {
+        $data = $this->request->getJSON(true) ?? $this->request->getPost();
+        if (empty($data['dateEntretien'])) return $this->response->setStatusCode(400)->setJSON(['error' => 'DATE_REQUISE']);
+        return $this->mettreAJour($id, ['date_entretien' => $data['dateEntretien']]);
+    }
+
+    public function realiser(int $id)
+    {
+        $data = $this->request->getJSON(true) ?? $this->request->getPost();
+        $status = $this->statusId('Réalisé');
+        return $status === null ? $this->response->setStatusCode(500)->setJSON(['error' => 'STATUT_ABSENT']) : $this->mettreAJour($id, ['statut' => $status, 'compte_rendu' => $data['compteRendu'] ?? null]);
+    }
+
+    public function annuler(int $id)
+    {
+        $status = $this->statusId('Annulé');
+        return $status === null ? $this->response->setStatusCode(500)->setJSON(['error' => 'STATUT_ABSENT']) : $this->mettreAJour($id, ['statut' => $status]);
+    }
+
+    public function historique(int $id)
+    {
+        return $this->response->setJSON((new HistoriqueEntretienModel())->where('id_entretien', $id)->orderBy('date_changement', 'ASC')->findAll());
+    }
+
+    private function statusId(string $designation): ?int
+    {
+        $row = db_connect()->table('status_entretien')->where('designation', $designation)->get()->getRowArray();
+        return $row === null ? null : (int) $row['id'];
+    }
+
+    private function mettreAJour(int $id, array $data)
+    {
+        $model = new EntretienModel();
+        if ($model->find($id) === null) return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND']);
+        $model->update($id, $data);
+        return $this->response->setJSON(['ok' => true]);
     }
 
     /**

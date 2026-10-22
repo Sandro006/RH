@@ -14,7 +14,7 @@ function renderIdentity() {
 }
 async function renderTab(tab) {
     if (tab === 'identity') { renderIdentity(); return; }
-    const endpoints = { affectations: `/api/salaries/${id}/affectations`, contrats: `/api/salaries/${id}/contrats`, documents: `/api/salaries/${id}/documents`, historique: `/api/salaries/${id}/historique` };
+    const endpoints = { affectations: `/api/salaries/${id}/affectations`, contrats: `/api/contrats?idSalarie=${encodeURIComponent(id)}`, documents: `/api/salaries/${id}/documents`, historique: `/api/salaries/${id}/historique` };
     try {
         const result = await api.get(endpoints[tab]);
         const rows = Array.isArray(result) ? result : (result?.data || []);
