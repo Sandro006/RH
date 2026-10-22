@@ -1,6 +1,8 @@
 <?php
 
 $routes->get('/', 'Home::index');
+$routes->get('web/(.*)', 'WebController::asset/$1');
+$routes->get('web/(:any)', 'WebController::asset/$1');
 $routes->get('api/dashboard', 'DashboardController::index', ['filter' => 'auth']);
 $routes->group('api/auth', ['namespace' => 'App\\Controllers\\Auth'], static function ($routes) {
     $routes->post('login', 'AuthController::login');

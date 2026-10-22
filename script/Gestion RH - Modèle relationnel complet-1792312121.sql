@@ -219,14 +219,17 @@ CREATE TABLE IF NOT EXISTS utilisateur (
 	actif boolean NOT NULL DEFAULT true,
 	date_creation timestamp with time zone NOT NULL DEFAULT now(),
 	derniere_connexion timestamp with time zone,
+	tentatives_echec integer NOT NULL DEFAULT 0,
+	verrouille_jusqu_a timestamp with time zone,
+	doit_changer_mot_de_passe boolean NOT NULL DEFAULT false,
 	PRIMARY KEY (id_utilisateur)
 );
 CREATE TABLE IF NOT EXISTS journal_audit (
 	id_audit bigserial NOT NULL,
-	id_utilisateur bigint NOT NULL,
+	id_utilisateur bigint,
 	action bigint NOT NULL,
 	entite varchar(120) NOT NULL,
-	id_entite varchar(60) NOT NULL,
+	id_entite varchar(60),
 	date_action timestamp with time zone NOT NULL DEFAULT now(),
 	ancienne_valeur text,
 	nouvelle_valeur text,

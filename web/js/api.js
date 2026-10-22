@@ -4,7 +4,8 @@ const api = {
         if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
         const response = await fetch(url, { credentials: 'same-origin', ...options, headers });
         const body = await response.json().catch(() => ({}));
-        if (response.status === 401) {
+        const isLoginRequest = /\/api\/auth\/login(?:$|\?)/.test(url);
+        if (response.status === 401 && !isLoginRequest) {
             sessionStorage.removeItem('user');
             if (!location.pathname.endsWith('/login.html')) location.href = '/web/login.html';
             throw new Error('Session expirée');

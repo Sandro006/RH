@@ -19,10 +19,47 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
+	public static function sessionManager(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('sessionManager');
+		return new \App\Libraries\Auth\SessionManager();
+	}
+
+	public static function authService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('authService');
+		return new \App\Services\Auth\AuthService(
+			model(\App\Models\Admin\UtilisateurModel::class),
+			new \App\Libraries\Auth\PasswordHasher(),
+			service('sessionManager'),
+			service('auditService'),
+		);
+	}
+
+	public static function dashboardService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('dashboardService');
+		return new \App\Services\Common\DashboardService(db_connect());
+	}
+
+	public static function utilisateurService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('utilisateurService');
+		return new \App\Services\Admin\UtilisateurService(
+			model(\App\Models\Admin\UtilisateurModel::class),
+			model(\App\Models\Admin\EmployeModel::class),
+			new \App\Libraries\Auth\PasswordHasher(),
+			service('auditService'),
+		);
+	}
+
 	public static function auditService(bool $getShared = true)
 	{
 		if ($getShared) return static::getSharedInstance('auditService');
-		return new \App\Libraries\Common\AuditService(db_connect());
+		return new \App\Libraries\Common\AuditService(
+			model(\App\Models\Common\JournalAuditModel::class),
+			model(\App\Models\Common\ActionModel::class),
+		);
 	}
 
 	public static function workflowService(bool $getShared = true)
