@@ -1,6 +1,5 @@
 <?php
 
-
 // salaire
 $routes->group('api/salaries', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
     $routes->get('/',           'SalarieController::index');
@@ -64,4 +63,20 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Personnel'],
 // supprimer
 $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
     $routes->delete('(:num)', 'DocumentController::supprimer/$1');
+});
+
+//entretiens
+$routes->get('entretiens', 'Selection\EntretienController::page');
+
+$routes->group('api', static function ($routes) {
+    // Liste et filtres
+    $routes->get('entretiens', 'Selection\EntretienController::index');
+    $routes->post('entretiens', 'Selection\EntretienController::planifier');
+    // Consulter les détails
+    $routes->get('entretiens/(:num)', 'Selection\EntretienController::show/$1');
+    $routes->post('entretiens/(:num)/confirmer', 'Selection\EntretienController::confirmer/$1');
+    $routes->post('entretiens/(:num)/reporter', 'Selection\EntretienController::reporter/$1');
+    $routes->post('entretiens/(:num)/realiser', 'Selection\EntretienController::realiser/$1');
+    $routes->post('entretiens/(:num)/annuler', 'Selection\EntretienController::annuler/$1');
+    $routes->get('entretiens/(:num)/historique', 'Selection\EntretienController::historique/$1');
 });
