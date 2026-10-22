@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document salarié | Gestion RH</title>
+    <link rel="stylesheet" href="../../css/personnel.css">
+</head>
+
+<body>
+    <header class="app-header"><a href="../../dashboard.html">Gestion RH</a>
+        <nav><a href="salaires.html">Salariés</a></nav>
+    </header>
+    <main class="main">
+        <div class="breadcrumb"><a href="salaires.html">Salariés</a> / Document</div>
+        <div class="page-heading">
+            <h1>Ajouter un document</h1>
+        </div>
+        <section class="card">
+            <form id="document-form" class="form-grid"><label>Type de document<select name="typeDocument" required>
+                        <option value="">Choisir…</option>
+                    </select></label><label>Fichier<input name="fichier" type="file" required></label><label>Nom du
+                    fichier<input name="nomFichier" required></label>
+                <div class="actions field-wide"><a class="button button-secondary"
+                        href="salarie.html">Annuler</a><button class="button-primary">Déposer</button></div>
+            </form>
+        </section>
+    </main>
+    <script src="../../js/api.js"></script>
+    <script src="../../js/ui.js"></script>
+    <script src="../../js/pages/personnel/document-form.js"></script>
+</body>
+
+</html>
