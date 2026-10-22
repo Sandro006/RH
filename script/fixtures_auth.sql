@@ -64,38 +64,45 @@ WHERE p.intitule = 'AUTH - Administrateur'
   AND s.matricule = 'MAT-AUTH-0003'
   AND NOT EXISTS (SELECT 1 FROM employe e WHERE e.id_salarie = s.id_salarie);
 
+-- password: admin123
 INSERT INTO utilisateur (id_employe, identifiant, mot_de_passe_hash, role, actif)
-SELECT e.id, 'admin', '$2y$10$mJLmOD2k7sV8QMF6maNtreXOD5X083DEs9ENp/qFQd5X0tSk/VHv.', 'admin', true
+SELECT e.id, 'admin', '$2y$10$es0U0VGtKgq2E.1dbvUN8uDTZbvahlPbRsnp4XZE21aXnP3NaxQAy', 'admin', true
 FROM employe e
 WHERE e.nom = 'Administrateur Auth'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE identifiant = 'admin');
 
+-- password: rh123
 INSERT INTO utilisateur (id_employe, identifiant, mot_de_passe_hash, role, actif)
-SELECT e.id, 'rh', '$2y$10$AAP7eNjEbOJs72tZMs6xx.1Hfle36kvKtWRJL4tlbUMWhICLJ0xTq', 'rh', true
+SELECT e.id, 'rh', '$2y$10$eQfviYz.MyfpAOsFIPZXS.r2gTXE0P.cDcXyqEdIK18yL4LX6k45.', 'rh', true
 FROM employe e
 WHERE e.nom = 'RH Auth'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE identifiant = 'rh');
 
+-- password: manager123
 INSERT INTO utilisateur (id_employe, identifiant, mot_de_passe_hash, role, actif)
-SELECT e.id, 'manager', '$2y$10$GVPzEf9DToA1nO9z0m90fut3hNaJmjvoyjZcZOagMS9I6yI21h9s2', 'manager', true
+SELECT e.id, 'manager', '$2y$10$VZG2/Tz.Dw/oqqfYO9yI.u29wx7ziSRpcP8zgG6JOh9TW/o76HswW', 'manager', true
 FROM employe e
 WHERE e.nom = 'Manager Auth'
   AND NOT EXISTS (SELECT 1 FROM utilisateur WHERE identifiant = 'manager');
 
+-- password: recruteur123
 INSERT INTO utilisateur (id_employe, identifiant, mot_de_passe_hash, role, actif)
-SELECT NULL, 'recruteur', '$2y$10$CRLHG5ooLm5EmSiEVbU2HerXuU7yjg00U/MIXEqRdUtNO6F8X98Dm', 'recruteur', true
+SELECT NULL, 'recruteur', '$2y$10$GXLr5yg5TtVJuSzDIfVsVO3rImUu640Ykl35kr63tmZNPpD7qWuHG', 'recruteur', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateur WHERE identifiant = 'recruteur');
 
+-- password: direction123
 INSERT INTO utilisateur (id_employe, identifiant, mot_de_passe_hash, role, actif)
-SELECT NULL, 'direction', '$2y$10$ns9UBPjwwhYZIbcf3Y3NieW2YdctoMkrgozaX42Y9Kj3RsQwKQfZ.', 'direction', true
+SELECT NULL, 'direction', '$2y$10$TpbiaWaJ7xni1PapMjF9YOq33mh78p.dIFTp0qD6Ijbh4LtwnoOkW', 'direction', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateur WHERE identifiant = 'direction');
 
+-- password: controle123
 INSERT INTO utilisateur (id_employe, identifiant, mot_de_passe_hash, role, actif)
-SELECT NULL, 'controle', '$2y$10$7yKWvBhj40vg7DA9nLWQJeZTboO53aJGYfzx3ib8tOJNGYxHVb1SK', 'controle_gestion', true
+SELECT NULL, 'controle', '$2y$10$UBZOskUsVTfgm25nSgO9VeQjdg0D4/yzuIjitteXiz6dn8fwQlg6a', 'controle_gestion', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateur WHERE identifiant = 'controle');
 
+-- password: salarie123
 INSERT INTO utilisateur (id_employe, identifiant, mot_de_passe_hash, role, actif)
-SELECT NULL, 'salarie', '$2y$10$DdVdvoZbZS/EgFil9s7nGuxCLC0haojA87B.7pVry2ySHpkezaz7q', 'salarie', true
+SELECT NULL, 'salarie', '$2y$10$ObzZ9nBNCg.ZU.3Rag7sh.P5hPrFl7VSRWPp7hy72kOSynTes0A3u', 'salarie', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateur WHERE identifiant = 'salarie');
 
 INSERT INTO action (action) VALUES
