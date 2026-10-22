@@ -1,23 +1,27 @@
-const api = (() => {
-    async function request(url, options = {}) {
-        const headers = { Accept: 'application/json', ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...(options.headers || {}) };
-        const token = sessionStorage.getItem('token');
-        if (token) headers.Authorization = `Bearer ${token}`;
-        const response = await fetch(url, { ...options, headers });
-        if (response.status === 401) {
-            window.location.href = '/login.html';
-            throw new Error('Session expirée.');
-        }
-        const text = await response.text();
-        let data = null;
-        try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-        if (!response.ok) throw new Error(data?.message || data?.error || `Erreur HTTP ${response.status}`);
-        return data;
-    }
-    return {
-        get: url => request(url),
-        post: (url, body = {}) => request(url, { method: 'POST', body: JSON.stringify(body) }),
-        patch: (url, body = {}) => request(url, { method: 'PATCH', body: JSON.stringify(body) }),
-        del: url => request(url, { method: 'DELETE' })
-    };
-})();
+const api = { 
+    async request(url, options = {}) { 
+        const token = sessionStorage.getItem('token'); 
+        const r = await fetch(url, { 
+            ...options, headers: { 'Content-Type': 'application/json', 
+            ...(token ? { Authorization: `Bearer ${token}` } : {}), 
+            ...(options.headers || {}) } }); 
+            
+            if (r.status === 401) { 
+                sessionStorage.removeItem('token'); 
+                location.href = '../login.html'; throw Error('Session expirée') 
+            } 
+            const body = await r.json().catch(() => ({})); 
+            
+            if (!r.ok) throw Error(body.error || 'Une erreur est survenue'); 
+            return body.data ?? body 
+        }, 
+        get(url) { return this.request(url) }, 
+        post(url, body = {}) { 
+            return this.request(url, { method: 'POST', body: JSON.stringify(body) }) 
+        }, 
+        patch(url, body = {}) { 
+            return this.request(url, { method: 'PATCH', body: JSON.stringify(body) }) 
+        },
+        delete(url) { return this.request(url, { method: 'DELETE' }) }
+        
+};

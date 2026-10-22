@@ -1,0 +1,25 @@
+<?php
+declare(strict_types=1);
+namespace App\Services\Recrutement;
+use App\Models\Recrutement\{CandidatModel,CandidatureModel};
+
+class CandidatureService extends RecruitmentService
+{
+    private CandidatModel $candidats; private CandidatureModel $model; private EligibiliteService $eligibilite;
+    public function __construct(?\CodeIgniter\Database\BaseConnection $db=null){parent::__construct($db);$this->candidats=new CandidatModel($this->db);$this->model=new CandidatureModel($this->db);$this->eligibilite=new EligibiliteService($this->db);}
+    public function trouverOuCreerCandidat(array $data):int{$email=trim((string)($data['email']??''));if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new \InvalidArgumentException('Email candidat invalide.');$c=$this->candidats->where('email',$email)->first();if($c){$this->candidats->update($c['id_candidat'],array_intersect_key($data,array_flip(['nom','prenom','telephone','adresse'])));return(int)$c['id_candidat'];}return(int)$this->candidats->insert(['nom'=>$data['nom'],'prenom'=>$data['prenom'],'email'=>$email,'telephone'=>$data['telephone']??null,'adresse'=>$data['adresse']??null,'date_creation'=>date('Y-m-d H:i:s')],true);}
+    public function postuler(array $data):int{$off=$this->row('offre_emploi','id_offre',(int)$data['id_offre']);if((int)$off['statut']!==$this->id('status_offre_emploi','Publiée')||($off['date_cloture']&&$off['date_cloture']<date('Y-m-d')))throw new \DomainException('Cette offre n’accepte plus de candidatures.');$cid=$this->trouverOuCreerCandidat($data);if($this->model->where(['id_candidat'=>$cid,'id_offre'=>(int)$data['id_offre']])->first())throw new \DomainException('Une candidature existe déjà pour cette offre.');if(strtoupper((string)($data['origine_candidature']??'EXTERNE'))==='INTERNE'){if(empty($data['id_salarie']))throw new \InvalidArgumentException('Le salarié est requis pour une mobilité interne.');$elig=$this->eligibilite->verifierEligibiliteMobilite((int)$data['id_salarie'],(int)$this->row('demande_recrutement','id_demande',(int)$off['id_demande'])['id_poste']);if(!$elig['eligible'])throw new \DomainException(implode(', ',$elig['motifs']));}$id=(int)$this->model->insert(['id_candidat'=>$cid,'id_offre'=>(int)$data['id_offre'],'date_candidature'=>date('Y-m-d H:i:s'),'cv'=>$data['cv']??null,'lettre_motivation'=>$data['lettre_motivation']??null,'origine_candidature'=>$data['origine_candidature']??'EXTERNE','statut'=>$this->id('status_candidature','Reçue')],true);$this->history($id,null,$this->id('status_candidature','Reçue'),null,'Dépôt de candidature');return$id;}
+    private function history(int $id,?int $old,int $new,?int $actor,?string $comment):void{$this->db->table('candidature_status_historique')->insert(['id_candidature'=>$id,'statut_ancien'=>$old??$new,'statut_nouveau'=>$new,'date_changement'=>date('Y-m-d H:i:s'),'id_utilisateur'=>$actor,'commentaire'=>$comment]);}
+    private function change(int $id,string $target,?array $u=null,?string $comment=null):void{$c=$this->row('candidature','id_candidature',$id);$old=$this->designation((int)$c['statut']);$new=$this->id('status_candidature',$target);$allowed=['Reçue'=>['En présélection','Refusée','Retirée'],'En présélection'=>['Présélectionnée','Refusée','Retirée'],'Présélectionnée'=>['Entretien prévu','Refusée','Retirée'],'Entretien prévu'=>['En évaluation','Refusée','Retirée'],'En évaluation'=>['Retenue','Refusée','Retirée']];if(!in_array($target,$allowed[$old]??[],true))throw new \DomainException("Transition {$old} -> {$target} interdite.");$this->model->update($id,['statut'=>$new]);$this->history($id,(int)$c['statut'],$new,$this->actor($u),$comment);}
+    private function designation(int $id):string{$r=$this->db->table('status_candidature')->where('id',$id)->get()->getRowArray();return(string)$r['designation'];}
+    public function retirer(int $id,?array $u=null):void{$this->change($id,'Retirée',$u,'Retrait');}
+    public function mettreEnPreselection(int $id,?array $u=null):void{$this->change($id,'En présélection',$u);}
+    public function preselectionner(int $id,bool $retenir=true,?array $u=null):void{$this->change($id,$retenir?'Présélectionnée':'Refusée',$u);}
+    public function planifierEntretien(int $id,?array $data=null,?array $u=null):void{$this->change($id,'Entretien prévu',$u,$data['date_entretien']??null);}
+    public function marquerEvaluee(int $id,?array $u=null):void{$this->change($id,'En évaluation',$u);}
+    public function retenir(int $id,?array $u=null):void{$this->change($id,'Retenue',$u);}
+    public function refuser(int $id,?string $motif=null,?array $u=null):void{$this->change($id,'Refusée',$u,$motif);}
+    public function consulter(int $id):?array{return$this->model->find($id);}
+    public function lister(array $f=[]):array{$q=$this->model;foreach(['id_offre','statut','origine_candidature']as$x)if(isset($f[$x]))$q->where($x,$f[$x]);return$q->orderBy('id_candidature','DESC')->findAll();}
+    public function historique(int $id):array{return$this->db->table('candidature_status_historique')->where('id_candidature',$id)->orderBy('date_changement')->get()->getResultArray();}
+}
