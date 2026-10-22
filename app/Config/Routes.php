@@ -47,6 +47,7 @@ $routes->group('api/onboardings', ['namespace' => 'App\Controllers\Personnel'], 
     $routes->post('(:num)/annuler',   'OnboardingController::annuler/$1');
     $routes->get('(:num)/historique', 'OnboardingController::historique/$1');
     $routes->get('(:num)/taches',     'OnboardingController::listerTaches/$1');
+	$routes->get('(:num)/progression', 'OnboardingController::progression/$1');
 });
 
 // document salaire

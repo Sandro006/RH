@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contrat | Gestion RH</title>
+    <link rel="stylesheet" href="../../css/personnel.css">
+</head>
+
+<body>
+    <header class="app-header"><a href="../../dashboard.html">Gestion RH</a>
+        <nav><a href="salaires.html">Salariés</a><a href="contrats.html">Contrats</a></nav>
+    </header>
+    <main class="main">
+        <div class="breadcrumb"><a href="contrats.html">Contrats</a> / Nouveau</div>
+        <div class="page-heading">
+            <h1>Rédiger un contrat</h1>
+        </div>
+        <section class="card">
+            <form id="contract-form" class="form-grid"><label>Salarié <input name="idSalarie" type="number"
+                        required></label><label>Poste <input name="idPoste" type="number" required></label><label>Type
+                    de contrat<select name="typeContratId" required>
+                        <option value="">Choisir…</option>
+                        <option value="1">CDI</option>
+                        <option value="2">CDD</option>
+                        <option value="3">Stage</option>
+                        <option value="4">Intérim</option>
+                    </select></label><label>Date de début<input name="dateDebut" type="date"
+                        required></label><label>Date de fin<input name="dateFin" type="date"></label><label>Rémunération
+                    de base<input name="salaireBase" type="number" min="0" step="0.01" required></label><label
+                    class="field-wide"><span><input id="with-trial" name="avecPeriodeEssai" type="checkbox"> Prévoir une
+                        période d'essai</span></label>
+                <div id="trial-fields" class="form-grid field-wide hidden"><label>Catégorie<select name="categorie">
+                            <option value="OUVRIER_EMPLOYE">Ouvrier / Employé</option>
+                            <option value="AGENT_MAITRISE">Agent de maîtrise</option>
+                            <option value="CADRE">Cadre</option>
+                        </select></label><label>Durée de l'essai (jours)<input name="dureeEssaiJours" type="number"
+                            min="1"></label></div>
+                <p class="field-wide">Une période d'essai est optionnelle. La date de fin est obligatoire pour les CDD,
+                    stages et intérims.</p>
+                <div class="actions field-wide"><a class="button button-secondary"
+                        href="contrats.html">Annuler</a><button class="button-primary">Enregistrer</button></div>
+            </form>
+        </section>
+    </main>
+    <script src="../../js/api.js"></script>
+    <script src="../../js/ui.js"></script>
+    <script src="../../js/pages/personnel/contrat-form.js"></script>
+</body>
+
+</html>

@@ -19,6 +19,18 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
+	public static function auditService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('auditService');
+		return new \App\Libraries\Common\AuditService(db_connect());
+	}
+
+	public static function workflowService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('workflowService');
+		return new \App\Libraries\Common\WorkflowService();
+	}
+
     /*
      * public static function example($getShared = true)
      * {
@@ -58,7 +70,7 @@ class Services extends BaseService
 	{
 		if ($getShared) return static::getSharedInstance('grilleService');
 		return new \App\Services\Personnel\GrilleService(
-			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Personnel\GrilleModel::class),
 		);
 	}
 
@@ -66,7 +78,7 @@ class Services extends BaseService
 	{
 		if ($getShared) return static::getSharedInstance('periodeEssaiService');
 		return new \App\Services\Personnel\PeriodeEssaiService(
-			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Personnel\PeriodeEssaiModel::class),
 		);
 	}
 
@@ -80,6 +92,7 @@ class Services extends BaseService
 			model(\App\Models\Personnel\ContratHistoriqueModel::class),
 			model(\App\Models\Personnel\SalarieModel::class),
 			model(\App\Models\Personnel\StatusSalarieModel::class),
+			model(\App\Models\Personnel\AffectationModel::class),
 			service('periodeEssaiService'),
 			service('grilleService'),
 			service('auditService'),
