@@ -1,6 +1,6 @@
 <?= view('partials/page-heading', [
     'heading' => 'Salariés',
-    'actions' => '<a class="button button-primary" href="/personnel/salarie">Créer depuis une candidature</a>',
+    'actions' => '<a class="button button-primary" href="/personnel/salarie-form">Créer depuis une candidature</a>',
 ]) ?>
 
 <section class="card">

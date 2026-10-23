@@ -84,7 +84,7 @@ async function chargerCandidatures() {
                     key: 'actions',
                     label: 'Actions',
                     sort: false,
-                    render: row => `<button class="button button-secondary" type="button" data-statut="${ui.escape(row.id_candidature)}">Changer le statut</button>`,
+                    render: row => `<div class="actions">${row.statut_designation === 'Retenue' ? `<a class="button button-secondary" href="/selection/proposition-form?idCandidature=${encodeURIComponent(row.id_candidature)}">Proposition</a>` : ''}<button class="button button-secondary" type="button" data-statut="${ui.escape(row.id_candidature)}">Changer le statut</button></div>`,
                 },
             ],
             onSort(key, order) {

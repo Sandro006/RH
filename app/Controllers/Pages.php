@@ -121,6 +121,36 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/selection/classement.js'],
         ],
+        'selection/propositions' => [
+            'vue'      => 'pages/selection/propositions',
+            'titre'    => 'Propositions d\'embauche · Gestion RH',
+            'actif'    => 'propositions',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sélection / Propositions'],
+            ],
+            'scripts'  => ['/assets/js/pages/selection/propositions.js'],
+        ],
+        'selection/proposition-form' => [
+            'vue'      => 'pages/selection/proposition-form',
+            'titre'    => 'Nouvelle proposition · Gestion RH',
+            'actif'    => 'propositions',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sélection / Propositions'],
+            ],
+            'scripts'  => ['/assets/js/pages/selection/proposition-form.js'],
+        ],
+        'selection/proposition' => [
+            'vue'      => 'pages/selection/proposition',
+            'titre'    => 'Proposition d\'embauche · Gestion RH',
+            'actif'    => 'propositions',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sélection / Propositions'],
+            ],
+            'scripts'  => ['/assets/js/pages/selection/proposition.js'],
+        ],
         'selection/entretiens' => [
             'vue'      => 'pages/selection/entretiens',
             'titre'    => 'Entretiens · Gestion RH',
@@ -160,6 +190,16 @@ final class Pages extends BaseController
                 ['label' => 'Personnel / Salariés'],
             ],
             'scripts'  => ['/assets/js/pages/personnel/salarie.js'],
+        ],
+        'personnel/salarie-form' => [
+            'vue'      => 'pages/personnel/salarie-form',
+            'titre'    => 'Créer un salarié · Gestion RH',
+            'actif'    => 'salaires',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Salariés'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/salarie-form.js'],
         ],
         'personnel/grille' => [
             'vue'      => 'pages/personnel/grille',

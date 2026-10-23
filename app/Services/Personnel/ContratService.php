@@ -415,8 +415,8 @@ class ContratService
                 : $this->statusModel->idParDesignation((string) $filtre['statut']);
             $requete->where('c.statut', $statut);
         }
-        if (!empty($filtre['idSalarie'])) {
-            $requete->where('c.id_salarie', $filtre['idSalarie']);
+        if (!empty($filtre['idSalarie']) && is_numeric($filtre['idSalarie'])) {
+            $requete->where('c.id_salarie', (int) $filtre['idSalarie']);
         }
         if (!empty($filtre['typeContratId'])) {
             $requete->where('c.type_contrat_id', $filtre['typeContratId']);

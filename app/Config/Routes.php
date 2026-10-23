@@ -24,10 +24,14 @@ $routes->get('selection/entretiens', 'Pages::afficher/selection/entretiens', ['f
 $routes->get('selection/entretien-form', 'Pages::afficher/selection/entretien-form', ['filter' => 'auth']);
 $routes->get('selection/evaluation', 'Pages::afficher/selection/evaluation', ['filter' => 'auth']);
 $routes->get('selection/classement', 'Pages::afficher/selection/classement', ['filter' => 'auth']);
+$routes->get('selection/propositions', 'Pages::afficher/selection/propositions', ['filter' => 'auth']);
+$routes->get('selection/proposition-form', 'Pages::afficher/selection/proposition-form', ['filter' => 'auth']);
+$routes->get('selection/proposition', 'Pages::afficher/selection/proposition', ['filter' => 'auth']);
 
 $routes->group('personnel', ['filter' => 'auth'], static function ($routes) {
     $routes->get('salaries', 'Pages::afficher/personnel/salaries');
     $routes->get('salarie', 'Pages::afficher/personnel/salarie');
+    $routes->get('salarie-form', 'Pages::afficher/personnel/salarie-form');
     $routes->get('grille', 'Pages::afficher/personnel/grille');
     $routes->get('contrats', 'Pages::afficher/personnel/contrats');
     $routes->get('contrat', 'Pages::afficher/personnel/contrat');
@@ -195,6 +199,7 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
     $routes->get('types-entretien', 'ReferentielController::typesEntretien');
     $routes->get('employes', 'ReferentielController::employes');
     $routes->get('statuts/(:segment)', 'ReferentielController::statuts/$1');
+    $routes->get('natures-revendication', 'ReferentielController::naturesRevendication');
 });
 
 $routes->get('api/referentiels/types-document', 'Personnel\DocumentController::listerTypes', ['filter' => 'auth']);

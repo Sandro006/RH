@@ -260,7 +260,17 @@ class PropositionEmbaucheService
     // consulter
     public function consulter(int $idProposition): ?object
     {
-        return $this->propositionModel->find($idProposition);
+        $ligne = $this->propositionModel->db->table('proposition_embauche p')
+            ->select('p.*, sp.designation AS statut_designation, c.id_offre, ca.nom, ca.prenom, ca.email, oe.titre AS offre')
+            ->join('status_proposition_embauche sp', 'sp.id = p.statut', 'left')
+            ->join('candidature c', 'c.id_candidature = p.id_candidature', 'left')
+            ->join('candidat ca', 'ca.id_candidat = c.id_candidat', 'left')
+            ->join('offre_emploi oe', 'oe.id_offre = c.id_offre', 'left')
+            ->where('p.id_proposition', $idProposition)
+            ->get()
+            ->getRow();
+
+        return $ligne ?: null;
     }
 
     public function trouverParCandidature(int $idCandidature): ?object

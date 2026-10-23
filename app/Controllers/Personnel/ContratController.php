@@ -33,9 +33,15 @@ class ContratController extends BaseController
     // GET /api/contrats — lister (filtres)
     public function index()
     {
+        $idSalarie = $this->request->getGet('idSalarie');
+        if ($idSalarie !== null && $idSalarie !== '' && !ctype_digit((string) $idSalarie)) {
+            return $this->response->setStatusCode(400)
+                ->setJSON(['error' => 'DONNEES_INCOHERENTES', 'message' => 'idSalarie invalide']);
+        }
+
         $filtre = [
             'statut'        => $this->request->getGet('statut'),
-            'idSalarie'     => $this->request->getGet('idSalarie'),
+            'idSalarie'     => $idSalarie,
             'typeContratId' => $this->request->getGet('typeContratId'),
             'tri'           => $this->request->getGet('tri'),
             'ordre'         => $this->request->getGet('ordre'),
