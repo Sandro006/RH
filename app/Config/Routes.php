@@ -21,6 +21,8 @@ $routes->group('recrutement', ['filter' => 'auth'], static function ($routes) {
 });
 
 $routes->get('selection/entretiens', 'Pages::afficher/selection/entretiens', ['filter' => 'auth']);
+$routes->get('selection/evaluation', 'Pages::afficher/selection/evaluation', ['filter' => 'auth']);
+$routes->get('selection/classement', 'Pages::afficher/selection/classement', ['filter' => 'auth']);
 
 $routes->group('personnel', ['filter' => 'auth'], static function ($routes) {
     $routes->get('salaries', 'Pages::afficher/personnel/salaries');

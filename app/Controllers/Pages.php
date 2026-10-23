@@ -101,6 +101,26 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/recrutement/candidatures.js'],
         ],
+        'selection/evaluation' => [
+            'vue'      => 'pages/selection/evaluation',
+            'titre'    => 'Évaluer une candidature · Gestion RH',
+            'actif'    => 'evaluations',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sélection'],
+            ],
+            'scripts'  => ['/assets/js/pages/selection/evaluation.js'],
+        ],
+        'selection/classement' => [
+            'vue'      => 'pages/selection/classement',
+            'titre'    => 'Classement des candidatures · Gestion RH',
+            'actif'    => 'evaluations',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sélection'],
+            ],
+            'scripts'  => ['/assets/js/pages/selection/classement.js'],
+        ],
         'selection/entretiens' => [
             'vue'      => 'pages/selection/entretiens',
             'titre'    => 'Entretiens · Gestion RH',

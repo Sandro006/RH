@@ -87,7 +87,7 @@ function rendreCandidatures(rows) {
     }
 
     candidaturesBox.innerHTML = `<div class="table-wrap"><table><thead><tr><th>N°</th><th>Candidat</th><th>Origine</th><th>Statut</th><th>Date</th></tr></thead><tbody>${rows
-        .map(row => `<tr><td>${ui.escape(row.id_candidature)}</td><td>${ui.escape([row.prenom, row.nom].filter(Boolean).join(' ') || '—')}</td><td>${ui.escape(row.origine_candidature || '—')}</td><td>${ui.status(row.statut_designation || '—')}</td><td>${ui.date(row.date_candidature)}</td></tr>`)
+        .map(row => `<tr><td>${ui.escape(row.id_candidature)}</td><td><a href="/selection/evaluation?id=${encodeURIComponent(row.id_candidature)}">${ui.escape([row.prenom, row.nom].filter(Boolean).join(' ') || '—')}</a></td><td>${ui.escape(row.origine_candidature || '—')}</td><td>${ui.status(row.statut_designation || '—')}</td><td>${ui.date(row.date_candidature)}</td></tr>`)
         .join('')}</tbody></table></div>`;
 }
 
@@ -104,6 +104,9 @@ function rendreHistorique(rows) {
 
 function rendreActions() {
     const actions = actionsPour(offre.statut_designation);
+    if (offre.statut_designation === 'Clôturée' && peutGerer()) {
+        actions.push({ label: 'Évaluer et classer les candidats', href: `/selection/classement?offre=${offre.id_offre}`, variant: 'button-primary' });
+    }
     if (!actions.length) {
         actionsBox.innerHTML = ui.state('Aucune action disponible pour ce statut ou votre rôle.');
         return;

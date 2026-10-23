@@ -17,7 +17,7 @@ async function chargerCandidatures() {
                 {
                     key: 'candidat',
                     label: 'Candidat',
-                    render: row => ui.escape([row.prenom, row.nom].filter(Boolean).join(' ') || row.id_candidat),
+                    render: row => `<a href="/selection/evaluation?id=${encodeURIComponent(row.id_candidature)}">${ui.escape([row.prenom, row.nom].filter(Boolean).join(' ') || row.id_candidat)}</a>`,
                 },
                 { key: 'offre', label: 'Offre', render: row => ui.escape(row.offre_titre || row.id_offre || '—') },
                 { key: 'origine', label: 'Origine', render: row => ui.escape(row.origine_candidature || '—') },

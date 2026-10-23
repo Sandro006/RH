@@ -8,6 +8,7 @@ $sections = [
     ],
     'Sélection' => [
         'entretiens' => ['label' => 'Entretiens', 'url' => '/selection/entretiens'],
+        'evaluations' => ['label' => 'Évaluations', 'url' => '/recrutement/candidatures'],
     ],
     'Équipe' => [
         'salaires'    => ['label' => 'Salariés', 'url' => '/personnel/salaries'],
