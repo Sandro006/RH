@@ -99,7 +99,7 @@ class RecrutementController extends BaseController
     }
     public function offreHistorique(int $id)
     {
-        return $this->ok(db_connect()->table('offre_emploi_status_historique')->where('id_offre', $id)->orderBy('date_changement')->get()->getResultArray());
+        return $this->ok((new OffreEmploiService())->historique($id));
     }
     public function offreCandidatures(int $id)
     {
@@ -109,7 +109,8 @@ class RecrutementController extends BaseController
     {
         $s = new OffreEmploiService();
         $d = $this->data();
-        return $this->run(fn() => match ($a) { 'publier' => $s->publier($id, $d['canal_diffusion'] ?? 'Site carrières', $d['date_cloture'] ?? null), 'suspendre' => $s->suspendre($id, $d['motif'] ?? null), 'reprendre' => $s->reprendre($id), 'clore' => $s->clore($id), 'annuler' => $s->annuler($id), default => throw new \InvalidArgumentException('Action inconnue')});
+        $u = $this->utilisateur();
+        return $this->run(fn() => match ($a) { 'publier' => $s->publier($id, $d['canal_diffusion'] ?? 'Site carrières', $d['date_cloture'] ?? null, $u), 'suspendre' => $s->suspendre($id, $d['motif'] ?? null, $u), 'reprendre' => $s->reprendre($id, $u), 'clore' => $s->clore($id, $u), 'annuler' => $s->annuler($id, $u), default => throw new \InvalidArgumentException('Action inconnue')});
     }
     public function candidatures()
     {

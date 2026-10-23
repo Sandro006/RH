@@ -76,6 +76,12 @@ tbody tr:hover { background: #fafcff; }.badge { display: inline-block; padding: 
 .password button { position: absolute; right: .35rem; top: 1.95rem; width: auto; margin: 0; padding: .35rem .5rem; color: #64748b; background: transparent; box-shadow: none; }
 .grille-note { margin-bottom: 1rem; padding: .85rem 1rem; background: #f5f8ff; border: 1px solid #d9e4fb; border-radius: 10px; }
 .grille-note p { margin: .2rem 0; }
+fieldset { margin: 0; padding: 0; border: 0; }
+fieldset legend { margin-bottom: .4rem; color: #44536b; font-weight: 650; }
+.checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .4rem .8rem; }
+.checkbox-grid .checkbox, .checkbox { flex-direction: row; align-items: center; gap: .5rem; font-weight: 500; }
+.checkbox input { width: auto; }
+select[multiple] { min-height: 120px; }
 @media (max-width: 800px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 700px) { .login-shell { display: block; } .login-intro { display: none; } .login-form { padding: 2rem; } }
 @media (max-width: 460px) { .metrics { grid-template-columns: 1fr; } }

@@ -24,7 +24,32 @@ class OffreEmploiService extends RecruitmentService
     public function reprendre(int $id,?array $u=null):void{$this->change($id,'Publiée',$u,'Reprise');}
     public function clore(int $id,?array $u=null):void{$this->change($id,'Clôturée',$u,'Clôture');}
     public function annuler(int $id,?array $u=null):void{$this->change($id,'Annulée',$u,'Annulation');}
-    public function consulter(int $id):?array{return $this->model->find($id);}
+    public function consulter(int $id):?array
+    {
+        $row = $this->db->table('offre_emploi o')
+            ->select('o.*, st.designation AS statut_designation, p.intitule AS poste, s.nom AS service, d.nom AS departement, '
+                . '(SELECT COUNT(*) FROM candidature c WHERE c.id_offre = o.id_offre) AS nb_candidatures')
+            ->join('status_offre_emploi st','st.id=o.statut','left')
+            ->join('demande_recrutement dr','dr.id_demande=o.id_demande','left')
+            ->join('poste p','p.id_poste=dr.id_poste','left')
+            ->join('service s','s.id_service=p.id_service','left')
+            ->join('departement d','d.id_departement=s.id_departement','left')
+            ->where('o.id_offre',$id)
+            ->get()->getRowArray();
+
+        return $row ?: null;
+    }
+    public function historique(int $id):array
+    {
+        return $this->db->table('offre_emploi_status_historique h')
+            ->select('h.*, sa.designation AS statut_ancien_designation, sn.designation AS statut_nouveau_designation, u.identifiant AS utilisateur_identifiant')
+            ->join('status_offre_emploi sa','sa.id=h.statut_ancien','left')
+            ->join('status_offre_emploi sn','sn.id=h.statut_nouveau','left')
+            ->join('utilisateur u','u.id_utilisateur=h.id_utilisateur','left')
+            ->where('h.id_offre',$id)
+            ->orderBy('h.date_changement')
+            ->get()->getResultArray();
+    }
     public function lister(array $filter=[]):array{$q=$this->db->table('offre_emploi o')->select('o.*, st.designation AS statut_designation')->join('status_offre_emploi st','st.id=o.statut','left'); foreach(['statut','id_demande'] as $f)if(isset($filter[$f])&&$filter[$f]!=='')$q->where('o.'.$f,$filter[$f]); [$colonne,$ordre]=Tri::resoudre($filter,['id_offre'=>'o.id_offre','titre'=>'o.titre','canal'=>'o.canal_diffusion','publication'=>'o.date_publication','statut'=>'st.designation'],'o.id_offre','DESC'); return $q->orderBy($colonne,$ordre)->get()->getResultArray();}
     public function offresOuvertes():array{$id=$this->id('status_offre_emploi','Publiée'); return $this->model->where('statut',$id)->groupStart()->where('date_cloture',null)->orWhere('date_cloture >=',date('Y-m-d'))->groupEnd()->findAll();}
 }

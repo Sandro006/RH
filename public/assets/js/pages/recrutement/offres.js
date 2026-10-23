@@ -23,6 +23,12 @@ async function chargerOffres() {
                     label: 'Statut',
                     render: row => ui.status(row.statut_designation || row.statut || '—'),
                 },
+                {
+                    key: 'actions',
+                    label: 'Actions',
+                    sort: false,
+                    render: row => `<a href="/recrutement/offre?id=${ui.escape(row.id_offre)}">Voir</a>`,
+                },
             ],
             onSort(key, order) {
                 offresState.tri = key;

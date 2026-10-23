@@ -12,6 +12,8 @@ $routes->group('recrutement', ['filter' => 'auth'], static function ($routes) {
     $routes->get('demande', 'Pages::afficher/recrutement/demande');
     $routes->get('demande-edit', 'Pages::afficher/recrutement/demande-edit');
     $routes->get('offres', 'Pages::afficher/recrutement/offres');
+    $routes->get('offre', 'Pages::afficher/recrutement/offre');
+    $routes->get('offre-form', 'Pages::afficher/recrutement/offre-form');
     $routes->get('candidatures', 'Pages::afficher/recrutement/candidatures');
 });
 

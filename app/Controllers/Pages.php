@@ -69,6 +69,28 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/recrutement/offres.js'],
         ],
+        'recrutement/offre' => [
+            'vue'      => 'pages/recrutement/offre',
+            'titre'    => "Offre d'emploi · Gestion RH",
+            'actif'    => 'offres',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Recrutement', 'url' => '/recrutement/offres'],
+                ['label' => 'Offre'],
+            ],
+            'scripts'  => ['/assets/js/pages/recrutement/offre.js'],
+        ],
+        'recrutement/offre-form' => [
+            'vue'      => 'pages/recrutement/offre-form',
+            'titre'    => "Publier une offre · Gestion RH",
+            'actif'    => 'offres',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Recrutement', 'url' => '/recrutement/offres'],
+                ['label' => 'Offre'],
+            ],
+            'scripts'  => ['/assets/js/pages/recrutement/offre-form.js'],
+        ],
         'recrutement/candidatures' => [
             'vue'      => 'pages/recrutement/candidatures',
             'titre'    => 'Candidatures · Gestion RH',
