@@ -19,6 +19,37 @@ $routes->group('api/utilisateurs', ['namespace' => 'App\\Controllers\\Admin', 'f
     $routes->post('(:num)/reinitialiser-mot-de-passe', 'UtilisateurController::reinitialiser/$1');
 });
 
+$routes->get('api/public/offres', 'Recrutement\\RecrutementController::offresOuvertes');
+$routes->get('api/public/offres/(:num)', 'Recrutement\\RecrutementController::offrePublique/$1');
+$routes->post('api/offres/(:num)/candidatures', 'Recrutement\\RecrutementController::postuler/$1');
+
+// Évaluation et décision de sélection.
+$routes->group('api', ['namespace' => 'App\\Controllers\\Selection', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('candidatures/(:num)/evaluation', 'EvaluationController::show/$1');
+    $routes->post('candidatures/(:num)/evaluation', 'EvaluationController::store/$1');
+    $routes->post('candidatures/(:num)/retenir', 'EvaluationController::retenir/$1');
+    $routes->post('candidatures/(:num)/refuser', 'EvaluationController::refuser/$1');
+    $routes->get('offres/(:num)/evaluations', 'EvaluationController::liste/$1');
+    $routes->get('offres/(:num)/classement', 'EvaluationController::classement/$1');
+});
+
+// Proposition d’embauche et négociation.
+$routes->group('api/propositions', ['namespace' => 'App\\Controllers\\Selection', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('/', 'PropositionEmbaucheController::index');
+    $routes->get('(:num)', 'PropositionEmbaucheController::show/$1');
+    $routes->post('(:num)/envoyer', 'PropositionEmbaucheController::envoyer/$1');
+    $routes->post('(:num)/repondre', 'PropositionEmbaucheController::repondre/$1');
+    $routes->post('(:num)/contre-proposer', 'PropositionEmbaucheController::contreProposer/$1');
+    $routes->post('(:num)/expirer', 'PropositionEmbaucheController::expirer/$1');
+    $routes->get('(:num)/historique', 'PropositionEmbaucheController::historique/$1');
+    $routes->get('(:num)/revendications', 'PropositionEmbaucheController::revendications/$1');
+    $routes->post('(:num)/revendications', 'PropositionEmbaucheController::soumettreRevendication/$1');
+});
+$routes->post('api/candidatures/(:num)/proposition', 'Selection\\PropositionEmbaucheController::create/$1', ['filter' => 'auth']);
+$routes->post('api/revendications/(:num)/repondre', 'Selection\\PropositionEmbaucheController::repondreRevendication/$1', ['filter' => 'auth']);
+$routes->post('api/revendications/(:num)/retirer', 'Selection\\PropositionEmbaucheController::retirerRevendication/$1', ['filter' => 'auth']);
+$routes->get('api/revendications/(:num)/historique', 'Selection\\PropositionEmbaucheController::historiqueRevendication/$1', ['filter' => 'auth']);
+
 $routes->group('api', ['namespace' => 'App\\Controllers\\Recrutement', 'filter' => 'auth'], static function ($routes) {
     $routes->get('demandes', 'RecrutementController::demandes');
     $routes->post('demandes', 'RecrutementController::creerDemande');
@@ -27,6 +58,8 @@ $routes->group('api', ['namespace' => 'App\\Controllers\\Recrutement', 'filter' 
     $routes->get('demandes/(:num)/coherence', 'RecrutementController::demandeCoherence/$1');
     $routes->get('demandes/(:num)/validations', 'RecrutementController::demandeValidations/$1');
     $routes->get('demandes/(:num)/historique', 'RecrutementController::demandeHistorique/$1');
+    // La route littérale doit précéder le segment générique.
+    $routes->post('demandes/(:num)/offre', 'RecrutementController::offreDepuisDemande/$1');
     $routes->post('demandes/(:num)/(:segment)', 'RecrutementController::actionDemande/$1/$2');
     $routes->get('offres', 'RecrutementController::offres');
     $routes->get('offres/(:num)', 'RecrutementController::offre/$1');
@@ -34,15 +67,11 @@ $routes->group('api', ['namespace' => 'App\\Controllers\\Recrutement', 'filter' 
     $routes->get('offres/(:num)/candidatures', 'RecrutementController::offreCandidatures/$1');
     $routes->get('offres/(:num)/historique', 'RecrutementController::offreHistorique/$1');
     $routes->post('offres/(:num)/(:segment)', 'RecrutementController::actionOffre/$1/$2');
-    $routes->post('demandes/(:num)/offre', 'RecrutementController::offreDepuisDemande/$1');
     $routes->get('candidatures', 'RecrutementController::candidatures');
     $routes->get('candidatures/(:num)', 'RecrutementController::candidature/$1');
     $routes->get('candidatures/(:num)/historique', 'RecrutementController::candidatureHistorique/$1');
-    $routes->post('offres/(:num)/candidatures', 'RecrutementController::postuler/$1');
     $routes->post('candidatures/(:num)/(:segment)', 'RecrutementController::actionCandidature/$1/$2');
 });
-$routes->get('api/public/offres', 'Recrutement\\RecrutementController::offresOuvertes');
-$routes->get('api/public/offres/(:num)', 'Recrutement\\RecrutementController::offrePublique/$1');
 
 // salaire
 $routes->group('api/salaries', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
@@ -72,7 +101,7 @@ $routes->group('api/contrats', ['namespace' => 'App\Controllers\Personnel', 'fil
 });
 
 // grille salaire
-$routes->group('api/referentiels', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
+$routes->group('api/referentiels', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
     $routes->get('grille/(:num)', 'ContratController::grille/$1');
 });
 
@@ -94,7 +123,7 @@ $routes->group('api/onboardings', ['namespace' => 'App\Controllers\Personnel', '
 });
 
 // document salaire
-$routes->group('api/salaries/(:num)/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
+$routes->group('api/salaries/(:num)/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/',       'DocumentController::index/$1');
     $routes->post('/',      'DocumentController::ajouter/$1');
 });
@@ -113,14 +142,14 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
 $routes->get('api/referentiels/types-document', 'Personnel\DocumentController::listerTypes', ['filter' => 'auth']);
 
 // supprimer
-$routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
+$routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
     $routes->delete('(:num)', 'DocumentController::supprimer/$1');
 });
 
 //entretiens
 $routes->get('entretiens', 'Selection\EntretienController::page');
 
-$routes->group('api', static function ($routes) {
+$routes->group('api', ['filter' => 'auth'], static function ($routes) {
     // Liste et filtres
     $routes->get('entretiens', 'Selection\EntretienController::index');
     $routes->post('entretiens', 'Selection\EntretienController::planifier');

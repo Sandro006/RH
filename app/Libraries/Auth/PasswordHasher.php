@@ -14,6 +14,12 @@ class PasswordHasher
         return password_hash($motDePasseClair, PASSWORD_BCRYPT);
     }
 
+    /** Alias conservé pour les appels historiques et la conception. */
+    public function hacher(string $motDePasseClair): string
+    {
+        return $this->hasher($motDePasseClair);
+    }
+
     public function verifier(string $motDePasseClair, string $hash): bool
     {
         return password_verify($motDePasseClair, $hash);

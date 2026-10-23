@@ -1,0 +1,2 @@
+const offerId = new URLSearchParams(location.search).get('idOffre');
+api.get(`/api/offres/${offerId}/classement`).then(rows => { document.querySelector('#ranking').innerHTML = rows.map((row, index) => `<p>${index + 1}. Candidature #${row.idCandidature} — <strong>${row.noteMoyenne}/5</strong></p>`).join('') || 'Aucune candidature évaluée.'; }).catch(error => { document.querySelector('#ranking').textContent = error.message; });
