@@ -20,7 +20,8 @@ use App\Libraries\Common\WorkflowService;
 /**
  * Service métier du module Entretien (RH.md §II.B.1).
  *
- * Un entretien est planifié pour une candidature Présélectionnée.
+ * Un entretien est planifié pour une candidature Présélectionnée ou déjà marquée
+ * Entretien prévu.
  * À la réalisation, la candidature passe à En évaluation.
  */
 class EntretienService
@@ -61,9 +62,9 @@ class EntretienService
         }
 
         $statutCandidature = $this->designationCandidature($idCandidature);
-        if ($statutCandidature !== 'Présélectionnée') {
+        if (!in_array($statutCandidature, ['Présélectionnée', 'Entretien prévu'], true)) {
             throw new StatutInvalideException(
-                "La candidature doit être Présélectionnée (statut actuel : {$statutCandidature})"
+                "La candidature doit être Présélectionnée ou Entretien prévu (statut actuel : {$statutCandidature})"
             );
         }
 
@@ -101,11 +102,13 @@ class EntretienService
                 'commentaire'     => 'Planification de l\'entretien',
             ]);
 
-            $this->candidatureService->planifierEntretien(
-                $idCandidature,
-                ['date_entretien' => (string) $dateEntretien],
-                $u->toArray()
-            );
+            if ($statutCandidature !== 'Entretien prévu') {
+                $this->candidatureService->planifierEntretien(
+                    $idCandidature,
+                    ['date_entretien' => (string) $dateEntretien],
+                    $u->toArray()
+                );
+            }
 
             $this->auditService->journaliser(
                 $u->idUtilisateur,

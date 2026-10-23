@@ -124,6 +124,10 @@ class RecrutementController extends BaseController
     {
         return $this->ok((new CandidatureService())->historique($id));
     }
+    public function candidatureTransitions(int $id)
+    {
+        return $this->run(fn() => (new CandidatureService())->transitions($id));
+    }
     public function postuler(int $id)
     {
         $d = $this->data();
@@ -134,7 +138,7 @@ class RecrutementController extends BaseController
     {
         $s = new CandidatureService();
         $d = $this->data();
-        return $this->run(fn() => match ($a) { 'retirer' => $s->retirer($id), 'preselection' => $s->mettreEnPreselection($id), 'selectionner' => $s->preselectionner($id, (bool) ($d['retenir'] ?? true)), 'planifier-entretien' => $s->planifierEntretien($id, $d), 'evaluer' => $s->marquerEvaluee($id), 'retenir' => $s->retenir($id), 'refuser' => $s->refuser($id, $d['motif'] ?? null), default => throw new \InvalidArgumentException('Action inconnue')});
+        return $this->run(fn() => match ($a) { 'retirer' => $s->retirer($id), 'preselection' => $s->mettreEnPreselection($id), 'selectionner' => $s->preselectionner($id, (bool) ($d['retenir'] ?? true)), 'planifier-entretien' => $s->planifierEntretien($id, $d), 'evaluer' => $s->marquerEvaluee($id), 'retenir' => $s->retenir($id), 'refuser' => $s->refuser($id, $d['motif'] ?? null), 'statut' => $s->changerStatut($id, (string) ($d['statut'] ?? ''), $d['commentaire'] ?? null, $this->utilisateur()), default => throw new \InvalidArgumentException('Action inconnue')});
     }
     public function eligibilite(int $id)
     {

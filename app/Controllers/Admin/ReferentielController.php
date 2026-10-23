@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Admin;
 
 use App\Controllers\ApiController;
+use App\Models\Admin\EmployeModel;
 use App\Services\Common\ReferentielService;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -101,6 +102,13 @@ class ReferentielController extends ApiController
     {
         return $this->executer(fn (): array => [
             'donnees' => $this->service->lister('natures_revendication'),
+        ]);
+    }
+
+    public function employes(): ResponseInterface
+    {
+        return $this->executer(fn (): array => [
+            'donnees' => model(EmployeModel::class)->listerPourSelect(),
         ]);
     }
 

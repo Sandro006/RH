@@ -131,6 +131,16 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/selection/entretiens.js'],
         ],
+        'selection/entretien-form' => [
+            'vue'      => 'pages/selection/entretien-form',
+            'titre'    => 'Planifier un entretien · Gestion RH',
+            'actif'    => 'entretiens',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sélection'],
+            ],
+            'scripts'  => ['/assets/js/pages/selection/entretien-form.js'],
+        ],
         'personnel/salaries' => [
             'vue'      => 'pages/personnel/salaires',
             'titre'    => 'Salariés · Gestion RH',

@@ -21,6 +21,7 @@ $routes->group('recrutement', ['filter' => 'auth'], static function ($routes) {
 });
 
 $routes->get('selection/entretiens', 'Pages::afficher/selection/entretiens', ['filter' => 'auth']);
+$routes->get('selection/entretien-form', 'Pages::afficher/selection/entretien-form', ['filter' => 'auth']);
 $routes->get('selection/evaluation', 'Pages::afficher/selection/evaluation', ['filter' => 'auth']);
 $routes->get('selection/classement', 'Pages::afficher/selection/classement', ['filter' => 'auth']);
 
@@ -120,6 +121,7 @@ $routes->group('api', ['namespace' => 'App\\Controllers\\Recrutement', 'filter' 
     $routes->get('candidatures', 'RecrutementController::candidatures');
     $routes->get('candidatures/(:num)', 'RecrutementController::candidature/$1');
     $routes->get('candidatures/(:num)/historique', 'RecrutementController::candidatureHistorique/$1');
+    $routes->get('candidatures/(:num)/transitions', 'RecrutementController::candidatureTransitions/$1');
     $routes->post('offres/(:num)/candidatures', 'RecrutementController::postuler/$1');
     $routes->post('candidatures/(:num)/(:segment)', 'RecrutementController::actionCandidature/$1/$2');
 });
@@ -191,6 +193,7 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
     $routes->get('rangs', 'ReferentielController::rangs');
     $routes->get('types-contrat', 'ReferentielController::typesContrat');
     $routes->get('types-entretien', 'ReferentielController::typesEntretien');
+    $routes->get('employes', 'ReferentielController::employes');
     $routes->get('statuts/(:segment)', 'ReferentielController::statuts/$1');
 });
 

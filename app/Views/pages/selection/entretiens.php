@@ -1,6 +1,6 @@
 <?= view('partials/page-heading', [
     'heading' => 'Entretiens',
-    'actions' => view('partials/refresh-button'),
+    'actions' => '<a class="button button-primary" href="/selection/entretien-form">Nouvel entretien</a>' . view('partials/refresh-button'),
 ]) ?>
 
 <section class="card">
