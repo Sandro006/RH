@@ -3,7 +3,7 @@ document.querySelector('#evaluation-form').addEventListener('submit', async even
     event.preventDefault();
     const form = event.currentTarget;
     const values = Object.fromEntries(new FormData(form));
-    const criteres = Object.fromEntries(Object.entries(values).filter(([key]) => key !== 'commentaire'));
+    const criteres = Object.fromEntries(Object.entries(values).filter(([key]) => key !== 'commentaire').map(([key, value]) => [key, Number(value)]));
     try {
         await api.post(`/api/candidatures/${evaluationId}/evaluation`, { criteres, commentaire: values.commentaire });
         location.href = `evaluation-synthese.html?idCandidature=${evaluationId}`;

@@ -46,7 +46,7 @@ class EvaluationService
         $valeurs = [];
         foreach ($noms as $nom) {
             $valeur = $criteres[$nom] ?? $criteres[lcfirst($nom)] ?? null;
-            if (!is_numeric($valeur) || (float) $valeur < 0 || (float) $valeur > 5) {
+            if (!is_numeric($valeur) || (float) $valeur < 0 || (float) $valeur > 5 || floor((float) $valeur) !== (float) $valeur) {
                 throw new DonneesIncoherentesException("Le critère {$nom} doit être compris entre 0 et 5");
             }
             $valeurs[] = (float) $valeur;

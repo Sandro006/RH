@@ -45,3 +45,14 @@ const ui = {
         ui.toast(message);
     }
 };
+
+// Navigation commune des écrans applicatifs.
+(() => {
+    if (location.pathname.endsWith('/login.html') || document.querySelector('.module-nav')) return;
+    const nav = document.createElement('nav');
+    nav.className = 'module-nav';
+    nav.innerHTML = '<a href="/web/dashboard.html">Tableau de bord</a><a href="/web/pages/recrutement/demandes.html">Demandes</a><a href="/web/pages/recrutement/offres.html">Offres</a><a href="/web/pages/recrutement/candidatures.html">Candidatures</a><a href="/web/pages/selection/entretiens.html">Entretiens</a><a href="/web/pages/recrutement/propositions.html">Propositions</a><a href="/web/pages/personnel/salaires.html">Salariés</a><a href="/web/pages/personnel/contrats.html">Contrats</a><a href="/web/pages/personnel/onboardings.html">Onboarding</a>';
+    nav.style.cssText = 'display:flex;flex-wrap:wrap;gap:.45rem;padding:.6rem 1rem;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:.9rem;position:relative;z-index:2';
+    nav.querySelectorAll('a').forEach(link => { link.style.cssText = 'padding:.35rem .55rem;color:#172d51;text-decoration:none;border-radius:6px'; });
+    document.body.prepend(nav);
+})();
