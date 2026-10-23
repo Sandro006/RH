@@ -18,5 +18,6 @@
             </label>
             <button class="button-primary" type="submit">Se connecter</button>
         </form>
+        <p class="login-candidature">Vous souhaitez nous rejoindre ? <a href="/candidatures">Déposer une candidature</a></p>
     </section>
 </main>

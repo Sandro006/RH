@@ -4,6 +4,9 @@ $routes->get('/', 'Home::index');
 
 // pages rendues par CodeIgniter (layout + partials)
 $routes->get('login', 'Pages::login');
+$routes->get('candidatures', 'Recrutement\\CandidaturePubliqueController::offres');
+$routes->get('candidatures/postuler/(:num)', 'Recrutement\\CandidaturePubliqueController::formulaire/$1');
+$routes->post('api/public/offres/(:num)/candidatures', 'Recrutement\\CandidaturePubliqueController::deposer/$1');
 $routes->get('dashboard', 'Pages::dashboard', ['filter' => 'auth']);
 
 $routes->group('recrutement', ['filter' => 'auth'], static function ($routes) {

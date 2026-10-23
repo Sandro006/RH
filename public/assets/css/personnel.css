@@ -72,6 +72,13 @@ tbody tr:hover { background: #fafcff; }.badge { display: inline-block; padding: 
 .login-form form { display: grid; gap: 1.1rem; }
 .login-form button { width: 100%; margin-top: .5rem; }
 .login-error { padding: .75rem; border-radius: 9px; color: #a42f3e; background: #ffe5e8; }
+.login-candidature { margin: 1.5rem 0 0; text-align: center; }
+.public-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem clamp(1rem, 5vw, 5rem); color: #fff; background: var(--navy); }
+.public-header .brand { font-size: 1.05rem; }.public-main { width: min(1040px, 100%); min-height: calc(100vh - 66px); padding-top: 3rem; padding-bottom: 3rem; }
+.public-hero { max-width: 680px; margin-bottom: 2rem; }.public-hero p { color: var(--muted); font-size: 1.05rem; }
+.offers-list { display: grid; gap: 1rem; }.public-offer { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; }.public-offer h2 { font-size: 1.2rem; }.public-offer p { margin-bottom: 0; white-space: pre-line; }.public-offer-meta { margin: .45rem 0; color: var(--muted); font-size: .9rem; }
+.application-summary { margin-bottom: 1.25rem; padding: 1rem 1.1rem; color: #334155; background: var(--primary-soft); border-radius: 10px; }.application-summary strong { color: var(--navy); }
+@media (max-width: 600px) { .public-offer { flex-direction: column; }.public-offer .button { width: 100%; }.public-header { align-items: flex-start; flex-direction: column; } }
 .password { position: relative; }
 .password button { position: absolute; right: .35rem; top: 1.95rem; width: auto; margin: 0; padding: .35rem .5rem; color: #64748b; background: transparent; box-shadow: none; }
 .grille-note { margin-bottom: 1rem; padding: .85rem 1rem; background: #f5f8ff; border: 1px solid #d9e4fb; border-radius: 10px; }
