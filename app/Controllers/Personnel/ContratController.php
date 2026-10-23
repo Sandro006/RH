@@ -37,6 +37,8 @@ class ContratController extends BaseController
             'statut'        => $this->request->getGet('statut'),
             'idSalarie'     => $this->request->getGet('idSalarie'),
             'typeContratId' => $this->request->getGet('typeContratId'),
+            'tri'           => $this->request->getGet('tri'),
+            'ordre'         => $this->request->getGet('ordre'),
         ];
         return $this->response->setJSON($this->service->lister($filtre));
     }

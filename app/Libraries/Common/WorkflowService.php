@@ -14,9 +14,9 @@ use CodeIgniter\Database\BaseConnection;
 class WorkflowService
 {
     private const CONFIGURATIONS = [
-        'demande' => ['table' => 'demande_recrutement', 'id' => 'id_demande', 'status' => 'status', 'history' => 'demande_recrutement_status_historique'],
-        'offre' => ['table' => 'offre_emploi', 'id' => 'id_offre', 'status' => 'status', 'history' => 'offre_emploi_status_historique'],
-        'candidature' => ['table' => 'candidature', 'id' => 'id_candidature', 'status' => 'status', 'history' => 'candidature_status_historique'],
+        'demande' => ['table' => 'demande_recrutement', 'id' => 'id_demande', 'status' => 'statut', 'history' => 'demande_recrutement_status_historique'],
+        'offre' => ['table' => 'offre_emploi', 'id' => 'id_offre', 'status' => 'statut', 'history' => 'offre_emploi_status_historique'],
+        'candidature' => ['table' => 'candidature', 'id' => 'id_candidature', 'status' => 'statut', 'history' => 'candidature_status_historique'],
         'entretien' => ['table' => 'entretien', 'id' => 'id_entretien', 'status' => 'statut', 'history' => 'entretien_status_historique'],
         'proposition' => ['table' => 'proposition_embauche', 'id' => 'id_proposition', 'status' => 'statut', 'history' => 'proposition_embauche_status_historique'],
         'revendication' => ['table' => 'revendication', 'id' => 'id_revendication', 'status' => 'statut_id', 'history' => 'revendication_status_historique'],
@@ -79,8 +79,9 @@ class WorkflowService
 
         $db->table($configuration['history'])->insert([
             $this->historyIdColumn($entite) => $id,
-            'statut_ancien' => $ancien !== null ? (int) $ancien : null,
+            'statut_ancien' => $ancien !== null ? (int) $ancien : $nouvelId,
             'statut_nouveau' => $nouvelId,
+            'date_changement' => date('Y-m-d H:i:s'),
             'id_utilisateur' => $utilisateur?->idUtilisateur,
             'commentaire' => $commentaire,
         ]);

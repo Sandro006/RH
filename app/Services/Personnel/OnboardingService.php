@@ -11,7 +11,6 @@ use App\Models\Personnel\TacheModel;
 use App\Models\Personnel\StatusTacheModel;
 use App\Models\Personnel\TacheHistoriqueModel;
 use App\Models\Personnel\SalarieModel;
-use App\Entities\Personnel\Onboarding;
 use App\Entities\Personnel\TacheOnboarding;
 use App\Exceptions\ObjetIntrouvableException;
 use App\Exceptions\StatutInvalideException;
@@ -19,6 +18,7 @@ use App\Exceptions\ConflitException;
 use App\Exceptions\AccesRefuseException;
 use App\Libraries\Common\AuditService;
 use App\Libraries\Common\SessionUtilisateur;
+use App\Libraries\Common\Tri;
 use App\Libraries\Common\WorkflowService;
 
 class OnboardingService
@@ -307,21 +307,48 @@ class OnboardingService
     }
 
     // consulter
-    public function consulter(int $idOnboarding): ?Onboarding
+    public function consulter(int $idOnboarding): ?array
     {
-        return $this->onboardingModel->find($idOnboarding);
+        $row = $this->requeteOnboardings()
+            ->where('o.id_onboarding', $idOnboarding)
+            ->get()
+            ->getRowArray();
+
+        return $row;
     }
 
     // lister
     public function lister(array $filtre = []): array
     {
+        $requete = $this->requeteOnboardings();
+
         if (!empty($filtre['statut'])) {
-            $this->onboardingModel->where('statut', $filtre['statut']);
+            $statut = is_numeric($filtre['statut'])
+                ? (int) $filtre['statut']
+                : $this->statusModel->idParDesignation((string) $filtre['statut']);
+            $requete->where('o.statut', $statut);
         }
         if (!empty($filtre['idSalarie'])) {
-            $this->onboardingModel->where('id_salarie', $filtre['idSalarie']);
+            $requete->where('o.id_salarie', $filtre['idSalarie']);
         }
-        return $this->onboardingModel->findAll();
+
+        [$colonne, $ordre] = Tri::resoudre($filtre, [
+            'id_onboarding' => 'o.id_onboarding',
+            'id_salarie'    => 'o.id_salarie',
+            'date_debut'    => 'o.date_debut',
+            'date_fin'      => 'o.date_fin',
+            'statut'        => 'so.designation',
+        ], 'o.date_debut', 'DESC');
+
+        return $requete->orderBy($colonne, $ordre)->get()->getResultArray();
+    }
+
+    private function requeteOnboardings()
+    {
+        return $this->onboardingModel->db->table('onboarding o')
+            ->select('o.*, so.designation AS statut_designation, s.nom AS salarie_nom, s.prenom AS salarie_prenom')
+            ->join('status_onboarding so', 'so.id = o.statut', 'left')
+            ->join('salarie s', 's.id_salarie = o.id_salarie', 'left');
     }
 
     // historique

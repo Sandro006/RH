@@ -46,17 +46,13 @@ class ReferentielController extends ApiController
         ]);
     }
 
-    public function grilles(int $idPoste): ResponseInterface
+    public function grilles(): ResponseInterface
     {
-        return $this->executer(function () use ($idPoste): array {
-            $grille = $this->service->grilleActive($idPoste);
-
-            if ($grille === null) {
-                return ['donnees' => null];
-            }
-
-            return ['donnees' => $grille];
-        });
+        return $this->executer(fn (): array => [
+            'donnees' => $this->service->lister('grilles', [
+                'idPoste' => (int) $this->request->getGet('idPoste'),
+            ]),
+        ]);
     }
 
     public function grillesPoste(int $idPoste): ResponseInterface

@@ -9,7 +9,7 @@ class EntretienModel extends Model
     protected $table            = 'entretien';
     protected $primaryKey       = 'id_entretien';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
+    protected $returnType       = 'object';
     protected $protectFields    = true;
 
     protected $allowedFields = [

@@ -10,7 +10,6 @@ use App\Models\Personnel\ContratHistoriqueModel;
 use App\Models\Personnel\SalarieModel;
 use App\Models\Personnel\StatusSalarieModel;
 use App\Models\Personnel\AffectationModel;
-use App\Entities\Personnel\Contrat;
 use App\Exceptions\ObjetIntrouvableException;
 use App\Exceptions\StatutInvalideException;
 use App\Exceptions\DonneesIncoherentesException;
@@ -18,6 +17,7 @@ use App\Exceptions\ConflitException;
 use App\Exceptions\AccesRefuseException;
 use App\Libraries\Common\AuditService;
 use App\Libraries\Common\SessionUtilisateur;
+use App\Libraries\Common\Tri;
 use App\Libraries\Common\WorkflowService;
 
 /**
@@ -394,24 +394,53 @@ class ContratService
     }
 
     // consulter
-    public function consulter(int $idContrat): ?Contrat
+    public function consulter(int $idContrat): ?array
     {
-        return $this->contratModel->find($idContrat);
+        $row = $this->requeteContrats()
+            ->where('c.id_contrat', $idContrat)
+            ->get()
+            ->getRowArray();
+
+        return $row;
     }
 
     // lister
     public function lister(array $filtre = []): array
     {
+        $requete = $this->requeteContrats();
+
         if (!empty($filtre['statut'])) {
-            $this->contratModel->where('statut', $filtre['statut']);
+            $statut = is_numeric($filtre['statut'])
+                ? (int) $filtre['statut']
+                : $this->statusModel->idParDesignation((string) $filtre['statut']);
+            $requete->where('c.statut', $statut);
         }
         if (!empty($filtre['idSalarie'])) {
-            $this->contratModel->where('id_salarie', $filtre['idSalarie']);
+            $requete->where('c.id_salarie', $filtre['idSalarie']);
         }
         if (!empty($filtre['typeContratId'])) {
-            $this->contratModel->where('type_contrat_id', $filtre['typeContratId']);
+            $requete->where('c.type_contrat_id', $filtre['typeContratId']);
         }
-        return $this->contratModel->findAll();
+
+        [$colonne, $ordre] = Tri::resoudre($filtre, [
+            'id_contrat'    => 'c.id_contrat',
+            'id_salarie'    => 'c.id_salarie',
+            'date_debut'    => 'c.date_debut',
+            'date_fin'      => 'c.date_fin',
+            'salaire_base'  => 'c.salaire_base',
+            'statut'        => 'sc.designation',
+        ], 'c.date_debut', 'DESC');
+
+        return $requete->orderBy($colonne, $ordre)->get()->getResultArray();
+    }
+
+    private function requeteContrats()
+    {
+        return $this->contratModel->db->table('contrat c')
+            ->select('c.*, sc.designation AS statut_designation, tc.designation AS type_contrat_designation, s.nom AS salarie_nom, s.prenom AS salarie_prenom')
+            ->join('status_contrat sc', 'sc.id = c.statut', 'left')
+            ->join('type_contrat tc', 'tc.id = c.type_contrat_id', 'left')
+            ->join('salarie s', 's.id_salarie = c.id_salarie', 'left');
     }
 
     // historique

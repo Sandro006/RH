@@ -1,8 +1,39 @@
 <?php
 
 $routes->get('/', 'Home::index');
-$routes->get('web/(.*)', 'WebController::asset/$1');
-$routes->get('web/(:any)', 'WebController::asset/$1');
+
+// pages rendues par CodeIgniter (layout + partials)
+$routes->get('login', 'Pages::login');
+$routes->get('dashboard', 'Pages::dashboard', ['filter' => 'auth']);
+
+$routes->group('recrutement', ['filter' => 'auth'], static function ($routes) {
+    $routes->get('demandes', 'Pages::afficher/recrutement/demandes');
+    $routes->get('demande-form', 'Pages::afficher/recrutement/demande-form');
+    $routes->get('demande', 'Pages::afficher/recrutement/demande');
+    $routes->get('demande-edit', 'Pages::afficher/recrutement/demande-edit');
+    $routes->get('offres', 'Pages::afficher/recrutement/offres');
+    $routes->get('candidatures', 'Pages::afficher/recrutement/candidatures');
+});
+
+$routes->get('selection/entretiens', 'Pages::afficher/selection/entretiens', ['filter' => 'auth']);
+
+$routes->group('personnel', ['filter' => 'auth'], static function ($routes) {
+    $routes->get('salaries', 'Pages::afficher/personnel/salaries');
+    $routes->get('salarie', 'Pages::afficher/personnel/salarie');
+    $routes->get('grille', 'Pages::afficher/personnel/grille');
+    $routes->get('contrats', 'Pages::afficher/personnel/contrats');
+    $routes->get('contrat', 'Pages::afficher/personnel/contrat');
+    $routes->get('contrat-form', 'Pages::afficher/personnel/contrat-form');
+    $routes->get('contrat-avenant-form', 'Pages::afficher/personnel/contrat-avenant-form');
+    $routes->get('affectation-form', 'Pages::afficher/personnel/affectation-form');
+    $routes->get('onboardings', 'Pages::afficher/personnel/onboardings');
+    $routes->get('onboarding', 'Pages::afficher/personnel/onboarding');
+    $routes->get('document-form', 'Pages::afficher/personnel/document-form');
+});
+
+$routes->get('profil/mot-de-passe', 'Pages::afficher/profil/mot-de-passe', ['filter' => 'auth']);
+
+// ressources statiques servies depuis public/assets
 $routes->get('api/dashboard', 'DashboardController::index', ['filter' => 'auth']);
 $routes->group('api/auth', ['namespace' => 'App\\Controllers\\Auth'], static function ($routes) {
     $routes->post('login', 'AuthController::login');
@@ -17,6 +48,50 @@ $routes->group('api/utilisateurs', ['namespace' => 'App\\Controllers\\Admin', 'f
     $routes->post('(:num)/activer', 'UtilisateurController::activer/$1');
     $routes->post('(:num)/desactiver', 'UtilisateurController::desactiver/$1');
     $routes->post('(:num)/reinitialiser-mot-de-passe', 'UtilisateurController::reinitialiser/$1');
+});
+
+// sélection : entretiens, évaluations, décision finale
+$routes->group('api', ['namespace' => 'App\\Controllers\\Selection', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('entretiens', 'EntretienController::index');
+    $routes->post('entretiens', 'EntretienController::planifier');
+    $routes->get('entretiens/(:num)', 'EntretienController::show/$1');
+    $routes->post('entretiens/(:num)/confirmer', 'EntretienController::confirmer/$1');
+    $routes->post('entretiens/(:num)/reporter', 'EntretienController::reporter/$1');
+    $routes->post('entretiens/(:num)/realiser', 'EntretienController::realiser/$1');
+    $routes->post('entretiens/(:num)/annuler', 'EntretienController::annuler/$1');
+    $routes->get('entretiens/(:num)/historique', 'EntretienController::historique/$1');
+    $routes->get('candidatures/(:num)/entretiens', 'EntretienController::listerParCandidature/$1');
+    $routes->post('offres/(:num)/entretiens', 'EntretienController::planifierPourOffre/$1');
+
+    $routes->get('evaluations/(:num)', 'EvaluationController::show/$1');
+    $routes->get('candidatures/(:num)/evaluations', 'EvaluationController::listerParCandidature/$1');
+    $routes->post('candidatures/(:num)/evaluations', 'EvaluationController::evaluer/$1');
+    $routes->get('candidatures/(:num)/evaluations/synthese', 'EvaluationController::synthese/$1');
+    $routes->get('offres/(:num)/evaluations', 'EvaluationController::listerParOffre/$1');
+
+    $routes->get('offres/(:num)/classement', 'SelectionController::classement/$1');
+    $routes->get('offres/(:num)/candidats-eligibles', 'SelectionController::eligibles/$1');
+    $routes->post('candidatures/(:num)/retenir', 'SelectionController::retenir/$1');
+    $routes->post('candidatures/(:num)/refuser', 'SelectionController::refuser/$1');
+    $routes->post('candidatures/(:num)/decision', 'SelectionController::decider/$1');
+});
+
+// propositions d'embauche et négociation
+$routes->group('api', ['namespace' => 'App\\Controllers\\Personnel', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('propositions', 'PropositionEmbaucheController::index');
+    $routes->post('propositions', 'PropositionEmbaucheController::create');
+    $routes->get('propositions/(:num)', 'PropositionEmbaucheController::show/$1');
+    $routes->post('propositions/(:num)/envoyer', 'PropositionEmbaucheController::envoyer/$1');
+    $routes->post('propositions/(:num)/repondre', 'PropositionEmbaucheController::repondre/$1');
+    $routes->post('propositions/(:num)/contre-proposer', 'PropositionEmbaucheController::contreProposer/$1');
+    $routes->post('propositions/(:num)/expirer', 'PropositionEmbaucheController::expirer/$1');
+    $routes->get('propositions/(:num)/historique', 'PropositionEmbaucheController::historique/$1');
+    $routes->get('propositions/(:num)/revendications', 'PropositionEmbaucheController::listerRevendications/$1');
+    $routes->post('propositions/(:num)/revendications', 'PropositionEmbaucheController::soumettreRevendication/$1');
+    $routes->get('candidatures/(:num)/proposition', 'PropositionEmbaucheController::parCandidature/$1');
+    $routes->post('revendications/(:num)/repondre', 'PropositionEmbaucheController::repondreRevendication/$1');
+    $routes->post('revendications/(:num)/retirer', 'PropositionEmbaucheController::retirerRevendication/$1');
+    $routes->get('revendications/(:num)/historique', 'PropositionEmbaucheController::historiqueRevendication/$1');
 });
 
 $routes->group('api', ['namespace' => 'App\\Controllers\\Recrutement', 'filter' => 'auth'], static function ($routes) {
@@ -104,6 +179,8 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
     $routes->get('departements', 'ReferentielController::departements');
     $routes->get('services', 'ReferentielController::services');
     $routes->get('postes', 'ReferentielController::postes');
+    $routes->get('grilles', 'ReferentielController::grilles');
+    $routes->get('grilles/(:num)', 'ReferentielController::grillesPoste/$1');
     $routes->get('rangs', 'ReferentielController::rangs');
     $routes->get('types-contrat', 'ReferentielController::typesContrat');
     $routes->get('types-entretien', 'ReferentielController::typesEntretien');
@@ -119,16 +196,3 @@ $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], st
 
 //entretiens
 $routes->get('entretiens', 'Selection\EntretienController::page');
-
-$routes->group('api', static function ($routes) {
-    // Liste et filtres
-    $routes->get('entretiens', 'Selection\EntretienController::index');
-    $routes->post('entretiens', 'Selection\EntretienController::planifier');
-    // Consulter les détails
-    $routes->get('entretiens/(:num)', 'Selection\EntretienController::show/$1');
-    $routes->post('entretiens/(:num)/confirmer', 'Selection\EntretienController::confirmer/$1');
-    $routes->post('entretiens/(:num)/reporter', 'Selection\EntretienController::reporter/$1');
-    $routes->post('entretiens/(:num)/realiser', 'Selection\EntretienController::realiser/$1');
-    $routes->post('entretiens/(:num)/annuler', 'Selection\EntretienController::annuler/$1');
-    $routes->get('entretiens/(:num)/historique', 'Selection\EntretienController::historique/$1');
-});

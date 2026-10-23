@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace App\Services\Recrutement;
 use App\Models\Recrutement\{CandidatModel,CandidatureModel};
+use App\Libraries\Common\Tri;
 
 class CandidatureService extends RecruitmentService
 {
@@ -20,6 +21,6 @@ class CandidatureService extends RecruitmentService
     public function retenir(int $id,?array $u=null):void{$this->change($id,'Retenue',$u);}
     public function refuser(int $id,?string $motif=null,?array $u=null):void{$this->change($id,'Refusée',$u,$motif);}
     public function consulter(int $id):?array{return$this->model->find($id);}
-    public function lister(array $f=[]):array{$q=$this->db->table('candidature c')->select('c.*, sc.designation AS statut_designation, ca.nom, ca.prenom, o.titre AS offre_titre')->join('status_candidature sc','sc.id=c.statut','left')->join('candidat ca','ca.id_candidat=c.id_candidat','left')->join('offre_emploi o','o.id_offre=c.id_offre','left');foreach(['id_offre','statut','origine_candidature']as$x)if(isset($f[$x])&&$f[$x]!=='')$q->where('c.'.$x,$f[$x]);return$q->orderBy('c.id_candidature','DESC')->get()->getResultArray();}
+    public function lister(array $f=[]):array{$q=$this->db->table('candidature c')->select('c.*, sc.designation AS statut_designation, ca.nom, ca.prenom, o.titre AS offre_titre')->join('status_candidature sc','sc.id=c.statut','left')->join('candidat ca','ca.id_candidat=c.id_candidat','left')->join('offre_emploi o','o.id_offre=c.id_offre','left');foreach(['id_offre','statut','origine_candidature']as$x)if(isset($f[$x])&&$f[$x]!=='')$q->where('c.'.$x,$f[$x]);[$colonne,$ordre]=Tri::resoudre($f,['id_candidature'=>'c.id_candidature','candidat'=>'ca.nom','offre'=>'o.titre','origine'=>'c.origine_candidature','statut'=>'sc.designation'],'c.id_candidature','DESC');return$q->orderBy($colonne,$ordre)->get()->getResultArray();}
     public function historique(int $id):array{return$this->db->table('candidature_status_historique')->where('id_candidature',$id)->orderBy('date_changement')->get()->getResultArray();}
 }

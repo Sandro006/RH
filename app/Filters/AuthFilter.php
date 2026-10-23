@@ -16,6 +16,7 @@ class AuthFilter implements FilterInterface
         'api/auth/mot-de-passe',
         'api/auth/logout',
         'api/auth/session',
+        'profil/mot-de-passe',
     ];
 
     public function before(RequestInterface $request, $arguments = null)
@@ -46,10 +47,14 @@ class AuthFilter implements FilterInterface
         }
 
         if ($compte->doit_changer_mot_de_passe && !$routeAutorisee) {
-            return service('response')->setStatusCode(403)->setJSON([
-                'error'   => 'CHANGEMENT_MOT_DE_PASSE_REQUIS',
-                'message' => 'Vous devez changer votre mot de passe avant de continuer',
-            ]);
+            if ($this->veutJson($request)) {
+                return service('response')->setStatusCode(403)->setJSON([
+                    'error'   => 'CHANGEMENT_MOT_DE_PASSE_REQUIS',
+                    'message' => 'Vous devez changer votre mot de passe avant de continuer',
+                ]);
+            }
+
+            return service('response')->redirect('/profil/mot-de-passe');
         }
 
         return null;
@@ -68,7 +73,7 @@ class AuthFilter implements FilterInterface
             ]);
         }
 
-        return service('response')->redirect('/login.html');
+        return service('response')->redirect('/login');
     }
 
     private function veutJson(RequestInterface $request): bool

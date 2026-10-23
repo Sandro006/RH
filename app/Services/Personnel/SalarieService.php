@@ -19,6 +19,7 @@ use App\Exceptions\ConflitException;
 use App\Exceptions\AccesRefuseException;
 use App\Libraries\Common\AuditService;
 use App\Libraries\Common\SessionUtilisateur;
+use App\Libraries\Common\Tri;
 use App\Libraries\Common\WorkflowService;
 
 /**
@@ -272,7 +273,7 @@ class SalarieService
     // lister
     public function lister(array $filtre = []): array
     {
-        $requete = $this->requeteSalaries()->orderBy('s.matricule', 'ASC');
+        $requete = $this->requeteSalaries();
 
         if (!empty($filtre['statut'])) {
             $requete->where('s.statut', (int) $filtre['statut']);
@@ -284,7 +285,17 @@ class SalarieService
             $requete->where('d.id_departement', (int) $filtre['id_departement']);
         }
 
-        return $requete->get()->getResultArray();
+        [$colonne, $ordre] = Tri::resoudre($filtre, [
+            'id_salarie'    => 's.id_salarie',
+            'matricule'     => 's.matricule',
+            'nom'           => 's.nom',
+            'email'         => 's.email',
+            'date_embauche' => 's.date_embauche',
+            'poste'         => 'p.intitule',
+            'statut'        => 'ss.designation',
+        ], 's.matricule', 'ASC');
+
+        return $requete->orderBy($colonne, $ordre)->get()->getResultArray();
     }
 
     private function requeteSalaries()

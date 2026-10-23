@@ -68,6 +68,74 @@ class Services extends BaseService
 		return new \App\Libraries\Common\WorkflowService(db_connect());
 	}
 
+	public static function candidatureService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('candidatureService');
+		return new \App\Services\Recrutement\CandidatureService(db_connect());
+	}
+
+	public static function entretienService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('entretienService');
+		return new \App\Services\Selection\EntretienService(
+			model(\App\Models\Selection\EntretienModel::class),
+			model(\App\Models\Selection\StatusEntretienModel::class),
+			model(\App\Models\Selection\HistoriqueEntretienModel::class),
+			service('candidatureService'),
+			service('auditService'),
+			service('workflowService'),
+		);
+	}
+
+	public static function evaluationService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('evaluationService');
+		return new \App\Services\Selection\EvaluationService(
+			model(\App\Models\Selection\EvaluationCandidatModel::class),
+			service('candidatureService'),
+			service('auditService'),
+		);
+	}
+
+	public static function selectionService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('selectionService');
+		return new \App\Services\Selection\SelectionService(
+			service('evaluationService'),
+			service('candidatureService'),
+			model(\App\Models\Personnel\ReadModels\CandidatureReadModel::class),
+			service('auditService'),
+		);
+	}
+
+	public static function propositionEmbaucheService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('propositionEmbaucheService');
+		return new \App\Services\Personnel\PropositionEmbaucheService(
+			model(\App\Models\Personnel\PropositionEmbaucheModel::class),
+			model(\App\Models\Personnel\RevendicationModel::class),
+			model(\App\Models\Personnel\ReadModels\StatusPropositionReadModel::class),
+			model(\App\Models\Personnel\ReadModels\CandidatureReadModel::class),
+			service('grilleService'),
+			service('auditService'),
+			service('workflowService'),
+		);
+	}
+
+	public static function revendicationService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('revendicationService');
+		return new \App\Services\Personnel\RevendicationService(
+			model(\App\Models\Personnel\RevendicationModel::class),
+			model(\App\Models\Personnel\StatusRevendicationModel::class),
+			model(\App\Models\Personnel\NatureRevendicationModel::class),
+			model(\App\Models\Personnel\ReadModels\StatusPropositionReadModel::class),
+			service('propositionEmbaucheService'),
+			service('auditService'),
+			service('workflowService'),
+		);
+	}
+
 	public static function referentielService(bool $getShared = true)
 	{
 		if ($getShared) return static::getSharedInstance('referentielService');

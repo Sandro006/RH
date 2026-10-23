@@ -128,7 +128,11 @@ class DashboardService
             $utilisateur->idEmploye
         ));
 
-        return $this->ligne('demandesAModifier', 'Mes demandes à compléter', $nombre, 'pages/recrutement/demandes.html');
+        $lien = $utilisateur->idEmploye !== null
+            ? '/recrutement/demandes?id_demandeur=' . $utilisateur->idEmploye
+            : '/recrutement/demandes';
+
+        return $this->ligne('demandesAModifier', 'Mes demandes à compléter', $nombre, $lien);
     }
 
     private function actionsControleGestion(): array
@@ -137,7 +141,7 @@ class DashboardService
             ['En validation budgétaire']
         ));
 
-        return $this->ligne('validationsBudget', 'Demandes à valider (budget)', $nombre, 'pages/recrutement/demandes.html?statut=En%20validation%20budg%C3%A9taire');
+        return $this->ligne('validationsBudget', 'Demandes à valider (budget)', $nombre, '/recrutement/demandes?statut=En%20validation%20budg%C3%A9taire');
     }
 
     private function actionsDirection(): array
@@ -146,7 +150,7 @@ class DashboardService
             ['En validation hiérarchique']
         ));
 
-        return $this->ligne('validationsHierarchiques', 'Demandes à valider (hiérarchie)', $nombre, 'pages/recrutement/demandes.html?statut=En%20validation%20hi%C3%A9rarchique');
+        return $this->ligne('validationsHierarchiques', 'Demandes à valider (hiérarchie)', $nombre, '/recrutement/demandes?statut=En%20validation%20hi%C3%A9rarchique');
     }
 
     private function actionsRh(): array
@@ -156,7 +160,7 @@ class DashboardService
         $onboarding = $this->compterSecurise(fn (): int => $this->compterTachesOnboardingEnRetard());
 
         return [
-            ...$this->ligne('controlesRh', 'Demandes à contrôler', $demandes, 'pages/recrutement/demandes.html?statut=En%20contr%C3%B4le%20RH'),
+            ...$this->ligne('controlesRh', 'Demandes à contrôler', $demandes, '/recrutement/demandes?statut=En%20contr%C3%B4le%20RH'),
             ...$this->ligne('propositionsAEnvoyer', 'Propositions à envoyer', $propositions, 'pages/recrutement/propositions.html'),
             ...$this->ligne('onboardingEnRetard', 'Tâches d’onboarding en retard', $onboarding, 'pages/personnel/onboarding.html'),
         ];

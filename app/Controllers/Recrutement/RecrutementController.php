@@ -2,12 +2,17 @@
 declare(strict_types=1);
 namespace App\Controllers\Recrutement;
 use App\Controllers\BaseController;
+use App\Libraries\Common\SessionUtilisateur;
 use App\Services\Recrutement\{DemandeRecrutementService, OffreEmploiService, CandidatureService, EligibiliteService};
 class RecrutementController extends BaseController
 {
     private function data(): array
     {
         return $this->request->getJSON(true) ?? $this->request->getPost();
+    }
+    private function utilisateur(): ?array
+    {
+        return SessionUtilisateur::courante()?->toArray();
     }
     private function ok($data, int $code = 200)
     {
@@ -33,11 +38,11 @@ class RecrutementController extends BaseController
     }
     public function creerDemande()
     {
-        return $this->run(fn() => (new DemandeRecrutementService())->creer($this->data()));
+        return $this->run(fn() => (new DemandeRecrutementService())->creer($this->data(), $this->utilisateur()));
     }
     public function modifierDemande(int $id)
     {
-        return $this->run(fn() => (new DemandeRecrutementService())->modifier($id, $this->data()) ?? true);
+        return $this->run(fn() => (new DemandeRecrutementService())->modifier($id, $this->data(), $this->utilisateur()) ?? true);
     }
     public function demandeHistorique(int $id)
     {
@@ -49,13 +54,14 @@ class RecrutementController extends BaseController
     }
     public function demandeValidations(int $id)
     {
-        return $this->ok(db_connect()->table('validation')->where('id_demande', $id)->orderBy('date_validation', 'DESC')->get()->getResultArray());
+        return $this->ok((new DemandeRecrutementService())->validations($id));
     }
     public function actionDemande(int $id, string $a)
     {
         $s = new DemandeRecrutementService();
         $d = $this->data();
-        return $this->run(fn() => match ($a) { 'soumettre' => $s->soumettre($id), 'controle-rh' => $s->controlerRh($id, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? ''), 'validation-budget' => $s->validerBudget($id, $d['montant_approuve'] ?? null, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? ''), 'validation-hierarchie' => $s->validerHierarchie($id, $d['decision'] ?? 'FEU_VERT', (bool) ($d['consultation'] ?? false), $d['commentaire'] ?? ''), 'consultation' => $s->demanderConsultation($id, $d['delai'] ?? null), 'cloture-consultation' => $s->cloturerConsultation($id, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? ''), 'feu-vert' => $s->donnerFeuVert($id, $d['canal_diffusion'] ?? null), 'annuler' => $s->annuler($id, $d['motif'] ?? null), default => throw new \InvalidArgumentException('Action inconnue')});
+        $u = $this->utilisateur();
+        return $this->run(fn() => match ($a) { 'soumettre' => $s->soumettre($id, $u), 'controle-rh' => $s->controlerRh($id, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? '', null, $u), 'validation-budget' => $s->validerBudget($id, $d['montant_approuve'] ?? null, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? '', null, $u), 'validation-hierarchie' => $s->validerHierarchie($id, $d['decision'] ?? 'FEU_VERT', (bool) ($d['consultation'] ?? false), $d['commentaire'] ?? '', null, $u), 'consultation' => $s->demanderConsultation($id, $d['delai'] ?? null, $u), 'cloture-consultation' => $s->cloturerConsultation($id, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? '', null, $u), 'feu-vert' => $s->donnerFeuVert($id, $d['canal_diffusion'] ?? null, $u), 'annuler' => $s->annuler($id, $d['motif'] ?? null, $u), default => throw new \InvalidArgumentException('Action inconnue')});
     }
     public function offres()
     {

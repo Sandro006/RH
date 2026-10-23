@@ -32,6 +32,8 @@ class OnboardingController extends BaseController
         $filtre = [
             'statut'     => $this->request->getGet('statut'),
             'idSalarie'  => $this->request->getGet('idSalarie'),
+            'tri'        => $this->request->getGet('tri'),
+            'ordre'      => $this->request->getGet('ordre'),
         ];
         return $this->response->setJSON($this->service->lister($filtre));
     }
