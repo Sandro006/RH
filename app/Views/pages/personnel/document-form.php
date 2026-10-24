@@ -1,7 +1,7 @@
 <?= view('partials/page-heading', ['heading' => 'Ajouter un document']) ?>
 
 <section class="card">
-    <form id="document-form" class="form-grid">
+    <form id="document-form" class="form-grid insertion-form">
         <label>Type de document
             <select name="typeDocument" required>
                 <option value="">Choisir…</option>

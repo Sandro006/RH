@@ -6,7 +6,7 @@
 <div id="message" hidden></div>
 
 <section class="card" style="max-width:900px">
-    <form id="offre-form" class="form-grid">
+    <form id="offre-form" class="form-grid insertion-form">
         <label>Titre <input name="titre" required maxlength="200"></label>
         <label>Date de clôture <input name="date_cloture" type="date"></label>
         <fieldset class="field-wide">

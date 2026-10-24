@@ -8,7 +8,7 @@
     <div id="application-success" class="success hidden" role="status"></div>
     <form id="application-form" class="card" enctype="multipart/form-data" data-offer-id="<?= esc((string) $offreId) ?>">
         <div id="application-offer" class="application-summary">Chargement de l’offre…</div>
-        <div class="form-grid">
+        <div class="form-grid insertion-form">
             <label>Nom *<input name="nom" maxlength="150" autocomplete="family-name" required></label>
             <label>Prénom *<input name="prenom" maxlength="150" autocomplete="given-name" required></label>
             <label>Adresse e-mail *<input name="email" type="email" maxlength="200" autocomplete="email" required></label>

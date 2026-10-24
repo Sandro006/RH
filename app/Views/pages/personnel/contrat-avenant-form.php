@@ -1,7 +1,7 @@
 <?= view('partials/page-heading', ['heading' => 'Avenant / Renouvellement']) ?>
 
 <section class="card">
-    <form id="amendment-form" class="form-grid">
+    <form id="amendment-form" class="form-grid insertion-form">
         <label>Type
             <select name="type" required>
                 <option value="avenant">Avenant</option>

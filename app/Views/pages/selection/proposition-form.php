@@ -4,7 +4,7 @@
 ]) ?>
 
 <section class="card">
-    <form id="proposition-form" class="form-grid">
+    <form id="proposition-form" class="form-grid insertion-form">
         <label class="field-wide">Candidature retenue
             <select name="idCandidature" required>
                 <option value="">Chargement…</option>

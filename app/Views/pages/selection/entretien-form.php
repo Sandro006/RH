@@ -7,7 +7,7 @@
 
 <section class="card" style="max-width:900px">
     <form id="entretien-form">
-        <div class="form-grid">
+        <div class="form-grid insertion-form">
             <label>Candidat<select id="entretien-candidat" name="idCandidature" required></select></label>
             <label>Recruteur<select id="entretien-recruteur" name="idRecruteur" required></select></label>
             <label>Date et heure<input id="entretien-date" name="dateEntretien" type="datetime-local" required></label>

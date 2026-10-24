@@ -5,7 +5,7 @@
 
 <section class="card" style="max-width:900px">
     <div id="message" hidden></div>
-    <form id="demande-form" class="form-grid">
+    <form id="demande-form" class="form-grid insertion-form">
         <input type="hidden" name="id_demandeur">
         <label>Poste
             <select name="id_poste" required>

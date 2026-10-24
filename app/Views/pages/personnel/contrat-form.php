@@ -1,7 +1,7 @@
 <?= view('partials/page-heading', ['heading' => 'Rédiger un contrat']) ?>
 
 <section class="card">
-    <form id="contract-form" class="form-grid">
+    <form id="contract-form" class="form-grid insertion-form">
         <label>Salarié <input name="idSalarie" type="number" required></label>
         <label>Poste <input name="idPoste" type="number" required></label>
         <label>Type de contrat
