@@ -6,7 +6,7 @@ async function loadContract() {
     if (!contractId) { detail.innerHTML = ui.state('Identifiant contrat manquant.', true); return; }
     try {
         contract = await api.get(`/api/contrats/${contractId}`);
-        document.querySelector('#heading').innerHTML = `<h1>Contrat n°${contract.id_contrat}</h1>${ui.badge(contract.statut_designation || contract.statut)}<div class="actions"><a class="button button-secondary" href="/personnel/contrat-form?id=${contractId}">Modifier</a><a class="button button-primary" href="/personnel/contrat-avenant-form?id=${contractId}">Avenant</a></div>`;
+        document.querySelector('#heading').innerHTML = `<h1>Contrat n°${contract.id_contrat}</h1>${ui.badge(contract.statut_designation || contract.statut)}<div class="actions"><a class="button button-secondary" href="/personnel/contrat-preview?id=${contractId}" target="_blank">Aperçu / Signer</a><button class="button button-secondary" onclick="window.open('/personnel/contrat-preview?id=${contractId}&print=1', '_blank')">Imprimer</button><a class="button button-secondary" href="/personnel/contrat-form?id=${contractId}">Modifier</a><a class="button button-primary" href="/personnel/contrat-avenant-form?id=${contractId}">Avenant</a></div>`;
         renderDetail();
     } catch (error) { detail.innerHTML = ui.state(error.message, true); }
 }

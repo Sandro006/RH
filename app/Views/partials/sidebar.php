@@ -1,4 +1,10 @@
 <?php
+use App\Libraries\Common\SessionUtilisateur;
+use App\Libraries\Common\Roles;
+
+$session = SessionUtilisateur::courante();
+$roleUtilisateur = $session ? $session->role : null;
+
 $icons = [
     'dashboard' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>',
     'demandes' => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
@@ -15,34 +21,52 @@ $icons = [
 
 $sections = [
     'Pilotage' => [
-        'dashboard'   => ['label' => 'Tableau de bord', 'url' => '/dashboard'],
-        'demandes'    => ['label' => 'Demandes de recrutement', 'url' => '/recrutement/demandes'],
-        'offres'      => ['label' => "Offres d'emploi", 'url' => '/recrutement/offres'],
-        'candidatures' => ['label' => 'Candidatures', 'url' => '/recrutement/candidatures'],
+        'dashboard'   => ['label' => 'Tableau de bord', 'url' => '/dashboard', 'roles' => [Roles::ADMIN, Roles::MANAGER, Roles::RH, Roles::DIRECTION]],
+        'demandes'    => ['label' => 'Demandes de recrutement', 'url' => '/recrutement/demandes', 'roles' => [Roles::ADMIN, Roles::MANAGER, Roles::RH, Roles::RECRUTEUR, Roles::CONTROLE_GESTION]],
+        'offres'      => ['label' => "Offres d'emploi", 'url' => '/recrutement/offres', 'roles' => [Roles::ADMIN, Roles::RH, Roles::RECRUTEUR]],
+        'candidatures' => ['label' => 'Candidatures', 'url' => '/recrutement/candidatures', 'roles' => [Roles::ADMIN, Roles::RH, Roles::RECRUTEUR]],
     ],
     'Sélection' => [
-        'entretiens' => ['label' => 'Entretiens', 'url' => '/selection/entretiens'],
-        'evaluations' => ['label' => 'Évaluations', 'url' => '/recrutement/candidatures'],
-        'propositions' => ['label' => "Propositions d'embauche", 'url' => '/selection/propositions'],
+        'entretiens' => ['label' => 'Entretiens', 'url' => '/selection/entretiens', 'roles' => [Roles::ADMIN, Roles::RH, Roles::RECRUTEUR]],
+        'evaluations' => ['label' => 'Évaluations', 'url' => '/recrutement/candidatures', 'roles' => [Roles::ADMIN, Roles::RH, Roles::RECRUTEUR]],
+        'propositions' => ['label' => "Propositions d'embauche", 'url' => '/selection/propositions', 'roles' => [Roles::ADMIN, Roles::RH, Roles::DIRECTION, Roles::CONTROLE_GESTION]],
     ],
     'Équipe' => [
-        'salaires'    => ['label' => 'Salariés', 'url' => '/personnel/salaries'],
-        'contrats'    => ['label' => 'Contrats', 'url' => '/personnel/contrats'],
-        'grille'      => ['label' => 'Grille salariale', 'url' => '/personnel/grille'],
-        'onboardings' => ['label' => 'Onboarding', 'url' => '/personnel/onboardings'],
+        'salaires'    => ['label' => 'Salariés', 'url' => '/personnel/salaries', 'roles' => [Roles::ADMIN, Roles::RH, Roles::MANAGER]],
+        'contrats'    => ['label' => 'Contrats', 'url' => '/personnel/contrats', 'roles' => [Roles::ADMIN, Roles::RH]],
+        'grille'      => ['label' => 'Grille salariale', 'url' => '/personnel/grille', 'roles' => [Roles::ADMIN, Roles::RH, Roles::CONTROLE_GESTION]],
+        'onboardings' => ['label' => 'Onboarding', 'url' => '/personnel/onboardings', 'roles' => [Roles::ADMIN, Roles::RH]],
     ],
 ];
+
+function peutVoirLien(?string $roleUtilisateur, array $rolesAutorises): bool
+{
+    if ($roleUtilisateur === null) {
+        return false;
+    }
+    if ($roleUtilisateur === Roles::ADMIN) {
+        return true;
+    }
+    return in_array($roleUtilisateur, $rolesAutorises, true);
+}
 ?>
 <aside class="sidebar">
     <nav>
         <?php foreach ($sections as $section => $liens): ?>
-            <div class="sidebar-label"><?= esc($section) ?></div>
-            <?php foreach ($liens as $cle => $lien): ?>
-                <a href="<?= esc($lien['url']) ?>"<?= ($active ?? '') === $cle ? ' class="active"' : '' ?>>
-                    <?= $icons[$cle] ?? '' ?>
-                    <?= esc($lien['label']) ?>
-                </a>
-            <?php endforeach; ?>
+            <?php 
+            $liensVisibles = array_filter($liens, function($lien) use ($roleUtilisateur) {
+                return peutVoirLien($roleUtilisateur, $lien['roles'] ?? []);
+            });
+            ?>
+            <?php if (!empty($liensVisibles)): ?>
+                <div class="sidebar-label"><?= esc($section) ?></div>
+                <?php foreach ($liensVisibles as $cle => $lien): ?>
+                    <a href="<?= esc($lien['url']) ?>"<?= ($active ?? '') === $cle ? ' class="active"' : '' ?>>
+                        <?= $icons[$cle] ?? '' ?>
+                        <?= esc($lien['label']) ?>
+                    </a>
+                <?php endforeach; ?>
+            <?php endif; ?>
         <?php endforeach; ?>
     </nav>
 </aside>

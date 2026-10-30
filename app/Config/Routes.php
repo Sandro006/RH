@@ -35,11 +35,14 @@ $routes->group('personnel', ['filter' => 'auth'], static function ($routes) {
     $routes->get('grille', 'Pages::afficher/personnel/grille');
     $routes->get('contrats', 'Pages::afficher/personnel/contrats');
     $routes->get('contrat', 'Pages::afficher/personnel/contrat');
+    $routes->get('contrat-preview', 'Pages::afficher/personnel/contrat-preview');
     $routes->get('contrat-form', 'Pages::afficher/personnel/contrat-form');
     $routes->get('contrat-avenant-form', 'Pages::afficher/personnel/contrat-avenant-form');
     $routes->get('affectation-form', 'Pages::afficher/personnel/affectation-form');
     $routes->get('onboardings', 'Pages::afficher/personnel/onboardings');
     $routes->get('onboarding', 'Pages::afficher/personnel/onboarding');
+    $routes->get('onboarding-form', 'Pages::afficher/personnel/onboarding-form');
+    $routes->get('onboarding-tache-form', 'Pages::afficher/personnel/onboarding-tache-form');
     $routes->get('document-form', 'Pages::afficher/personnel/document-form');
 });
 
@@ -169,11 +172,14 @@ $routes->group('api/onboardings', ['namespace' => 'App\Controllers\Personnel', '
     $routes->get('/',           'OnboardingController::index');
     $routes->post('/',          'OnboardingController::demarrer');
     $routes->get('(:num)',      'OnboardingController::show/$1');
+    $routes->patch('(:num)',    'OnboardingController::update/$1');
     $routes->post('(:num)/taches', 'OnboardingController::creerTache/$1');
     $routes->post('taches/(:num)/demarrer', 'OnboardingController::demarrerTache/$1');
     $routes->post('taches/(:num)/realiser', 'OnboardingController::realiserTache/$1');
     $routes->post('taches/(:num)/bloquer',  'OnboardingController::bloquerTache/$1');
     $routes->post('taches/(:num)/annuler',  'OnboardingController::annulerTache/$1');
+    $routes->get('taches/(:num)',  'OnboardingController::showTache/$1');
+    $routes->patch('taches/(:num)',  'OnboardingController::updateTache/$1');
     $routes->post('(:num)/cloturer',  'OnboardingController::cloturer/$1');
     $routes->post('(:num)/annuler',   'OnboardingController::annuler/$1');
     $routes->get('(:num)/historique', 'OnboardingController::historique/$1');

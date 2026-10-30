@@ -33,6 +33,7 @@ class SalarieController extends BaseController
             'statut'   => $this->request->getGet('statut'),
             'id_poste' => $this->request->getGet('idPoste') ?? $this->request->getGet('id_poste'),
             'id_departement' => $this->request->getGet('idDepartement') ?? $this->request->getGet('id_departement'),
+            'recherche' => $this->request->getGet('recherche'),
             'tri'            => $this->request->getGet('tri'),
             'ordre'          => $this->request->getGet('ordre'),
         ];

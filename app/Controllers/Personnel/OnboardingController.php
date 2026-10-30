@@ -139,6 +139,31 @@ class OnboardingController extends BaseController
         }
     }
 
+    // showTache
+    public function showTache(int $idTache)
+    {
+        $tache = $this->service->consulterTache($idTache);
+        if ($tache === null) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND']);
+        }
+        return $this->response->setJSON($tache);
+    }
+
+    // updateTache
+    public function updateTache(int $idTache)
+    {
+        $body = $this->request->getJSON(true) ?? [];
+
+        try {
+            $this->service->modifierTache($idTache, $body, SessionUtilisateur::courante());
+            return $this->response->setStatusCode(200)->setJSON(['ok' => true]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        }
+    }
+
     // progression
     public function progression(int $idOnboarding)
     {
@@ -186,5 +211,20 @@ class OnboardingController extends BaseController
     public function listerTaches(int $idOnboarding)
     {
         return $this->response->setJSON($this->service->listerTaches($idOnboarding));
+    }
+
+    // update
+    public function update(int $id)
+    {
+        $body = $this->request->getJSON(true) ?? [];
+
+        try {
+            $this->service->modifier($id, $body, SessionUtilisateur::courante());
+            return $this->response->setStatusCode(200)->setJSON(['ok' => true]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        }
     }
 }

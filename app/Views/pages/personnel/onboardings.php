@@ -10,6 +10,7 @@
                 ''  => 'Tous',
                 'À démarrer' => 'À démarrer',
                 'En cours'   => 'En cours',
+                'En attente' => 'En attente',
                 'Terminé'    => 'Terminé',
                 'Annulé'     => 'Annulé',
             ]],

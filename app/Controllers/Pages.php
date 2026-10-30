@@ -241,6 +241,17 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/personnel/contrat-form.js'],
         ],
+        'personnel/contrat-preview' => [
+            'vue'      => 'pages/personnel/contrat-preview',
+            'titre'    => 'Aperçu du contrat · Gestion RH',
+            'actif'    => 'contrats',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Contrats'],
+            ],
+            'layouts'  => 'blank',
+            'scripts'  => ['/assets/js/api.js', '/assets/js/ui.js'],
+        ],
         'personnel/contrat-avenant-form' => [
             'vue'      => 'pages/personnel/contrat-avenant-form',
             'titre'    => 'Avenant · Gestion RH',
@@ -280,6 +291,28 @@ final class Pages extends BaseController
                 ['label' => 'Personnel / Onboarding'],
             ],
             'scripts'  => ['/assets/js/pages/personnel/onboarding.js'],
+        ],
+        'personnel/onboarding-form' => [
+            'vue'      => 'pages/personnel/onboarding-form',
+            'titre'    => 'Modifier l\'onboarding · Gestion RH',
+            'actif'    => 'onboardings',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Onboardings', 'url' => '/personnel/onboardings'],
+                ['label' => 'Modifier'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/onboarding-form.js'],
+        ],
+        'personnel/onboarding-tache-form' => [
+            'vue'      => 'pages/personnel/onboarding-tache-form',
+            'titre'    => 'Modifier la tâche · Gestion RH',
+            'actif'    => 'onboardings',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Onboardings', 'url' => '/personnel/onboardings'],
+                ['label' => 'Tâche'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/onboarding-tache-form.js'],
         ],
         'personnel/document-form' => [
             'vue'      => 'pages/personnel/document-form',
@@ -322,6 +355,11 @@ final class Pages extends BaseController
 
         if (!isset(self::PAGES[$cle])) {
             throw PageNotFoundException::forPageNotFound();
+        }
+
+        // Pour les pages avec layout blank, retourner la vue directement
+        if (isset(self::PAGES[$cle]['layouts']) && self::PAGES[$cle]['layouts'] === 'blank') {
+            return view(self::PAGES[$cle]['vue']);
         }
 
         return $this->rendre($cle);

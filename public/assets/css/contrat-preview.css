@@ -1,0 +1,460 @@
+:root {
+    --blanc: #FFFFFF;
+    --or: #EBB644;
+    --vieil-or: #EBBB34;
+    --orange: #DD8729;
+    --charbon: #26272A;
+    --fond: #F5F5F2;
+    --gris: #707070;
+    --bordure: #E4E1DA;
+    --danger: #EF4444;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 30px 16px;
+    background: var(--fond);
+    color: var(--charbon);
+    font-family: "Segoe UI", Arial, sans-serif;
+    line-height: 1.6;
+}
+
+.page {
+    max-width: 900px;
+    margin: auto;
+}
+
+/* En-tête de l'application */
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 25px;
+}
+
+.topbar p {
+    margin: 4px 0 0;
+    color: var(--gris);
+    font-size: 14px;
+}
+
+.status {
+    padding: 7px 14px;
+    border-radius: 30px;
+    background: #FFF0CE;
+    color: var(--charbon);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Document */
+
+.document {
+    overflow: hidden;
+    background: var(--blanc);
+    border: 1px solid var(--bordure);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(38, 39, 42, 0.07);
+}
+
+.document-header {
+    padding: 35px 42px;
+    border-top: 7px solid var(--or);
+    border-bottom: 1px solid var(--bordure);
+}
+
+.company {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--charbon);
+    color: var(--or);
+    font-weight: 800;
+    font-size: 20px;
+}
+
+.brand h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.brand p {
+    margin: 2px 0 0;
+    color: var(--gris);
+    font-size: 12px;
+}
+
+.reference {
+    text-align: right;
+    font-size: 13px;
+}
+
+.reference strong {
+    display: block;
+    font-size: 14px;
+}
+
+.document-title {
+    margin-top: 34px;
+    text-align: center;
+}
+
+.document-title .eyebrow {
+    color: var(--orange);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.document-title h1 {
+    margin: 8px 0;
+    font-size: clamp(24px, 4vw, 32px);
+    letter-spacing: 1px;
+}
+
+.document-title p {
+    margin: 0;
+    color: var(--gris);
+    font-size: 14px;
+}
+
+.gold-line {
+    width: 70px;
+    height: 4px;
+    margin: 20px auto 0;
+    border-radius: 5px;
+    background: var(--or);
+}
+
+/* Corps */
+
+.document-body {
+    padding: 35px 42px;
+}
+
+.intro {
+    margin: 0 0 28px;
+    font-size: 14px;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--bordure);
+}
+
+.section-number {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--charbon);
+    color: var(--or);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.section-title h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.section-content {
+    font-size: 14px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.info-item {
+    padding: 13px 15px;
+    border: 1px solid var(--bordure);
+    border-radius: 8px;
+    background: #FCFCFA;
+    overflow-wrap: anywhere;
+}
+
+.info-label {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--gris);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-weight: 650;
+    font-size: 14px;
+}
+
+.salary-box {
+    padding: 22px;
+    border-left: 4px solid var(--orange);
+    border-radius: 6px;
+    background: #FFF7E8;
+}
+
+.salary-label {
+    color: var(--gris);
+    font-size: 12px;
+}
+
+.salary-amount {
+    display: block;
+    margin-top: 4px;
+    font-size: 27px;
+    font-weight: 800;
+}
+
+.salary-note {
+    margin: 5px 0 0;
+    color: var(--gris);
+    font-size: 12px;
+}
+
+.article {
+    margin-bottom: 17px;
+}
+
+.article h3 {
+    margin: 0 0 5px;
+    font-size: 14px;
+}
+
+.article p {
+    margin: 0;
+    color: #454545;
+    font-size: 13px;
+    text-align: justify;
+}
+
+/* Signatures */
+
+.signature-intro {
+    margin-bottom: 22px;
+    font-size: 13px;
+}
+
+.signatures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 30px;
+}
+
+.signature {
+    min-height: 145px;
+    padding: 17px;
+    border: 1px dashed #CFCBC2;
+    border-radius: 8px;
+}
+
+.signature h3 {
+    margin: 0;
+    font-size: 13px;
+}
+
+.signature p {
+    margin: 5px 0;
+    color: var(--gris);
+    font-size: 12px;
+}
+
+.signature-space {
+    height: 65px;
+}
+
+.signature-line {
+    border-top: 1px solid #A9A59C;
+}
+
+.document-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 18px 42px;
+    border-top: 1px solid var(--bordure);
+    background: #FAFAF8;
+    color: var(--gris);
+    font-size: 11px;
+}
+
+/* Boutons de l'application */
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 43px;
+    padding: 11px 19px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--or);
+    color: var(--charbon);
+}
+
+.btn-primary:hover {
+    background: var(--vieil-or);
+}
+
+.btn-secondary {
+    border-color: var(--bordure);
+    background: var(--blanc);
+    color: var(--charbon);
+}
+
+.btn-secondary:hover {
+    background: var(--fond);
+}
+
+.state {
+    padding: 2.6rem;
+    color: var(--gris);
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 15px 8px;
+    }
+
+    .topbar,
+    .company {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .reference {
+        text-align: left;
+    }
+
+    .document-header,
+    .document-body {
+        padding: 24px 18px;
+    }
+
+    .info-grid,
+    .signatures {
+        grid-template-columns: 1fr;
+    }
+
+    .document-footer {
+        flex-direction: column;
+        padding: 18px;
+    }
+
+    .actions {
+        flex-direction: column-reverse;
+    }
+
+    .actions .btn {
+        width: 100%;
+    }
+}
+
+/* Impression */
+
+@media print {
+    @page {
+        size: A4;
+        margin: 12mm;
+    }
+
+    body {
+        padding: 0;
+        background: white;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .page {
+        max-width: none;
+    }
+
+    .topbar,
+    .actions {
+        display: none !important;
+    }
+
+    .document {
+        overflow: visible;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .document-header {
+        padding: 20px 24px;
+    }
+
+    .document-body {
+        padding: 24px;
+    }
+
+    .section,
+    .info-item,
+    .salary-box,
+    .signature {
+        break-inside: avoid;
+    }
+
+    .document-footer {
+        padding: 15px 24px;
+    }
+}

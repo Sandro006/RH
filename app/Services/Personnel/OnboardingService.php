@@ -314,6 +314,10 @@ class OnboardingService
             ->get()
             ->getRowArray();
 
+        if ($row !== null) {
+            $row['progression'] = $this->progression($idOnboarding);
+        }
+
         return $row;
     }
 
@@ -345,8 +349,13 @@ class OnboardingService
 
     private function requeteOnboardings()
     {
+        $statutTerminee = $this->statusTacheModel->idParDesignation('Terminée');
+        $statutAnnulee = $this->statusTacheModel->idParDesignation('Annulée');
+
         return $this->onboardingModel->db->table('onboarding o')
             ->select('o.*, so.designation AS statut_designation, s.nom AS salarie_nom, s.prenom AS salarie_prenom')
+            ->select('(SELECT COUNT(*) FROM onboarding_tache WHERE id_onboarding = o.id_onboarding) AS taches_total')
+            ->select("(SELECT COUNT(*) FROM onboarding_tache WHERE id_onboarding = o.id_onboarding AND statut IN ({$statutTerminee}, {$statutAnnulee})) AS taches_terminees")
             ->join('status_onboarding so', 'so.id = o.statut', 'left')
             ->join('salarie s', 's.id_salarie = o.id_salarie', 'left');
     }
@@ -361,6 +370,77 @@ class OnboardingService
     public function listerTaches(int $idOnboarding): array
     {
         return $this->tacheModel->listerParOnboarding($idOnboarding);
+    }
+
+    // consulterTache
+    public function consulterTache(int $idTache): ?array
+    {
+        $tache = $this->tacheModel->find($idTache);
+        return $tache ? $tache->toArray() : null;
+    }
+
+    // modifierTache
+    public function modifierTache(int $idTache, array $modifications, SessionUtilisateur $u): void
+    {
+        if (!$u->aLeRole(['rh', 'recruteur', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour modifier une tâche');
+        }
+
+        $tache = $this->tacheModel->find($idTache);
+        if ($tache === null) {
+            throw new ObjetIntrouvableException("Tâche #{$idTache} introuvable");
+        }
+
+        // Champs modifiables uniquement
+        $autorises = ['intitule', 'description', 'responsable', 'date_echeance'];
+        $payload = array_intersect_key($modifications, array_flip($autorises));
+
+        if (empty($payload)) {
+            return;
+        }
+
+        $this->tacheModel->update($idTache, $payload);
+
+        $this->auditService->journaliser(
+            $u->idUtilisateur,
+            'UPDATE',
+            'onboarding_tache',
+            $idTache,
+            json_encode($payload),
+            $u->adresseIp
+        );
+    }
+
+    // modifier
+    public function modifier(int $idOnboarding, array $modifications, SessionUtilisateur $u): void
+    {
+        if (!$u->aLeRole(['rh', 'admin'])) {
+            throw new AccesRefuseException('Rôle insuffisant pour modifier un onboarding');
+        }
+
+        $onboarding = $this->onboardingModel->find($idOnboarding);
+        if ($onboarding === null) {
+            throw new ObjetIntrouvableException("Onboarding #{$idOnboarding} introuvable");
+        }
+
+        // Champs modifiables uniquement
+        $autorises = ['date_debut', 'date_fin'];
+        $payload = array_intersect_key($modifications, array_flip($autorises));
+
+        if (empty($payload)) {
+            return;
+        }
+
+        $this->onboardingModel->update($idOnboarding, $payload);
+
+        $this->auditService->journaliser(
+            $u->idUtilisateur,
+            'UPDATE',
+            'onboarding',
+            $idOnboarding,
+            json_encode($payload),
+            $u->adresseIp
+        );
     }
 
     // changerStatutTache

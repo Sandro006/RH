@@ -24,5 +24,7 @@
 </section>
 
 <section class="card">
-    <div id="list" class="state">Chargement…</div>
+    <div id="grille-container" class="grille-container">
+        <div id="list" class="state">Chargement…</div>
+    </div>
 </section>

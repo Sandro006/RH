@@ -427,6 +427,8 @@ tbody tr:last-child td { border-bottom: none; }
     color: var(--primary);
     border-bottom-color: var(--primary);
 }
+.tab-panel { display: block; }
+.tab-panel.hidden { display: none; }
 .hidden { display: none !important; }
 .toast {
     position: fixed;
@@ -650,6 +652,107 @@ tbody tr:last-child td { border-bottom: none; }
     border-radius: var(--radius-md);
 }
 .grille-note p { margin: var(--spacing-xs) 0; }
+
+/* Grille salariale */
+.grille-container {
+    padding: var(--spacing-md);
+}
+.grille-departements {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+.grille-departement {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+.grille-departement-title {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: var(--spacing-sm);
+}
+.grille-postes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+}
+.grille-poste {
+    padding: var(--spacing-lg);
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+.grille-poste:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+.grille-poste.active {
+    border-color: var(--success);
+}
+.grille-poste.historique {
+    border-color: var(--warning);
+    opacity: 0.85;
+}
+.grille-poste-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+}
+.grille-poste-titre {
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    flex: 1;
+}
+.grille-poste-rang {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+}
+.grille-poste-service {
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+}
+.grille-poste-salaire {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+    border-top: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+}
+.salaire-min, .salaire-max {
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.salaire-separator {
+    color: var(--text-muted);
+    font-size: var(--font-size-lg);
+}
+.grille-poste-periode {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+.grille-poste-etat {
+    margin-top: auto;
+    padding-top: var(--spacing-sm);
+}
 
 fieldset { margin: 0; padding: 0; border: 0; }
 fieldset legend {

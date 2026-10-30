@@ -284,6 +284,15 @@ class SalarieService
         if (!empty($filtre['id_departement'])) {
             $requete->where('d.id_departement', (int) $filtre['id_departement']);
         }
+        if (!empty($filtre['recherche'])) {
+            $recherche = $filtre['recherche'];
+            $requete->groupStart()
+                ->like('s.matricule', $recherche)
+                ->orLike('s.nom', $recherche)
+                ->orLike('s.prenom', $recherche)
+                ->orLike("CONCAT(s.prenom, ' ', s.nom)", $recherche)
+                ->groupEnd();
+        }
 
         [$colonne, $ordre] = Tri::resoudre($filtre, [
             'id_salarie'    => 's.id_salarie',

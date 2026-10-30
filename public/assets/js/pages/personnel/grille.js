@@ -35,22 +35,67 @@ function grillesFiltrees() {
 }
 
 function rendreGrille() {
-    Table.render(grilleList, {
-        rows: grillesFiltrees(),
-        sort: { key: 'poste', order: 'asc' },
-        empty: 'Aucune grille salariale trouvée.',
-        columns: [
-            { key: 'poste', label: 'Poste', render: row => ui.escape(row.poste || row.idPoste) },
-            { key: 'service', label: 'Service', render: row => ui.escape(row.service || '—') },
-            { key: 'departement', label: 'Département', render: row => ui.escape(row.departement || '—') },
-            { key: 'rang', label: 'Rang', render: row => ui.escape(row.rang || '—') },
-            { key: 'salaireMin', label: 'Salaire min', render: row => ui.money(row.salaireMin) },
-            { key: 'salaireMax', label: 'Salaire max', render: row => ui.money(row.salaireMax) },
-            { key: 'dateDebut', label: 'Du', render: row => ui.date(row.dateDebut) },
-            { key: 'dateFin', label: 'Au', render: row => (row.dateFin ? ui.date(row.dateFin) : 'En cours') },
-            { key: 'actif', label: 'État', render: row => ui.status(row.actif ? 'Active' : 'Historique') },
-        ],
-    });
+    const donnees = grillesFiltrees();
+    
+    if (donnees.length === 0) {
+        grilleList.innerHTML = '<div class="state">Aucune grille salariale trouvée.</div>';
+        return;
+    }
+
+    // Grouper par département
+    const parDepartement = donnees.reduce((acc, grille) => {
+        const dept = grille.departement || 'Sans département';
+        if (!acc[dept]) {
+            acc[dept] = [];
+        }
+        acc[dept].push(grille);
+        return acc;
+    }, {});
+
+    let html = '<div class="grille-departements">';
+    
+    for (const [departement, grilles] of Object.entries(parDepartement)) {
+        html += `
+            <div class="grille-departement">
+                <h3 class="grille-departement-title">${ui.escape(departement)}</h3>
+                <div class="grille-postes">
+        `;
+        
+        grilles.forEach(grille => {
+            const etatClass = grille.actif ? 'active' : 'historique';
+            const etatLabel = grille.actif ? 'Active' : 'Historique';
+            const periode = grille.dateFin 
+                ? `${ui.date(grille.dateDebut)} - ${ui.date(grille.dateFin)}`
+                : `${ui.date(grille.dateDebut)} - En cours`;
+            
+            html += `
+                <div class="grille-poste ${etatClass}">
+                    <div class="grille-poste-header">
+                        <span class="grille-poste-titre">${ui.escape(grille.poste || grille.idPoste)}</span>
+                        <span class="grille-poste-rang">${ui.escape(grille.rang || '—')}</span>
+                    </div>
+                    <div class="grille-poste-service">${ui.escape(grille.service || '—')}</div>
+                    <div class="grille-poste-salaire">
+                        <span class="salaire-min">${ui.money(grille.salaireMin)}</span>
+                        <span class="salaire-separator">—</span>
+                        <span class="salaire-max">${ui.money(grille.salaireMax)}</span>
+                    </div>
+                    <div class="grille-poste-periode">${periode}</div>
+                    <div class="grille-poste-etat">
+                        <span class="badge ${grille.actif ? 'success' : 'warning'}">${etatLabel}</span>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    grilleList.innerHTML = html;
 }
 
 async function chargerGrille() {

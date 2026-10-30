@@ -8,9 +8,18 @@ const ui = {
         const label = String(value || '—');
         const normalized = label.toLocaleLowerCase('fr-FR');
         let tone = '';
-        if (/valid|retenue|actif|termin|sign/.test(normalized)) tone = 'success';
-        else if (/refus|annul|retir|résili|parti/.test(normalized)) tone = 'danger';
-        else if (/contrôle|validation|consultation|corriger|suspend|entretien|évaluation|cours|attente/.test(normalized)) tone = 'warning';
+        
+        // Statuts Onboarding et Tâche spécifiques
+        if (/à démarrer|à faire/.test(normalized)) tone = '';
+        else if (/en cours/.test(normalized)) tone = 'primary';
+        else if (/en attente|bloquée/.test(normalized)) tone = 'warning';
+        else if (/terminé|terminée/.test(normalized)) tone = 'success';
+        else if (/annulé|annulée/.test(normalized)) tone = 'danger';
+        // Statuts généraux
+        else if (/valid|retenue|actif|sign/.test(normalized)) tone = 'success';
+        else if (/refus|retir|résili|parti/.test(normalized)) tone = 'danger';
+        else if (/contrôle|validation|consultation|corriger|suspend|entretien|évaluation/.test(normalized)) tone = 'warning';
+        
         return `<span class="badge ${tone}">${ui.escape(label)}</span>`;
     },
     badge(value = '') { return ui.status(value); },

@@ -28,6 +28,16 @@ async function loadOnboardings() {
                 },
                 { key: 'date_debut', label: 'Début', render: row => ui.date(row.date_debut) },
                 {
+                    key: 'taches',
+                    label: 'Tâches',
+                    sort: false,
+                    render: row => {
+                        const total = row.taches_total || 0;
+                        const terminees = row.taches_terminees || 0;
+                        return total > 0 ? `${terminees}/${total} terminées` : '-';
+                    },
+                },
+                {
                     key: 'progression',
                     label: 'Progression',
                     sort: false,
@@ -65,11 +75,22 @@ onboardingFilters.addEventListener('submit', event => {
 });
 
 document.querySelector('#start')?.addEventListener('click', async () => {
-    const idSalarie = prompt('Identifiant du salarié');
-    if (!idSalarie) return;
+    const recherche = prompt('Matricule ou nom du salarié');
+    if (!recherche) return;
     try {
+        // Rechercher le salarié et récupérer son ID
+        const salaries = await api.get(`/api/salaries?recherche=${encodeURIComponent(recherche)}`);
+        if (!salaries || salaries.length === 0) {
+            ui.error('Aucun salarié trouvé');
+            return;
+        }
+        if (salaries.length > 1) {
+            ui.error('Plusieurs salariés trouvés, soyez plus précis');
+            return;
+        }
+        const idSalarie = salaries[0].id_salarie;
         const result = await api.post('/api/onboardings', {
-            idSalarie: Number(idSalarie),
+            idSalarie: idSalarie,
             dateDebut: new Date().toISOString().slice(0, 10),
         });
         location.href = `/personnel/onboarding?id=${encodeURIComponent(result.idOnboarding)}`;
