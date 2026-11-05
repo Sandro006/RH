@@ -99,7 +99,7 @@ employés, statuts). **Aucune dépendance externe.**
 **Livrable démontrable** : parcours complet demande → offre publiée → candidatures.
 
 ---
-
+ 
 ## Piste C — Elisa : Sélection (Entretien → Évaluation → Proposition + Négociation)
 
 **Données d'entrée** : `script/fixtures_selection.sql` — insère elle-même une **candidature
@@ -110,7 +110,6 @@ employés, statuts). **Aucune dépendance externe.**
   `consulter`, `lister`, `historique`, `planifierPourOffre`.
 - [ ] **C2** — Lien candidature (lecture/écriture directe en base) : `Présélectionnée → Entretien prévu` ;
   `realiser` → `En évaluation`.
-- [ ] **C3** — `EvaluationService` : `evaluer`, `calculerNote`, `noteMoyenne`, `synthese`,
   `listerParCandidature`, `classerPourOffre` (+ convention JSON des critères).
 - [ ] **C4** — `SelectionService` : `seuilRetention`, `candidatsEligibles`, `retenir`, `refuser`, `decider`.
 - [ ] **C5** — `PropositionEmbaucheService` : `creerDepuisCandidature` (contrôle **Retenue** direct en base),
@@ -134,14 +133,14 @@ employés, statuts). **Aucune dépendance externe.**
 « Acceptée »** (+ candidature Retenue, candidat, offre).
 **Aucune dépendance au code d'Elisa** : Princio lit `proposition_embauche`/`candidature` via ses repos.
 
-- [ ] **D1** — `SalarieService` : `creerDepuisCandidature` (contrôle proposition **Acceptée** direct en base),
+- [x] **D1** — `SalarieService` : `creerDepuisCandidature` (contrôle proposition **Acceptée** direct en base),
   `modifier`, `affecter`, `listerAffectations`, `changerStatut`, `consulter`, `lister`, `historique`.
-- [ ] **D2** — `MatriculeService.genererMatricule` (`MAT-AAAA-00001`, unicité).
-- [ ] **D3** — `ContratService` : `creerContrat`, `modifier`, `soumettrePourSignature`, `signer`,
+- [x] **D2** — `MatriculeService.genererMatricule` (`MAT-AAAA-00001`, unicité).
+- [x] **D3** — `ContratService` : `creerContrat`, `modifier`, `soumettrePourSignature`, `signer`,
   `activer`, `mettreFin`, `renouveler`, `creerAvenant`.
-- [ ] **D4** — `PeriodeEssaiService` : `categorieDepuisPoste`, `calculer`, `dureeMaxJours`,
+- [x] **D4** — `PeriodeEssaiService` : `categorieDepuisPoste`, `calculer`, `dureeMaxJours`,
   `deduireStages`, `validerDuree` (essai **optionnel**, plafonds CDD/CDI).
-- [ ] **D5** — `activer` → salarié **En période d'essai** ou **Actif** ; `mettreFin` → **Parti**.
+- [x] **D5** — `activer` → salarié **En période d'essai** ou **Actif** ; `mettreFin` → **Parti**.
 - [ ] **D6** — `OnboardingService` : `demarrer`, `creerTachesParDefaut`, `creerTache`, `demarrerTache`,
   `realiserTache`, `bloquerTache`, `annulerTache`, `progression`, `cloturer`, `annuler`.
 - [ ] **D7** — `DocumentService` : `ajouter`, `lister`, `supprimer`.
@@ -202,3 +201,9 @@ employés, statuts). **Aucune dépendance externe.**
 - Pas d'appel de service entre pistes : lecture/écriture via la base (statuts, FK).
 - Ne pas modifier le schéma sans `script/migration_*.sql`.
 - Les fichiers partagés ne changent qu'en PR dédiée.
+
+
+je suis le roi du monde et tu  cr,
+
+
+salaire brute * congee non prix /30
