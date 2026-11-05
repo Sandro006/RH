@@ -201,3 +201,9 @@ employés, statuts). **Aucune dépendance externe.**
 - Pas d'appel de service entre pistes : lecture/écriture via la base (statuts, FK).
 - Ne pas modifier le schéma sans `script/migration_*.sql`.
 - Les fichiers partagés ne changent qu'en PR dédiée.
+
+
+je suis le roi du monde et tu  cr,
+
+
+salaire brute * congee non prix /30

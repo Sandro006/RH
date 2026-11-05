@@ -48,7 +48,7 @@ trait SelectionTestTrait
         }
 
         if ($db->table('candidature')->where('id_candidature', 1002)->countAllResults() === 0) {
-            $this->markTestSkipped('Fixtures embauche non chargées (script/fixtures_embauche.sql).');
+            $this->markTestSkipped('Fixtures embauche non chargées (script/db/03_seeds_demo.sql).');
         }
 
         if ($db->table('utilisateur')->where('id_utilisateur', 1002)->countAllResults() === 0) {
