@@ -278,4 +278,16 @@ class Services extends BaseService
 		);
 	}
 
+	public static function grilleSalarialeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('grilleSalarialeService');
+
+		return new \App\Services\Finance\GrilleSalarialeService(
+			model(\App\Models\Finance\GrilleSalarialeModel::class),
+			model(\App\Models\Personnel\PosteModel::class),
+			model(\App\Models\Personnel\RangModel::class),
+			service('auditService'),
+		);
+	}
+
 }
