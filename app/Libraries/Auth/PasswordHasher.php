@@ -6,7 +6,7 @@ namespace App\Libraries\Auth;
 
 class PasswordHasher
 {
-    private const LONGUEUR_MIN = 12;
+    private const LONGUEUR_MIN = 8 ;
     private const LONGUEUR_MAX = 72;
 
     public function hasher(string $motDePasseClair): string

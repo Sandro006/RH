@@ -463,8 +463,9 @@ class DossierService
             throw new ObjetIntrouvableException("Salarié #{$idSalarie} introuvable");
         }
 
-        if ($u->role === 'salarie' && $this->documentPolicy->idSalarieDe($u) !== $idSalarie) {
-            throw new AccesRefuseException('Un salarié ne peut consulter que son propre dossier');
+        // Seuls les RH et admin peuvent consulter les dossiers salariés
+        if (!$u->aLeRole(['admin', 'rh'])) {
+            throw new AccesRefuseException('Seuls les RH peuvent consulter les dossiers salariés');
         }
 
         return $salarie;

@@ -153,7 +153,7 @@ class DashboardService
             ->where('actif', false)
             ->countAllResults());
 
-        return $this->ligne('comptesInactifs', 'Comptes désactivés', $nombre, 'pages/admin/utilisateurs.html?actif=0');
+        return $this->ligne('comptesInactifs', 'Comptes désactivés', $nombre, '/securite/acces');
     }
 
     private function actionsManager(SessionUtilisateur $utilisateur): array
@@ -196,8 +196,8 @@ class DashboardService
 
         return [
             ...$this->ligne('controlesRh', 'Demandes à contrôler', $demandes, '/recrutement/demandes?statut=En%20contr%C3%B4le%20RH'),
-            ...$this->ligne('propositionsAEnvoyer', 'Propositions à envoyer', $propositions, 'pages/recrutement/propositions.html'),
-            ...$this->ligne('onboardingEnRetard', 'Tâches d’onboarding en retard', $onboarding, 'pages/personnel/onboarding.html'),
+            ...$this->ligne('propositionsAEnvoyer', 'Propositions à envoyer', $propositions, '/selection/propositions'),
+            ...$this->ligne('onboardingEnRetard', 'Tâches d’onboarding en retard', $onboarding, '/personnel/onboardings'),
         ];
     }
 
@@ -207,8 +207,8 @@ class DashboardService
         $entretiens   = $this->compterSecurise(fn (): int => $this->compterEntretiensAVenir());
 
         return [
-            ...$this->ligne('candidaturesATraiter', 'Candidatures à traiter', $candidatures, 'pages/recrutement/candidatures.html'),
-            ...$this->ligne('entretiensAVenir', 'Entretiens à venir', $entretiens, 'pages/recrutement/entretiens.html'),
+            ...$this->ligne('candidaturesATraiter', 'Candidatures à traiter', $candidatures, '/recrutement/candidatures'),
+            ...$this->ligne('entretiensAVenir', 'Entretiens à venir', $entretiens, '/selection/entretiens'),
         ];
     }
 
@@ -217,7 +217,7 @@ class DashboardService
         $idSalarie = $this->idSalarieDepuisEmploye($utilisateur->idEmploye);
         $nombre = $this->compterSecurise(fn (): int => $this->compterTachesSalarie($idSalarie));
 
-        return $this->ligne('mesTachesOnboarding', 'Mes tâches d’onboarding', $nombre, 'pages/personnel/onboarding.html');
+        return $this->ligne('mesTachesOnboarding', 'Mes tâches d’onboarding', $nombre, '/personnel/mes-taches');
     }
 
     private function compterDemandesParStatuts(array $statuts, ?int $idDemandeur = null): int

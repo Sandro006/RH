@@ -48,6 +48,7 @@ class Services extends BaseService
 		return new \App\Services\Admin\UtilisateurService(
 			model(\App\Models\Admin\UtilisateurModel::class),
 			model(\App\Models\Admin\EmployeModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
 			new \App\Libraries\Auth\PasswordHasher(),
 			service('auditService'),
 		);

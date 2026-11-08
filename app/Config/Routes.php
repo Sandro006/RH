@@ -29,24 +29,34 @@ $routes->get('selection/proposition-form', 'Pages::afficher/selection/propositio
 $routes->get('selection/proposition', 'Pages::afficher/selection/proposition', ['filter' => 'auth']);
 
 $routes->group('personnel', ['filter' => 'auth'], static function ($routes) {
-    $routes->get('salaries', 'Pages::afficher/personnel/salaries');
-    $routes->get('salarie', 'Pages::afficher/personnel/salarie');
-    $routes->get('salarie-form', 'Pages::afficher/personnel/salarie-form');
-    $routes->get('grille', 'Pages::afficher/personnel/grille');
-    $routes->get('contrats', 'Pages::afficher/personnel/contrats');
-    $routes->get('contrat', 'Pages::afficher/personnel/contrat');
-    $routes->get('contrat-preview', 'Pages::afficher/personnel/contrat-preview');
-    $routes->get('contrat-form', 'Pages::afficher/personnel/contrat-form');
-    $routes->get('contrat-avenant-form', 'Pages::afficher/personnel/contrat-avenant-form');
-    $routes->get('affectation-form', 'Pages::afficher/personnel/affectation-form');
-    $routes->get('onboardings', 'Pages::afficher/personnel/onboardings');
-    $routes->get('onboarding', 'Pages::afficher/personnel/onboarding');
-    $routes->get('onboarding-form', 'Pages::afficher/personnel/onboarding-form');
-    $routes->get('onboarding-tache-form', 'Pages::afficher/personnel/onboarding-tache-form');
-    $routes->get('document-form', 'Pages::afficher/personnel/document-form');
+    $routes->get('salaries', 'Pages::afficher/personnel/salaries', ['filter' => 'role:rh,admin']);
+    $routes->get('salarie', 'Pages::afficher/personnel/salarie', ['filter' => 'role:rh,admin']);
+    $routes->get('salarie-form', 'Pages::afficher/personnel/salarie-form', ['filter' => 'role:rh,admin']);
+    $routes->get('grille', 'Pages::afficher/personnel/grille', ['filter' => 'role:rh,admin,controle_gestion']);
+    $routes->get('contrats', 'Pages::afficher/personnel/contrats', ['filter' => 'role:rh,admin']);
+    $routes->get('contrat', 'Pages::afficher/personnel/contrat', ['filter' => 'role:rh,admin']);
+    $routes->get('contrat-preview', 'Pages::afficher/personnel/contrat-preview', ['filter' => 'role:rh,admin']);
+    $routes->get('contrat-form', 'Pages::afficher/personnel/contrat-form', ['filter' => 'role:rh,admin']);
+    $routes->get('contrat-avenant-form', 'Pages::afficher/personnel/contrat-avenant-form', ['filter' => 'role:rh,admin']);
+    $routes->get('affectation-form', 'Pages::afficher/personnel/affectation-form', ['filter' => 'role:rh,admin']);
+    $routes->get('onboardings', 'Pages::afficher/personnel/onboardings', ['filter' => 'role:rh,admin']);
+    $routes->get('onboarding', 'Pages::afficher/personnel/onboarding', ['filter' => 'role:rh,admin']);
+    $routes->get('onboarding-form', 'Pages::afficher/personnel/onboarding-form', ['filter' => 'role:rh,admin']);
+    $routes->get('onboarding-tache-form', 'Pages::afficher/personnel/onboarding-tache-form', ['filter' => 'role:rh,admin']);
+    $routes->get('document-form', 'Pages::afficher/personnel/document-form', ['filter' => 'role:rh,admin']);
+    $routes->get('mes-documents', 'Pages::afficher/personnel/mes-documents');
+    $routes->get('mes-taches', 'Pages::afficher/personnel/mes-taches');
 });
 
 $routes->get('profil/mot-de-passe', 'Pages::afficher/profil/mot-de-passe', ['filter' => 'auth']);
+
+// Département Informatique
+$routes->get('departement/informatique', 'Pages::afficher/departement/informatique', ['filter' => 'auth']);
+$routes->get('departement/informatique/creer-utilisateur', 'Pages::creerUtilisateur', ['filter' => 'auth']);
+$routes->get('departement/informatique/reinitialiser-mdp', 'Pages::reinitialiserMdp', ['filter' => 'auth']);
+
+$routes->get('securite/audit', 'Pages::afficher/securite/audit', ['filter' => 'auth']);
+$routes->get('securite/acces', 'Pages::afficher/securite/acces', ['filter' => 'auth']);
 
 // ressources statiques servies depuis public/assets
 $routes->get('api/dashboard', 'DashboardController::index', ['filter' => 'auth']);
@@ -137,32 +147,32 @@ $routes->get('api/public/offres/(:num)', 'Recrutement\\RecrutementController::of
 
 // salaire
 $routes->group('api/salaries', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
-    $routes->get('/',           'SalarieController::index');
-    $routes->post('/',          'SalarieController::createDepuisCandidature');
-    $routes->get('(:num)',      'SalarieController::show/$1');
-    $routes->patch('(:num)',    'SalarieController::update/$1');
-    $routes->post('(:num)/affectations', 'SalarieController::affecter/$1');
-    $routes->get('(:num)/affectations',  'SalarieController::listerAffectations/$1');
-    $routes->get('(:num)/historique',    'SalarieController::historique/$1');
-    $routes->post('(:num)/statut',       'SalarieController::changerStatut/$1');
-    $routes->get('(:num)/dossier/alertes', 'DossierController::alertes/$1');
-    $routes->get('(:num)/dossier',         'DossierController::show/$1');
-    $routes->get('(:num)/carriere',        'DossierController::carriere/$1');
+    $routes->get('/',           'SalarieController::index', ['filter' => 'role:rh,admin']);
+    $routes->post('/',          'SalarieController::createDepuisCandidature', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)',      'SalarieController::show/$1', ['filter' => 'role:rh,admin']);
+    $routes->patch('(:num)',    'SalarieController::update/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/affectations', 'SalarieController::affecter/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/affectations',  'SalarieController::listerAffectations/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/historique',    'SalarieController::historique/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/statut',       'SalarieController::changerStatut/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/dossier/alertes', 'DossierController::alertes/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/dossier',         'DossierController::show/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/carriere',        'DossierController::carriere/$1', ['filter' => 'role:rh,admin']);
 });
 
 // contrat
 $routes->group('api/contrats', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
-    $routes->get('/',           'ContratController::index');
-    $routes->post('/',          'ContratController::create');
-    $routes->get('(:num)',      'ContratController::show/$1');
-    $routes->patch('(:num)',    'ContratController::update/$1');
-    $routes->post('(:num)/soumettre',   'ContratController::soumettre/$1');
-    $routes->post('(:num)/signer',      'ContratController::signer/$1');
-    $routes->post('(:num)/activer',     'ContratController::activer/$1');
-    $routes->post('(:num)/renouveler',  'ContratController::renouveler/$1');
-    $routes->post('(:num)/avenant',     'ContratController::avenant/$1');
-    $routes->post('(:num)/mettre-fin',  'ContratController::mettreFin/$1');
-    $routes->get('(:num)/historique',   'ContratController::historique/$1');
+    $routes->get('/',           'ContratController::index', ['filter' => 'role:rh,admin']);
+    $routes->post('/',          'ContratController::create', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)',      'ContratController::show/$1', ['filter' => 'role:rh,admin']);
+    $routes->patch('(:num)',    'ContratController::update/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/soumettre',   'ContratController::soumettre/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/signer',      'ContratController::signer/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/activer',     'ContratController::activer/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/renouveler',  'ContratController::renouveler/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/avenant',     'ContratController::avenant/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/mettre-fin',  'ContratController::mettreFin/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/historique',   'ContratController::historique/$1', ['filter' => 'role:rh,admin']);
 });
 
 // grille salaire
@@ -172,29 +182,33 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Personnel'],
 
 // onboardings
 $routes->group('api/onboardings', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
-    $routes->get('/',           'OnboardingController::index');
-    $routes->post('/',          'OnboardingController::demarrer');
-    $routes->get('(:num)',      'OnboardingController::show/$1');
-    $routes->patch('(:num)',    'OnboardingController::update/$1');
-    $routes->post('(:num)/taches', 'OnboardingController::creerTache/$1');
-    $routes->post('taches/(:num)/demarrer', 'OnboardingController::demarrerTache/$1');
-    $routes->post('taches/(:num)/realiser', 'OnboardingController::realiserTache/$1');
-    $routes->post('taches/(:num)/bloquer',  'OnboardingController::bloquerTache/$1');
-    $routes->post('taches/(:num)/annuler',  'OnboardingController::annulerTache/$1');
-    $routes->get('taches/(:num)',  'OnboardingController::showTache/$1');
-    $routes->patch('taches/(:num)',  'OnboardingController::updateTache/$1');
-    $routes->post('(:num)/cloturer',  'OnboardingController::cloturer/$1');
-    $routes->post('(:num)/annuler',   'OnboardingController::annuler/$1');
-    $routes->get('(:num)/historique', 'OnboardingController::historique/$1');
-    $routes->get('(:num)/taches',     'OnboardingController::listerTaches/$1');
-	$routes->get('(:num)/progression', 'OnboardingController::progression/$1');
+    $routes->get('/',           'OnboardingController::index', ['filter' => 'role:rh,admin']);
+    $routes->post('/',          'OnboardingController::demarrer', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)',      'OnboardingController::show/$1', ['filter' => 'role:rh,admin']);
+    $routes->patch('(:num)',    'OnboardingController::update/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/taches', 'OnboardingController::creerTache/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('taches/(:num)/demarrer', 'OnboardingController::demarrerTache/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('taches/(:num)/realiser', 'OnboardingController::realiserTache/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('taches/(:num)/bloquer',  'OnboardingController::bloquerTache/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('taches/(:num)/annuler',  'OnboardingController::annulerTache/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('taches/(:num)',  'OnboardingController::showTache/$1', ['filter' => 'role:rh,admin']);
+    $routes->patch('taches/(:num)',  'OnboardingController::updateTache/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/cloturer',  'OnboardingController::cloturer/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/annuler',   'OnboardingController::annuler/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/historique', 'OnboardingController::historique/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/taches',     'OnboardingController::listerTaches/$1', ['filter' => 'role:rh,admin']);
+	$routes->get('(:num)/progression', 'OnboardingController::progression/$1', ['filter' => 'role:rh,admin']);
 });
+
+$routes->get('api/personnel/mes-taches', 'Personnel\OnboardingController::mesTaches', ['filter' => 'auth']);
 
 // document salaire
 $routes->group('api/salaries/(:num)/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
-    $routes->get('/',       'DocumentController::index/$1');
-    $routes->post('/',      'DocumentController::ajouter/$1');
+    $routes->get('/',       'DocumentController::index/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('/',      'DocumentController::ajouter/$1', ['filter' => 'role:rh,admin']);
 });
+
+$routes->get('api/personnel/mes-documents', 'Personnel\DocumentController::mesDocuments', ['filter' => 'auth']);
 
 // referentiels
 $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'filter' => 'auth'], static function ($routes) {
@@ -215,10 +229,19 @@ $routes->get('api/referentiels/types-document', 'Personnel\DocumentController::l
 
 // supprimer
 $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
-    $routes->get('expirant', 'DocumentController::expirant');
-    $routes->post('(:num)/remplacer', 'DocumentController::remplacer/$1');
-    $routes->get('(:num)/telecharger', 'DocumentController::telecharger/$1');
-    $routes->delete('(:num)', 'DocumentController::supprimer/$1');
+    $routes->get('expirant', 'DocumentController::expirant', ['filter' => 'role:rh,admin']);
+    $routes->post('(:num)/remplacer', 'DocumentController::remplacer/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('(:num)/telecharger', 'DocumentController::telecharger/$1', ['filter' => 'role:rh,admin']);
+    $routes->delete('(:num)', 'DocumentController::supprimer/$1', ['filter' => 'role:rh,admin']);
+});
+
+// grille salaire (CRUD Finance)
+$routes->group('api/finance/grilles-salariales', ['namespace' => 'App\Controllers\Finance', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('/',           'GrilleSalarialeController::index', ['filter' => 'role:finance,admin']);
+    $routes->post('/',          'GrilleSalarialeController::create', ['filter' => 'role:finance,admin']);
+    $routes->get('(:num)',      'GrilleSalarialeController::show/$1', ['filter' => 'role:finance,admin']);
+    $routes->patch('(:num)',    'GrilleSalarialeController::update/$1', ['filter' => 'role:finance,admin']);
+    $routes->delete('(:num)',  'GrilleSalarialeController::delete/$1', ['filter' => 'role:finance,admin']);
 });
 
 //entretiens

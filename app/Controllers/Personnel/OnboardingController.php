@@ -213,6 +213,44 @@ class OnboardingController extends BaseController
         return $this->response->setJSON($this->service->listerTaches($idOnboarding));
     }
 
+    // Mes tâches onboarding (salarié connecté)
+    public function mesTaches()
+    {
+        $u = SessionUtilisateur::courante();
+
+        if ($u === null) {
+            return $this->reponseNonAuthentifie();
+        }
+
+        if ($u->idEmploye === null) {
+            return $this->response->setJSON([]);
+        }
+
+        $employe = \Config\Database::connect()->table('employe')
+            ->select('id_salarie')
+            ->where('id', $u->idEmploye)
+            ->get()
+            ->getRow();
+
+        if ($employe === null || $employe->id_salarie === null) {
+            return $this->response->setJSON([]);
+        }
+
+        $onboarding = $this->service->onboardingActif((int) $employe->id_salarie);
+
+        if ($onboarding === null) {
+            return $this->response->setJSON([]);
+        }
+
+        $taches = $this->service->listerTaches($onboarding->id_onboarding);
+
+        return $this->response->setJSON([
+            'idOnboarding' => $onboarding->id_onboarding,
+            'statut'       => $onboarding->statut,
+            'taches'       => $taches,
+        ]);
+    }
+
     // update
     public function update(int $id)
     {

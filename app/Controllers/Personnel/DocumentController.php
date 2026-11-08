@@ -49,6 +49,43 @@ class DocumentController extends BaseController
         }
     }
 
+    // Mes documents (salarié connecté)
+    public function mesDocuments()
+    {
+        $u = SessionUtilisateur::courante();
+
+        if ($u === null) {
+            return $this->reponseNonAuthentifie();
+        }
+
+        if ($u->idEmploye === null) {
+            return $this->response->setJSON([]);
+        }
+
+        $employe = \Config\Database::connect()->table('employe')
+            ->select('id_salarie')
+            ->where('id', $u->idEmploye)
+            ->get()
+            ->getRow();
+
+        if ($employe === null || $employe->id_salarie === null) {
+            return $this->response->setJSON([]);
+        }
+
+        try {
+            $documents = array_map(
+                static fn ($document): array => $document->toPublicArray(),
+                $this->service->lister((int) $employe->id_salarie, $u, false)
+            );
+
+            return $this->response->setJSON($documents);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        }
+    }
+
     public function ajouter(int $idSalarie)
     {
         $u = SessionUtilisateur::courante();

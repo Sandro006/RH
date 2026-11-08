@@ -13,6 +13,7 @@ final class Roles
     public const DIRECTION         = 'direction';
     public const RECRUTEUR         = 'recruteur';
     public const SALARIE           = 'salarie';
+    public const FINANCE           = 'finance';
 
     public const TOUS = [
         self::ADMIN,
@@ -22,6 +23,7 @@ final class Roles
         self::DIRECTION,
         self::RECRUTEUR,
         self::SALARIE,
+        self::FINANCE,
     ];
 
     public static function estValide(string $role): bool

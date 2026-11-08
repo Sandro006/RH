@@ -136,6 +136,12 @@ class OnboardingService
         return $ids;
     }
 
+    // onboardingActif (pour le salarié connecté)
+    public function onboardingActif(int $idSalarie): ?\App\Entities\Personnel\Onboarding
+    {
+        return $this->onboardingModel->onboardingActif($idSalarie);
+    }
+
     // creerTache
     public function creerTache(array $data, SessionUtilisateur $u): int
     {

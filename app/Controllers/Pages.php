@@ -324,15 +324,97 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/personnel/document-form.js'],
         ],
+        'profil' => [
+            'vue'      => 'pages/profil/index',
+            'titre'    => 'Mon profil · Gestion RH',
+            'actif'    => '',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Profil'],
+            ],
+        ],
         'profil/mot-de-passe' => [
             'vue'      => 'pages/profil/mot-de-passe',
             'titre'    => 'Changer le mot de passe · Gestion RH',
             'actif'    => '',
             'fil'      => [
                 ['label' => 'Tableau de bord', 'url' => '/dashboard'],
-                ['label' => 'Profil'],
+                ['label' => 'Profil', 'url' => '/profil'],
+                ['label' => 'Changer le mot de passe'],
             ],
             'scripts'  => ['/assets/js/pages/profil/mot-de-passe.js'],
+        ],
+        'personnel/mes-documents' => [
+            'vue'      => 'pages/personnel/mes-documents',
+            'titre'    => 'Mes documents · Gestion RH',
+            'actif'    => 'mesDocuments',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Mes documents'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/mes-documents.js'],
+        ],
+        'personnel/mes-taches' => [
+            'vue'      => 'pages/personnel/mes-taches',
+            'titre'    => 'Mes tâches onboarding · Gestion RH',
+            'actif'    => 'mesTaches',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Mes tâches onboarding'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/mes-taches.js'],
+        ],
+        'securite/audit' => [
+            'vue'      => 'pages/securite/audit',
+            'titre'    => 'Audit des accès · Gestion RH',
+            'actif'    => 'audit',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sécurité / Audit'],
+            ],
+            'scripts'  => ['/assets/js/pages/securite/audit.js'],
+        ],
+        'securite/acces' => [
+            'vue'      => 'pages/securite/acces',
+            'titre'    => 'Gestion des accès · Gestion RH',
+            'actif'    => 'acces',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sécurité / Accès'],
+            ],
+            'scripts'  => ['/assets/js/pages/securite/acces.js'],
+        ],
+        'departement/informatique' => [
+            'vue'      => 'pages/departement/informatique',
+            'titre'    => 'Tableau de bord Informatique · Gestion RH',
+            'actif'    => 'dashboardIt',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Informatique'],
+            ],
+            'scripts'  => ['/assets/js/pages/departement/informatique.js'],
+        ],
+        'departement/informatique/creer-utilisateur' => [
+            'vue'      => 'pages/departement/creer-utilisateur',
+            'titre'    => 'Créer un utilisateur · Informatique',
+            'actif'    => 'creerUtilisateur',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Informatique', 'url' => '/departement/informatique'],
+                ['label' => 'Créer un utilisateur'],
+            ],
+            'scripts'  => ['/assets/js/pages/departement/creer-utilisateur.js'],
+        ],
+        'departement/informatique/reinitialiser-mdp' => [
+            'vue'      => 'pages/departement/reinitialiser-mdp',
+            'titre'    => 'Réinitialiser mot de passe · Informatique',
+            'actif'    => 'reinitialiserMdp',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Informatique', 'url' => '/departement/informatique'],
+                ['label' => 'Réinitialiser mot de passe'],
+            ],
+            'scripts'  => ['/assets/js/pages/departement/reinitialiser-mdp.js'],
         ],
     ];
 
@@ -347,6 +429,16 @@ final class Pages extends BaseController
     public function dashboard()
     {
         return $this->rendre('dashboard');
+    }
+
+    public function creerUtilisateur()
+    {
+        return $this->rendre('departement/informatique/creer-utilisateur');
+    }
+
+    public function reinitialiserMdp()
+    {
+        return $this->rendre('departement/informatique/reinitialiser-mdp');
     }
 
     public function afficher(string $section, ?string $page = null)
