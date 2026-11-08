@@ -9,6 +9,7 @@ use CodeIgniter\Exceptions\PageNotFoundException;
 final class Pages extends BaseController
 {
     private const PAGES = [
+        'temps/calendrier' => ['vue' => 'pages/temps/calendrier', 'titre' => 'Temps de travail · Gestion RH', 'actif' => 'temps', 'fil' => [['label' => 'Temps de travail']], 'scripts' => ['/assets/js/pages/temps/calendrier.js']],
         'dashboard' => [
             'vue'      => 'pages/dashboard',
             'titre'    => 'Tableau de bord · Gestion RH',

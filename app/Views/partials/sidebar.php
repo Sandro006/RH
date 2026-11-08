@@ -31,6 +31,9 @@ $sections = [
         'evaluations' => ['label' => 'Évaluations', 'url' => '/recrutement/candidatures', 'roles' => [Roles::ADMIN, Roles::RH, Roles::RECRUTEUR]],
         'propositions' => ['label' => "Propositions d'embauche", 'url' => '/selection/propositions', 'roles' => [Roles::ADMIN, Roles::RH, Roles::DIRECTION, Roles::CONTROLE_GESTION]],
     ],
+    'Temps de travail' => [
+        'temps' => ['label' => 'Calendrier et pointage', 'url' => '/temps/calendrier', 'roles' => [Roles::ADMIN, Roles::RH]],
+    ],
     'Équipe' => [
         'salaires'    => ['label' => 'Salariés', 'url' => '/personnel/salaries', 'roles' => [Roles::ADMIN, Roles::RH, Roles::MANAGER]],
         'contrats'    => ['label' => 'Contrats', 'url' => '/personnel/contrats', 'roles' => [Roles::ADMIN, Roles::RH]],

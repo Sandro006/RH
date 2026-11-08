@@ -217,3 +217,14 @@ $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], st
 
 //entretiens
 $routes->get('entretiens', 'Selection\EntretienController::page');
+
+// Temps de travail
+$routes->get('temps/calendrier', 'Pages::afficher/temps/calendrier', ['filter' => 'auth']);
+$routes->group('api/temps', ['namespace' => 'App\\Controllers\\Temps', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('calendrier', 'TempsController::calendrier');
+    $routes->post('planning', 'TempsController::planning');
+    $routes->post('pointage', 'TempsController::pointage');
+    $routes->get('taux', 'TempsController::taux');
+    $routes->post('taux', 'TempsController::ajouterTaux');
+});
+
