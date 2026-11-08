@@ -216,22 +216,44 @@ WHERE NOT EXISTS (
 );
 
 -- Types de document
-INSERT INTO type_document (id, designation)
-SELECT v.id, v.designation
+-- obligatoire : pièce attendue dans le dossier administratif
+-- duree_validite_mois : NULL = pas d'expiration automatique
+-- niveau_confidentialite : public | interne | rh | restreint
+INSERT INTO type_document (id, designation, obligatoire, duree_validite_mois, niveau_confidentialite, actif)
+SELECT v.id, v.designation, v.obligatoire, v.duree_validite_mois, v.niveau_confidentialite, true
 FROM (VALUES
-    (1, 'CV'),
-    (2, 'Contrat de travail'),
-    (3, 'Pièce d''identité'),
-    (4, 'Diplôme'),
-    (5, 'Attestation de travail'),
-    (6, 'Certificat médical'),
-    (7, 'RIB'),
-    (8, 'Attestation de formation'),
-    (9, 'Autre')
-) AS v(id, designation)
+    (1, 'CV', false, NULL::integer, 'interne'),
+    (2, 'Contrat de travail', true, NULL::integer, 'rh'),
+    (3, 'Pièce d''identité', true, 120, 'rh'),
+    (4, 'Diplôme', false, NULL::integer, 'interne'),
+    (5, 'Attestation de travail', false, NULL::integer, 'interne'),
+    (6, 'Certificat médical', true, 12, 'rh'),
+    (7, 'RIB', true, NULL::integer, 'restreint'),
+    (8, 'Attestation de formation', false, NULL::integer, 'interne'),
+    (9, 'Autre', false, NULL::integer, 'interne')
+) AS v(id, designation, obligatoire, duree_validite_mois, niveau_confidentialite)
 WHERE NOT EXISTS (
     SELECT 1 FROM type_document s WHERE s.id = v.id OR s.designation = v.designation
 );
+
+-- Backfill des métadonnées pour les bases où les types existent déjà.
+UPDATE type_document AS td
+SET obligatoire = v.obligatoire,
+    duree_validite_mois = v.duree_validite_mois,
+    niveau_confidentialite = v.niveau_confidentialite,
+    actif = true
+FROM (VALUES
+    (1, 'CV', false, NULL::integer, 'interne'),
+    (2, 'Contrat de travail', true, NULL::integer, 'rh'),
+    (3, 'Pièce d''identité', true, 120, 'rh'),
+    (4, 'Diplôme', false, NULL::integer, 'interne'),
+    (5, 'Attestation de travail', false, NULL::integer, 'interne'),
+    (6, 'Certificat médical', true, 12, 'rh'),
+    (7, 'RIB', true, NULL::integer, 'restreint'),
+    (8, 'Attestation de formation', false, NULL::integer, 'interne'),
+    (9, 'Autre', false, NULL::integer, 'interne')
+) AS v(id, designation, obligatoire, duree_validite_mois, niveau_confidentialite)
+WHERE td.id = v.id OR td.designation = v.designation;
 
 -- Rangs hiérarchiques
 INSERT INTO rang (id, designation)

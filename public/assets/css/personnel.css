@@ -822,3 +822,89 @@ select[multiple] { min-height: 140px; }
     .metrics { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
 }
+
+/* --- Bloc 5 : dossier administratif du salarié --- */
+.dossier-heading { align-items: flex-start; }
+.dossier-heading-main { min-width: 0; }
+.dossier-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+}
+.dossier-progress { max-width: 360px; }
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-md);
+}
+.dossier-field {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+.dossier-field small {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+}
+.dossier-field p { margin: 0; overflow-wrap: anywhere; }
+.doc-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-sm);
+}
+.doc-missing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin: var(--spacing-sm) 0 var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--warning-bg);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: var(--radius-md);
+}
+.doc-actions { display: flex; flex-wrap: wrap; gap: var(--spacing-xs); }
+.doc-actions .button { padding: 0.4rem 0.75rem; font-size: var(--font-size-sm); }
+.timeline-item {
+    position: relative;
+    padding: 0 0 var(--spacing-md) var(--spacing-md);
+}
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    top: 0.4rem;
+    left: calc(-1 * var(--spacing-md) - 5px);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 0 3px var(--white);
+}
+.timeline-item-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-bottom: 0.15rem;
+}
+.timeline-item p { margin: var(--spacing-xs) 0 0; }
+.dossier-subcard { margin-top: var(--spacing-md); }
+@media (max-width: 768px) {
+    .dossier-heading { flex-direction: column; }
+    .dossier-heading .actions { width: 100%; }
+    .dossier-progress { max-width: none; }
+    .doc-summary { align-items: flex-start; }
+}

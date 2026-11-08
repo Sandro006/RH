@@ -8,6 +8,7 @@ Ce dossier remplace tous les anciens scripts SQL, désormais déplacés dans
 | `01_migrations.sql` | Schéma | 48 tables, clés étrangères, index, commentaires |
 | `02_seeds.sql` | Données réelles | référentiels + départements/services/postes + grilles + comptes de démo |
 | `03_seeds_demo.sql` | Démo (optionnel) | 50 candidats, 50 offres, 50 candidatures, 50 propositions |
+| `04_migration_dossier_administratif.sql` | Migration Bloc 5 | colonnes identité, validité et confidentialité des documents |
 
 ## Installation sur une base vierge
 
@@ -23,7 +24,18 @@ Puis, seulement si vous voulez le jeu de démonstration :
 psql -U postgres -d gestion_rh -f script/db/03_seeds_demo.sql
 ```
 
-Les 3 scripts sont **idempotents** : on peut les relancer sans erreur ni doublon.
+## Mise à jour d'une base existante (Bloc 5)
+
+```
+psql -U postgres -d gestion_rh -f script/db/04_migration_dossier_administratif.sql
+psql -U postgres -d gestion_rh -f script/db/02_seeds.sql
+```
+
+Le script `04` ajoute les colonnes manquantes sans supprimer de données. Le rejeu de
+`02_seeds.sql` complète les métadonnées des types de documents (obligation, validité,
+confidentialité).
+
+Tous les scripts sont **idempotents** : on peut les relancer sans erreur ni doublon.
 
 ## Comptes de démonstration
 

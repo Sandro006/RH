@@ -11,6 +11,8 @@
         'Entretiens à venir',
         'Propositions en cours',
         'Tâches onboarding',
+        'Documents expirant (30 j)',
+        'Documents expirés',
     ] as $label): ?>
         <div class="metric">
             <small><?= esc($label) ?></small>

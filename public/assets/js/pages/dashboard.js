@@ -5,6 +5,8 @@ const dashboardLabels = {
     entretiensAVenir: 'Entretiens à venir',
     propositionsEnCours: 'Propositions en cours',
     tachesOnboarding: 'Tâches onboarding',
+    documentsExpirant: 'Documents expirant (30 j)',
+    documentsExpires: 'Documents expirés',
 };
 
 async function chargerDashboard() {

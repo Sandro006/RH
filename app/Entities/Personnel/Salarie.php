@@ -12,16 +12,22 @@ use CodeIgniter\Entity\Entity;
  */
 class Salarie extends Entity
 {
-    protected $dates = ['date_embauche'];
+    protected $dates = ['date_naissance', 'date_embauche', 'date_sortie'];
 
     protected $casts = [
-        'id_salarie'   => 'integer',
-        'id_candidat'  => '?integer',
-        'matricule'    => 'string',
-        'nom'          => 'string',
-        'prenom'       => 'string',
-        'email'        => '?string',
-        'telephone'    => '?string',
-        'statut'       => 'integer',
+        'id_salarie'          => 'integer',
+        'id_candidat'         => '?integer',
+        'matricule'           => 'string',
+        'nom'                 => 'string',
+        'prenom'              => 'string',
+        'email'               => '?string',
+        'telephone'           => '?string',
+        'lieu_naissance'      => '?string',
+        'nationalite'         => '?string',
+        'situation_familiale' => '?string',
+        'adresse'             => '?string',
+        'ville'               => '?string',
+        'pays'                => '?string',
+        'statut'              => 'integer',
     ];
 }

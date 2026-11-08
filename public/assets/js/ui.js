@@ -8,7 +8,7 @@ const ui = {
         const label = String(value || '—');
         const normalized = label.toLocaleLowerCase('fr-FR');
         let tone = '';
-        
+
         // Statuts Onboarding et Tâche spécifiques
         if (/à démarrer|à faire/.test(normalized)) tone = '';
         else if (/en cours/.test(normalized)) tone = 'primary';
@@ -19,7 +19,7 @@ const ui = {
         else if (/valid|retenue|actif|sign/.test(normalized)) tone = 'success';
         else if (/refus|retir|résili|parti/.test(normalized)) tone = 'danger';
         else if (/contrôle|validation|consultation|corriger|suspend|entretien|évaluation/.test(normalized)) tone = 'warning';
-        
+
         return `<span class="badge ${tone}">${ui.escape(label)}</span>`;
     },
     badge(value = '') { return ui.status(value); },
@@ -31,7 +31,7 @@ const ui = {
     },
     money(value) {
         if (value == null || value === '') return '—';
-        return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(Number(value))} €`;
+        return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(Number(value))} AR`;
     },
     state(message, error = false) {
         return `<div class="state ${error ? 'state-error' : ''}">${ui.escape(message)}</div>`;

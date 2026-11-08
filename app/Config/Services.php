@@ -231,6 +231,22 @@ class Services extends BaseService
 		);
 	}
 	
+	public static function stockageService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('stockageService');
+
+		return new \App\Libraries\Personnel\StockageService();
+	}
+
+	public static function documentPolicy(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('documentPolicy');
+
+		return new \App\Libraries\Personnel\DocumentPolicy(
+			model(\App\Models\Admin\EmployeModel::class),
+		);
+	}
+
 	public static function documentService(bool $getShared = true)
 	{
 		if ($getShared) return static::getSharedInstance('documentService');
@@ -239,6 +255,24 @@ class Services extends BaseService
 			model(\App\Models\Personnel\DocumentModel::class),
 			model(\App\Models\Personnel\TypeDocumentModel::class),
 			model(\App\Models\Personnel\SalarieModel::class),
+			service('auditService'),
+			service('stockageService'),
+			service('documentPolicy'),
+		);
+	}
+
+	public static function dossierService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('dossierService');
+
+		return new \App\Services\Personnel\DossierService(
+			model(\App\Models\Personnel\SalarieModel::class),
+			model(\App\Models\Personnel\AffectationModel::class),
+			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Personnel\SalarieHistoriqueModel::class),
+			model(\App\Models\Personnel\OnboardingModel::class),
+			service('documentService'),
+			service('documentPolicy'),
 			service('auditService'),
 		);
 	}

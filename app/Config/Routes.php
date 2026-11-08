@@ -145,6 +145,9 @@ $routes->group('api/salaries', ['namespace' => 'App\Controllers\Personnel', 'fil
     $routes->get('(:num)/affectations',  'SalarieController::listerAffectations/$1');
     $routes->get('(:num)/historique',    'SalarieController::historique/$1');
     $routes->post('(:num)/statut',       'SalarieController::changerStatut/$1');
+    $routes->get('(:num)/dossier/alertes', 'DossierController::alertes/$1');
+    $routes->get('(:num)/dossier',         'DossierController::show/$1');
+    $routes->get('(:num)/carriere',        'DossierController::carriere/$1');
 });
 
 // contrat
@@ -188,7 +191,7 @@ $routes->group('api/onboardings', ['namespace' => 'App\Controllers\Personnel', '
 });
 
 // document salaire
-$routes->group('api/salaries/(:num)/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
+$routes->group('api/salaries/(:num)/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/',       'DocumentController::index/$1');
     $routes->post('/',      'DocumentController::ajouter/$1');
 });
@@ -211,7 +214,10 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
 $routes->get('api/referentiels/types-document', 'Personnel\DocumentController::listerTypes', ['filter' => 'auth']);
 
 // supprimer
-$routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
+$routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('expirant', 'DocumentController::expirant');
+    $routes->post('(:num)/remplacer', 'DocumentController::remplacer/$1');
+    $routes->get('(:num)/telecharger', 'DocumentController::telecharger/$1');
     $routes->delete('(:num)', 'DocumentController::supprimer/$1');
 });
 

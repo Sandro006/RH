@@ -43,6 +43,8 @@ final class DashboardServiceTest extends CIUnitTestCase
             'entretiensAVenir',
             'propositionsEnCours',
             'tachesOnboarding',
+            'documentsExpirant',
+            'documentsExpires',
         ], array_keys($indicateurs));
 
         foreach ($indicateurs as $valeur) {

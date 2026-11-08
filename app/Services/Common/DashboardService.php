@@ -39,6 +39,8 @@ class DashboardService
             'entretiensAVenir'   => $this->compterSecurise(fn (): int => $this->compterEntretiensAVenir()),
             'propositionsEnCours' => $this->compterSecurise(fn (): int => $this->compterPropositionsEnCours()),
             'tachesOnboarding'   => $this->compterSecurise(fn (): int => $this->compterTachesOnboarding()),
+            'documentsExpirant'  => $this->compterSecurise(fn (): int => $this->compterDocumentsExpirant($utilisateur)),
+            'documentsExpires'   => $this->compterSecurise(fn (): int => $this->compterDocumentsExpires($utilisateur)),
         ];
     }
 
@@ -109,6 +111,39 @@ class DashboardService
             ->join('status_onboarding so', 'so.id = o.statut')
             ->whereIn('st.designation', self::TACHES_ONBOARDING_ACTIVES)
             ->whereIn('so.designation', self::ONBOARDINGS_ACTIFS)
+            ->countAllResults();
+    }
+
+    /**
+     * Pièces actives qui expirent dans les 30 prochains jours (RH / admin).
+     */
+    private function compterDocumentsExpirant(SessionUtilisateur $utilisateur): int
+    {
+        if (!$utilisateur->aLeRole(['admin', 'rh'])) {
+            return 0;
+        }
+
+        return $this->db->table('document')
+            ->where('archive', false)
+            ->where('date_expiration IS NOT NULL', null, false)
+            ->where('date_expiration >=', date('Y-m-d'))
+            ->where('date_expiration <=', date('Y-m-d', strtotime('+30 days')))
+            ->countAllResults();
+    }
+
+    /**
+     * Pièces actives déjà expirées (RH / admin).
+     */
+    private function compterDocumentsExpires(SessionUtilisateur $utilisateur): int
+    {
+        if (!$utilisateur->aLeRole(['admin', 'rh'])) {
+            return 0;
+        }
+
+        return $this->db->table('document')
+            ->where('archive', false)
+            ->where('date_expiration IS NOT NULL', null, false)
+            ->where('date_expiration <', date('Y-m-d'))
             ->countAllResults();
     }
 
