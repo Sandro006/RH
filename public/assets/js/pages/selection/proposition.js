@@ -96,7 +96,7 @@ function renderDetails() {
     if (statutProposition() === 'En négociation') {
         html += `<h2>Contre-proposition</h2>
             <form id="contre-proposition-form" class="form-grid">
-                <label>Rémunération proposée (€)
+                <label>Rémunération proposée (AR)
                     <input name="remunerationProposee" type="number" min="0" step="0.01" required value="${ui.escape(p.remuneration_proposee)}">
                 </label>
                 <label>Date d'embauche proposée

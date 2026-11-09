@@ -212,6 +212,17 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/personnel/grille.js'],
         ],
+        'personnel/grille-form' => [
+            'vue'      => 'pages/personnel/grille-form',
+            'titre'    => 'Grille salariale · Gestion RH',
+            'actif'    => 'grille',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Grille salariale', 'url' => '/personnel/grille'],
+                ['label' => 'Formulaire grille'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/grille-form.js'],
+        ],
         'personnel/contrats' => [
             'vue'      => 'pages/personnel/contrats',
             'titre'    => 'Contrats · Gestion RH',
@@ -325,15 +336,168 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/personnel/document-form.js'],
         ],
+        'profil' => [
+            'vue'      => 'pages/profil/index',
+            'titre'    => 'Mon profil · Gestion RH',
+            'actif'    => '',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Profil'],
+            ],
+        ],
         'profil/mot-de-passe' => [
             'vue'      => 'pages/profil/mot-de-passe',
             'titre'    => 'Changer le mot de passe · Gestion RH',
             'actif'    => '',
             'fil'      => [
                 ['label' => 'Tableau de bord', 'url' => '/dashboard'],
-                ['label' => 'Profil'],
+                ['label' => 'Profil', 'url' => '/profil'],
+                ['label' => 'Changer le mot de passe'],
             ],
             'scripts'  => ['/assets/js/pages/profil/mot-de-passe.js'],
+        ],
+        'personnel/conge-form' => [
+            'vue'      => 'pages/personnel/conge-form',
+            'titre'    => 'Nouvelle demande de congé · Gestion RH',
+            'actif'    => 'mesConges',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Mes congés', 'url' => '/personnel/mes-conges'],
+                ['label' => 'Nouvelle demande'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conge-form.js'],
+        ],
+        'personnel/conges-a-valider' => [
+            'vue'      => 'pages/personnel/conges-a-valider',
+            'titre'    => 'Validations des congés · Gestion RH',
+            'actif'    => 'congesAValider',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Validations'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-a-valider.js'],
+        ],
+        'personnel/conges-absences' => [
+            'vue'      => 'pages/personnel/conges-absences',
+            'titre'    => 'Absences · Gestion RH',
+            'actif'    => 'congesAbsences',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Absences'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-absences.js'],
+        ],
+        'personnel/conges-soldes' => [
+            'vue'      => 'pages/personnel/conges-soldes',
+            'titre'    => 'Soldes des congés · Gestion RH',
+            'actif'    => 'congesSoldes',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Soldes'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-soldes.js'],
+        ],
+        'personnel/conges-planning' => [
+            'vue'      => 'pages/personnel/conges-planning',
+            'titre'    => 'Planning des congés · Gestion RH',
+            'actif'    => 'congesPlanning',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Planning'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-planning.js'],
+        ],
+        'personnel/mes-conges' => [
+            'vue'      => 'pages/personnel/mes-conges',
+            'titre'    => 'Mes congés · Gestion RH',
+            'actif'    => 'mesConges',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Mes congés'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/mes-conges.js'],
+        ],
+        'personnel/mes-documents' => [
+            'vue'      => 'pages/personnel/mes-documents',
+            'titre'    => 'Mes documents · Gestion RH',
+            'actif'    => 'mesDocuments',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Mes documents'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/mes-documents.js'],
+        ],
+        'personnel/mes-taches' => [
+            'vue'      => 'pages/personnel/mes-taches',
+            'titre'    => 'Mes tâches onboarding · Gestion RH',
+            'actif'    => 'mesTaches',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Mes tâches onboarding'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/mes-taches.js'],
+        ],
+        'securite/audit' => [
+            'vue'      => 'pages/securite/audit',
+            'titre'    => 'Audit des accès · Gestion RH',
+            'actif'    => 'audit',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sécurité / Audit'],
+            ],
+            'scripts'  => ['/assets/js/pages/securite/audit.js'],
+        ],
+        'finance/bulletins' => [
+            'vue'      => 'pages/finance/bulletins',
+            'titre'    => 'Bulletins de paie · Gestion RH',
+            'actif'    => 'gestionPaie',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Finances / Bulletins'],
+            ],
+            'scripts'  => ['/assets/js/pages/finance/bulletins.js'],
+        ],
+        'securite/acces' => [
+            'vue'      => 'pages/securite/acces',
+            'titre'    => 'Gestion des accès · Gestion RH',
+            'actif'    => 'acces',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Sécurité / Accès'],
+            ],
+            'scripts'  => ['/assets/js/pages/securite/acces.js'],
+        ],
+        'departement/informatique' => [
+            'vue'      => 'pages/departement/informatique',
+            'titre'    => 'Tableau de bord Informatique · Gestion RH',
+            'actif'    => 'dashboardIt',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Informatique'],
+            ],
+            'scripts'  => ['/assets/js/pages/departement/informatique.js'],
+        ],
+        'departement/informatique/creer-utilisateur' => [
+            'vue'      => 'pages/departement/creer-utilisateur',
+            'titre'    => 'Créer un utilisateur · Informatique',
+            'actif'    => 'creerUtilisateur',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Informatique', 'url' => '/departement/informatique'],
+                ['label' => 'Créer un utilisateur'],
+            ],
+            'scripts'  => ['/assets/js/pages/departement/creer-utilisateur.js'],
+        ],
+        'departement/informatique/reinitialiser-mdp' => [
+            'vue'      => 'pages/departement/reinitialiser-mdp',
+            'titre'    => 'Réinitialiser mot de passe · Informatique',
+            'actif'    => 'reinitialiserMdp',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Informatique', 'url' => '/departement/informatique'],
+                ['label' => 'Réinitialiser mot de passe'],
+            ],
+            'scripts'  => ['/assets/js/pages/departement/reinitialiser-mdp.js'],
         ],
     ];
 
@@ -348,6 +512,16 @@ final class Pages extends BaseController
     public function dashboard()
     {
         return $this->rendre('dashboard');
+    }
+
+    public function creerUtilisateur()
+    {
+        return $this->rendre('departement/informatique/creer-utilisateur');
+    }
+
+    public function reinitialiserMdp()
+    {
+        return $this->rendre('departement/informatique/reinitialiser-mdp');
     }
 
     public function afficher(string $section, ?string $page = null)

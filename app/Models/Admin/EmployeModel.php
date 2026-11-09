@@ -49,4 +49,51 @@ class EmployeModel extends Model
     {
         return $this->where('id_salarie', $idSalarie)->first();
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Insère un employé rattaché à un salarié et à un poste.
+     * Table : employe (id, nom, date_de_naissance, poste_id, id_salarie)
+     */
+    public function insererDepuisSalarie(int $idSalarie, int $idPoste, string $nom, string $dateDeNaissance): int
+    {
+        $db = $this->db;
+        $db->transStart();
+
+        try {
+            $db->table($this->table)->insert([
+                'nom'               => $nom,
+                'date_de_naissance' => $dateDeNaissance,
+                'poste_id'          => $idPoste,
+                'id_salarie'        => $idSalarie,
+            ]);
+
+            $id = (int) $db->insertID();
+            $db->transComplete();
+
+            return $id;
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * Retourne le nom du département d'un employé (via poste -> service -> departement).
+     */
+    public function getDepartementDeEmploye(int $idEmploye): ?string
+    {
+        $row = $this->db->table('employe e')
+            ->select('d.nom AS departement')
+            ->join('poste p', 'p.id_poste = e.poste_id')
+            ->join('service s', 's.id_service = p.id_service')
+            ->join('departement d', 'd.id_departement = s.id_departement')
+            ->where('e.id', $idEmploye)
+            ->get()
+            ->getRow();
+
+        return $row !== null ? (string) $row->departement : null;
+    }
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 }

@@ -72,7 +72,7 @@ function rendreGrille() {
                 <div class="grille-poste ${etatClass}">
                     <div class="grille-poste-header">
                         <span class="grille-poste-titre">${ui.escape(grille.poste || grille.idPoste)}</span>
-                        <span class="grille-poste-rang">${ui.escape(grille.rang || '—')}</span>
+                        <span class="grille-poste-rang">${ui.escape(grille.rang_designation || '—')}</span>
                     </div>
                     <div class="grille-poste-service">${ui.escape(grille.service || '—')}</div>
                     <div class="grille-poste-salaire">
@@ -83,6 +83,14 @@ function rendreGrille() {
                     <div class="grille-poste-periode">${periode}</div>
                     <div class="grille-poste-etat">
                         <span class="badge ${grille.actif ? 'success' : 'warning'}">${etatLabel}</span>
+                    </div>
+                    <div class="grille-poste-actions">
+                        <button class="btn-action modifier" data-id="${grille.id_grille}" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-action supprimer" data-id="${grille.id_grille}" title="Supprimer" data-conf="Êtes-vous sûr de vouloir supprimer cette grille ?">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             `;
@@ -96,6 +104,25 @@ function rendreGrille() {
     
     html += '</div>';
     grilleList.innerHTML = html;
+
+    // Attacher les événements des actions
+    document.querySelectorAll('.modifier').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            window.location.href = `/personnel/grille-form?mode=edit&id=${id}`;
+        });
+    });
+
+    document.querySelectorAll('.supprimer').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (confirm(btn.getAttribute('data-conf'))) {
+                const id = btn.getAttribute('data-id');
+                // TODO: appeler l'API DELETE /api/finance/grilles-salariales/${id}
+                ui.toast('Grille supprimée.');
+                chargerGrille();
+            }
+        });
+    });
 }
 
 async function chargerGrille() {

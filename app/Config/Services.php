@@ -48,6 +48,7 @@ class Services extends BaseService
 		return new \App\Services\Admin\UtilisateurService(
 			model(\App\Models\Admin\UtilisateurModel::class),
 			model(\App\Models\Admin\EmployeModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
 			new \App\Libraries\Auth\PasswordHasher(),
 			service('auditService'),
 		);
@@ -231,6 +232,22 @@ class Services extends BaseService
 		);
 	}
 	
+	public static function stockageService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('stockageService');
+
+		return new \App\Libraries\Personnel\StockageService();
+	}
+
+	public static function documentPolicy(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('documentPolicy');
+
+		return new \App\Libraries\Personnel\DocumentPolicy(
+			model(\App\Models\Admin\EmployeModel::class),
+		);
+	}
+
 	public static function documentService(bool $getShared = true)
 	{
 		if ($getShared) return static::getSharedInstance('documentService');
@@ -240,6 +257,245 @@ class Services extends BaseService
 			model(\App\Models\Personnel\TypeDocumentModel::class),
 			model(\App\Models\Personnel\SalarieModel::class),
 			service('auditService'),
+			service('stockageService'),
+			service('documentPolicy'),
+		);
+	}
+
+	public static function dossierService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('dossierService');
+
+		return new \App\Services\Personnel\DossierService(
+			model(\App\Models\Personnel\SalarieModel::class),
+			model(\App\Models\Personnel\AffectationModel::class),
+			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Personnel\SalarieHistoriqueModel::class),
+			model(\App\Models\Personnel\OnboardingModel::class),
+			service('documentService'),
+			service('documentPolicy'),
+			service('auditService'),
+		);
+	}
+
+	public static function demandeCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('demandeCongeService');
+
+		return new \App\Services\Personnel\DemandeCongeService(
+			model(\App\Models\Personnel\DemandeCongeModel::class),
+			service('auditService'),
+		);
+	}
+
+	// -- Bloc 7 : Congés et absences (Services/Conges) -----------------------
+
+	public static function auditCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('auditCongeService');
+
+		return new \App\Services\Conges\AuditService(
+			service('auditService'),
+		);
+	}
+
+	public static function calendrierService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('calendrierService');
+
+		return new \App\Services\Conges\CalendrierService(
+			model(\App\Models\Conges\JourFerieModel::class),
+		);
+	}
+
+	public static function controleDemandeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('controleDemandeService');
+
+		return new \App\Services\Conges\ControleDemandeService(
+			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			model(\App\Models\Conges\TypeCongeModel::class),
+			model(\App\Models\Conges\DroitCongeModel::class),
+			model(\App\Models\Conges\DemandeCongeModel::class),
+			model(\App\Models\Conges\AbsenceModel::class),
+			service('calendrierService'),
+		);
+	}
+
+	public static function soldeCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('soldeCongeService');
+
+		return new \App\Services\Conges\SoldeService(
+			model(\App\Models\Conges\SoldeCongeModel::class),
+			model(\App\Models\Conges\MouvementSoldeModel::class),
+			model(\App\Models\Conges\TypeCongeModel::class),
+			model(\App\Models\Conges\DroitCongeModel::class),
+			model(\App\Models\Conges\DemandeCongeModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			service('calendrierService'),
+			service('auditCongeService'),
+		);
+	}
+
+	public static function absenceCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('absenceCongeService');
+
+		return new \App\Services\Conges\AbsenceService(
+			model(\App\Models\Conges\AbsenceModel::class),
+			model(\App\Models\Conges\TypeAbsenceModel::class),
+			model(\App\Models\Conges\TypeCongeModel::class),
+			model(\App\Models\Conges\DemandeCongeModel::class),
+			service('calendrierService'),
+		);
+	}
+
+	public static function notificationCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('notificationCongeService');
+
+		return new \App\Services\Conges\NotificationService();
+	}
+
+	public static function congeWorkflowService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('congeWorkflowService');
+
+		return new \App\Services\Conges\CongeService(
+			model(\App\Models\Conges\DemandeCongeModel::class),
+			model(\App\Models\Conges\TypeCongeModel::class),
+			model(\App\Models\Conges\StatutDemandeCongeModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Conges\DelegationValidationModel::class),
+			service('calendrierService'),
+			service('controleDemandeService'),
+			service('soldeCongeService'),
+			service('absenceCongeService'),
+			service('auditCongeService'),
+			service('notificationCongeService'),
+		);
+	}
+
+	public static function paieCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('paieCongeService');
+
+		return new \App\Services\Conges\PaieCongeService(
+			service('calendrierService'),
+		);
+	}
+
+	public static function justificatifCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('justificatifCongeService');
+
+		return new \App\Services\Conges\JustificatifService(
+			model(\App\Models\Conges\JustificatifAbsenceModel::class),
+			service('auditCongeService'),
+		);
+	}
+
+	// -- Bloc Paie : bulletins de paie --------------------------------------
+
+	public static function cotisationService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('cotisationService');
+
+		return new \App\Services\Paie\CotisationService(
+			model(\App\Models\Paie\TauxCotisationModel::class),
+		);
+	}
+
+	public static function elementPaieService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('elementPaieService');
+
+		return new \App\Services\Paie\ElementPaieService(
+			model(\App\Models\Paie\ElementPaieModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			service('auditService'),
+		);
+	}
+
+	public static function bulletinService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('bulletinService');
+
+		return new \App\Services\Paie\BulletinService(
+			model(\App\Models\Paie\BulletinPaieModel::class),
+			model(\App\Models\Paie\ElementPaieModel::class),
+			model(\App\Models\Personnel\ContratModel::class),
+			service('cotisationService'),
+			service('calendrierService'),
+		);
+	}
+
+	public static function passwordHasher(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('passwordHasher');
+
+		return new \App\Libraries\Auth\PasswordHasher();
+	}
+
+	public static function sessionManager(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('sessionManager');
+
+		return new \App\Libraries\Auth\SessionManager();
+	}
+
+	public static function auditService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('auditService');
+
+		return new \App\Libraries\Common\AuditService(
+			model(\App\Models\Common\JournalAuditModel::class),
+			model(\App\Models\Common\ActionModel::class),
+		);
+	}
+
+	public static function authService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('authService');
+
+		return new \App\Services\Auth\AuthService(
+			model(\App\Models\Admin\UtilisateurModel::class),
+			service('passwordHasher'),
+			service('sessionManager'),
+			service('auditService'),
+		);
+	}
+
+	public static function utilisateurService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('utilisateurService');
+
+		return new \App\Services\Admin\UtilisateurService(
+			model(\App\Models\Admin\UtilisateurModel::class),
+			model(\App\Models\Admin\EmployeModel::class),
+			service('passwordHasher'),
+			service('auditService'),
+		);
+	}
+
+	public static function referentielService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('referentielService');
+
+		return new \App\Services\Common\ReferentielService(
+			model(\App\Models\Common\ReferentielModel::class),
+		);
+	}
+
+	public static function dashboardService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('dashboardService');
+
+		return new \App\Services\Common\DashboardService(
+			\Config\Database::connect(),
 		);
 	}
 

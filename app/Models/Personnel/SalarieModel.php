@@ -16,7 +16,10 @@ class SalarieModel extends Model
     protected $useSoftDeletes   = false;
     protected $allowedFields    = [
         'id_candidat', 'matricule', 'nom', 'prenom',
-        'email', 'telephone', 'date_embauche', 'statut',
+        'email', 'telephone',
+        'date_naissance', 'lieu_naissance', 'nationalite', 'situation_familiale',
+        'adresse', 'ville', 'pays',
+        'date_embauche', 'date_sortie', 'statut',
     ];
     protected $useTimestamps = false;
 

@@ -1,0 +1,127 @@
+/* Grille salariale — formulaire */
+.grille-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg, 1.5rem);
+    max-width: 960px;
+}
+
+.grille-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-md, 1rem);
+    flex-wrap: wrap;
+}
+
+.grille-header h1 {
+    margin: 0 0 var(--spacing-xs, 0.5rem);
+    font-size: var(--font-size-2xl, 1.5rem);
+}
+
+.grille-header p {
+    margin: 0;
+    color: var(--text-secondary, #6B7280);
+}
+
+.grille-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.875rem;
+    border-radius: 999px;
+    background: #FEF3C7;
+    color: #92400E;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.grille-accent {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--primary-gradient, linear-gradient(135deg, #EBB644 0%, #DD8729 100%));
+}
+
+.grille-section {
+    padding: var(--spacing-lg, 1.5rem);
+    background: var(--white, #FFFFFF);
+    border: 1px solid var(--border, #E5E7EB);
+    border-radius: var(--radius-lg, 16px);
+    box-shadow: var(--shadow-sm);
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md, 1rem);
+    margin-bottom: var(--spacing-lg, 1.5rem);
+}
+
+.section-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-md, 12px);
+    background: var(--primary, #EBB644);
+    color: var(--charcoal, #26272A);
+    font-weight: 700;
+}
+
+.section-heading h2 {
+    margin: 0 0 0.25rem;
+    font-size: var(--font-size-lg, 1.125rem);
+}
+
+.section-heading p {
+    margin: 0;
+    color: var(--text-secondary, #6B7280);
+    font-size: var(--font-size-sm, 0.875rem);
+}
+
+.form-grid {
+    display: grid;
+    gap: var(--spacing-md, 1rem);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs, 0.5rem);
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: var(--font-size-sm, 0.875rem);
+    color: var(--text-primary, #26272A);
+}
+
+.form-help {
+    color: var(--text-muted, #9CA3AF);
+    font-size: var(--font-size-sm, 0.875rem);
+}
+
+.required {
+    color: var(--danger, #EF4444);
+}
+
+.grille-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-sm, 0.75rem);
+    flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+    .grille-actions {
+        justify-content: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .grille-actions > * {
+        width: 100%;
+    }
+}

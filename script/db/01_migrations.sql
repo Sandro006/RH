@@ -169,7 +169,15 @@ CREATE TABLE IF NOT EXISTS salarie (
 	prenom varchar(150) NOT NULL,
 	email varchar(200),
 	telephone varchar(30),
+	date_naissance date,
+	lieu_naissance varchar(150),
+	nationalite varchar(100),
+	situation_familiale varchar(50),
+	adresse text,
+	ville varchar(100),
+	pays varchar(100),
 	date_embauche date,
+	date_sortie date,
 	statut bigint,
 	PRIMARY KEY (id_salarie)
 );
@@ -203,6 +211,15 @@ CREATE TABLE IF NOT EXISTS document (
 	nom_fichier varchar(255),
 	chemin_fichier varchar(500) NOT NULL,
 	date_depot timestamp with time zone NOT NULL DEFAULT now(),
+	date_emission date,
+	date_expiration date,
+	niveau_confidentialite varchar(20) NOT NULL DEFAULT 'interne',
+	id_utilisateur_depot bigint,
+	mime_type varchar(100),
+	taille_octets bigint,
+	checksum_sha256 varchar(64),
+	remplace_par bigint,
+	archive boolean NOT NULL DEFAULT false,
 	PRIMARY KEY (id_document)
 );
 CREATE TABLE IF NOT EXISTS onboarding (
@@ -457,8 +474,24 @@ CREATE TABLE IF NOT EXISTS type_entrentien (
 CREATE TABLE IF NOT EXISTS type_document (
 	id bigserial NOT NULL,
 	designation varchar(255) NOT NULL UNIQUE,
+	obligatoire boolean NOT NULL DEFAULT false,
+	duree_validite_mois integer,
+	niveau_confidentialite varchar(20) NOT NULL DEFAULT 'interne',
+	actif boolean NOT NULL DEFAULT true,
 	PRIMARY KEY (id)
 );
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'type_document_confidentialite_check' AND conrelid = 'type_document'::regclass) THEN
+        ALTER TABLE type_document ADD CONSTRAINT type_document_confidentialite_check CHECK (niveau_confidentialite IN ('public', 'interne', 'rh', 'restreint'));
+    END IF;
+END $$;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'type_document_validite_check' AND conrelid = 'type_document'::regclass) THEN
+        ALTER TABLE type_document ADD CONSTRAINT type_document_validite_check CHECK (duree_validite_mois IS NULL OR duree_validite_mois > 0);
+    END IF;
+END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'service_fk1' AND conrelid = 'service'::regclass) THEN
@@ -707,6 +740,24 @@ BEGIN
 END $$;
 DO $$
 BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_fk3' AND conrelid = 'document'::regclass) THEN
+        ALTER TABLE document ADD CONSTRAINT document_fk3 FOREIGN KEY (id_utilisateur_depot) REFERENCES utilisateur(id_utilisateur) ON DELETE SET NULL;
+    END IF;
+END $$;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_fk4' AND conrelid = 'document'::regclass) THEN
+        ALTER TABLE document ADD CONSTRAINT document_fk4 FOREIGN KEY (remplace_par) REFERENCES document(id_document) ON DELETE SET NULL;
+    END IF;
+END $$;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'document_confidentialite_check' AND conrelid = 'document'::regclass) THEN
+        ALTER TABLE document ADD CONSTRAINT document_confidentialite_check CHECK (niveau_confidentialite IN ('public', 'interne', 'rh', 'restreint'));
+    END IF;
+END $$;
+DO $$
+BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'onboarding_fk0' AND conrelid = 'onboarding'::regclass) THEN
         ALTER TABLE onboarding ADD CONSTRAINT onboarding_fk0 FOREIGN KEY (statut) REFERENCES status_onboarding(id);
     END IF;
@@ -890,6 +941,12 @@ CREATE INDEX IF NOT EXISTS idx_salarie_hist_date ON salarie_status_historique US
 CREATE INDEX IF NOT EXISTS idx_contrat_hist_date ON contrat_status_historique USING btree (id_contrat, date_changement);
 CREATE INDEX IF NOT EXISTS idx_onboarding_hist_date ON onboarding_status_historique USING btree (id_onboarding, date_changement);
 CREATE INDEX IF NOT EXISTS idx_onboarding_tache_hist_date ON onboarding_tache_status_historique USING btree (id_tache, date_changement);
+CREATE INDEX IF NOT EXISTS idx_document_salarie ON document (id_salarie);
+CREATE INDEX IF NOT EXISTS idx_document_type ON document (type_document);
+CREATE INDEX IF NOT EXISTS idx_document_expiration ON document (date_expiration);
+CREATE INDEX IF NOT EXISTS idx_document_archive ON document (archive);
+CREATE INDEX IF NOT EXISTS idx_document_utilisateur ON document (id_utilisateur_depot);
+CREATE INDEX IF NOT EXISTS idx_document_salarie_archive ON document (id_salarie, archive);
 COMMENT ON TABLE demande_recrutement_status_historique IS 'Historique des changements de statut pour demande_recrutement.';
 COMMENT ON TABLE candidature_status_historique IS 'Historique des changements de statut pour candidature.';
 COMMENT ON TABLE status_offre_emploi IS 'Référentiel des statuts pour offre_emploi.';
@@ -915,5 +972,26 @@ COMMENT ON TABLE type_entrentien IS 'Référentiel des types d''entretien.';
 -- Index d'authentification / audit (ex-migration_auth.sql)
 CREATE INDEX IF NOT EXISTS idx_utilisateur_actif ON utilisateur (actif);
 CREATE INDEX IF NOT EXISTS idx_journal_audit_utilisateur_date ON journal_audit (id_utilisateur, date_action);
+
+-- Demandes de congé (voir script/db/07_migration_conge.sql)
+CREATE TABLE IF NOT EXISTS demande_conge (
+    id_conge      bigserial NOT NULL,
+    id_utilisateur bigint NOT NULL,
+    id_employe    bigint,
+    type_conge    varchar(255) NOT NULL,
+    date_debut    date NOT NULL,
+    date_fin      date NOT NULL,
+    motif         varchar(255) NOT NULL,
+    justification text,
+    statut        varchar(50) NOT NULL DEFAULT 'En attente',
+    date_creation timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (id_conge),
+    CONSTRAINT demande_conge_dates_check CHECK (date_fin >= date_debut),
+    CONSTRAINT demande_conge_statut_check CHECK (statut IN ('En attente', 'Validée', 'Refusée', 'Annulée'))
+);
+CREATE INDEX IF NOT EXISTS idx_conge_utilisateur ON demande_conge (id_utilisateur);
+CREATE INDEX IF NOT EXISTS idx_conge_employe ON demande_conge (id_employe);
+CREATE INDEX IF NOT EXISTS idx_conge_statut ON demande_conge (statut);
+CREATE INDEX IF NOT EXISTS idx_conge_dates ON demande_conge (date_debut, date_fin);
 
 COMMIT;

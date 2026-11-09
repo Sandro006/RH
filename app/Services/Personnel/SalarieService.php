@@ -155,7 +155,11 @@ class SalarieService
         }
 
         // Champs modifiables uniquement (pas matricule, pas statut, pas date_embauche)
-        $autorises = ['nom', 'prenom', 'email', 'telephone'];
+        $autorises = [
+            'nom', 'prenom', 'email', 'telephone',
+            'date_naissance', 'lieu_naissance', 'nationalite', 'situation_familiale',
+            'adresse', 'ville', 'pays',
+        ];
         $payload   = array_intersect_key($modifications, array_flip($autorises));
 
         if (empty($payload)) {
@@ -310,7 +314,10 @@ class SalarieService
     private function requeteSalaries()
     {
         return $this->salarieModel->db->table('salarie s')
-            ->select('s.id_salarie, s.id_candidat, s.matricule, s.nom, s.prenom, s.email, s.telephone, s.date_embauche, s.statut, ss.designation AS statut_designation, p.id_poste, p.intitule AS poste')
+            ->select('s.id_salarie, s.id_candidat, s.matricule, s.nom, s.prenom, s.email, s.telephone, '
+                . 's.date_naissance, s.lieu_naissance, s.nationalite, s.situation_familiale, '
+                . 's.adresse, s.ville, s.pays, s.date_embauche, s.date_sortie, s.statut, '
+                . 'ss.designation AS statut_designation, p.id_poste, p.intitule AS poste')
             ->join('status_salarie ss', 'ss.id = s.statut', 'left')
             ->join('affectation a', 'a.id_salarie = s.id_salarie AND a.date_fin IS NULL', 'left')
             ->join('poste p', 'p.id_poste = a.id_poste', 'left')

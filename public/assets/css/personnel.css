@@ -822,3 +822,542 @@ select[multiple] { min-height: 140px; }
     .metrics { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
 }
+
+/* --- Bloc 5 : dossier administratif du salarié --- */
+.dossier-heading { align-items: flex-start; }
+.dossier-heading-main { min-width: 0; }
+.dossier-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+}
+.dossier-progress { max-width: 360px; }
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-md);
+}
+.dossier-field {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+.dossier-field small {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+}
+.dossier-field p { margin: 0; overflow-wrap: anywhere; }
+.doc-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-sm);
+}
+.doc-missing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin: var(--spacing-sm) 0 var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--warning-bg);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: var(--radius-md);
+}
+.doc-actions { display: flex; flex-wrap: wrap; gap: var(--spacing-xs); }
+.doc-actions .button { padding: 0.4rem 0.75rem; font-size: var(--font-size-sm); }
+.timeline-item {
+    position: relative;
+    padding: 0 0 var(--spacing-md) var(--spacing-md);
+}
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    top: 0.4rem;
+    left: calc(-1 * var(--spacing-md) - 5px);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 0 3px var(--white);
+}
+.timeline-item-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-bottom: 0.15rem;
+}
+.timeline-item p { margin: var(--spacing-xs) 0 0; }
+.dossier-subcard { margin-top: var(--spacing-md); }
+@media (max-width: 768px) {
+    .dossier-heading { flex-direction: column; }
+    .dossier-heading .actions { width: 100%; }
+    .dossier-progress { max-width: none; }
+    .doc-summary { align-items: flex-start; }
+}
+
+/* ============================================================================
+   Gestion des accès (securite/acces)
+   ============================================================================ */
+
+.toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.input-search {
+    flex: 1 1 200px;
+    min-width: 150px;
+}
+
+.input-select {
+    min-width: 150px;
+}
+
+.table-utilisateurs {
+    width: 100%;
+    min-width: 700px;
+    border-collapse: collapse;
+    background: var(--white);
+}
+
+.table-utilisateurs th,
+.table-utilisateurs td {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.table-utilisateurs th {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--bg-tertiary);
+    position: sticky;
+    top: 0;
+}
+
+.table-utilisateurs tbody tr:hover { background: var(--bg-secondary); }
+.table-utilisateurs tbody tr:last-child td { border-bottom: none; }
+
+.table-utilisateurs .actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    padding: 0.4rem 0.75rem;
+    font-size: var(--font-size-sm);
+}
+
+.badge-actif {
+    background: var(--success-bg);
+    color: #065F46;
+}
+
+.badge-inactif {
+    background: var(--danger-bg);
+    color: #991B1B;
+}
+
+.role-badge {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.mdp-force {
+    background: var(--warning-bg);
+    color: #92400E;
+    font-size: 0.7rem;
+    margin-left: var(--spacing-xs);
+}
+
+.mdp-box {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin: var(--spacing-md) 0;
+}
+
+.mdp-box code {
+    flex: 1;
+    font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+    font-size: var(--font-size-lg);
+    background: var(--white);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    word-break: break-all;
+    color: var(--text-primary);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+/* Le composant .modal existe déjà dans components.css ; on surcharge le panel */
+.modal .modal-panel {
+    width: min(560px, 92%);
+    margin: 0;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal.hidden { display: none !important; }
+
+/* ============================================================================
+   Tableau de bord Informatique (tuiles)
+   ============================================================================ */
+
+.tuile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+}
+
+.tuile {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-lg);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    height: 140px;
+}
+
+.tuile:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+}
+
+.tuile-primary { border-top: 4px solid var(--primary); }
+.tuile-warning { border-top: 4px solid var(--warning); }
+.tuile-info { border-top: 4px solid var(--primary-light); }
+.tuile-disabled {
+    border-top: 4px solid var(--text-muted);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.tuile-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.tuile-icon svg {
+    width: 2rem;
+    height: 2rem;
+    color: var(--primary);
+}
+
+.tuile-info h3 {
+    font-size: var(--font-size-lg);
+    margin: 0 0 var(--spacing-xs);
+}
+
+.tuile-info p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.mt-md { margin-top: var(--spacing-md); }
+
+/* ============================================================================
+   Formulaires (département informatique)
+   ============================================================================ */
+
+.form-grid.insertion-form .field-wide { grid-column: 1 / -1; }
+.form-grid.insertion-form .field-half { grid-column: span 1; }
+@media (min-width: 768px) {
+    .form-grid.insertion-form .field-half { grid-column: span 1; }
+    .form-grid.insertion-form .field-wide { grid-column: 1 / -1; }
+}
+
+ / *   I m p r o v e d   t u i l e   s t y l e s   * / 
+ . t u i l e - g r i d   { 
+         g r i d - t e m p l a t e - c o l u m n s :   r e p e a t ( a u t o - f i t ,   m i n m a x ( 2 8 0 p x ,   1 f r ) )   ! i m p o r t a n t ; 
+ } 
+ . t u i l e   { 
+         f l e x - d i r e c t i o n :   r o w   ! i m p o r t a n t ; 
+         h e i g h t :   a u t o   ! i m p o r t a n t ; 
+         p o s i t i o n :   r e l a t i v e ; 
+         o v e r f l o w :   h i d d e n ; 
+ } 
+ . t u i l e : h o v e r   { 
+         b o x - s h a d o w :   v a r ( - - s h a d o w - l g )   ! i m p o r t a n t ; 
+ } 
+ . t u i l e - p r i m a r y   {   b o r d e r - l e f t :   4 p x   s o l i d   v a r ( - - p r i m a r y )   ! i m p o r t a n t ;   b o r d e r - t o p :   n o n e   ! i m p o r t a n t ;   } 
+ . t u i l e - p r i m a r y   . t u i l e - i c o n   {   b a c k g r o u n d :   v a r ( - - p r i m a r y - g r a d i e n t ) ;   c o l o r :   v a r ( - - c h a r c o a l ) ;   } 
+ . t u i l e - w a r n i n g   {   b o r d e r - l e f t :   4 p x   s o l i d   v a r ( - - w a r n i n g )   ! i m p o r t a n t ;   b o r d e r - t o p :   n o n e   ! i m p o r t a n t ;   } 
+ . t u i l e - w a r n i n g   . t u i l e - i c o n   {   b a c k g r o u n d :   v a r ( - - w a r n i n g - b g ) ;   c o l o r :   v a r ( - - w a r n i n g ) ;   } 
+ . t u i l e - i n f o   {   b o r d e r - l e f t :   4 p x   s o l i d   # 0 2 8 4 C 7   ! i m p o r t a n t ;   b o r d e r - t o p :   n o n e   ! i m p o r t a n t ;   } 
+ . t u i l e - i n f o   . t u i l e - i c o n   {   b a c k g r o u n d :   # E 0 F 2 F E ;   c o l o r :   # 0 2 8 4 C 7 ;   } 
+ . t u i l e - d i s a b l e d   {   b o r d e r - l e f t :   4 p x   s o l i d   v a r ( - - t e x t - m u t e d )   ! i m p o r t a n t ;   b o r d e r - t o p :   n o n e   ! i m p o r t a n t ;   } 
+ . t u i l e - d i s a b l e d   . t u i l e - i c o n   {   b a c k g r o u n d :   v a r ( - - b g - t e r t i a r y ) ;   c o l o r :   v a r ( - - t e x t - m u t e d ) ;   } 
+ . t u i l e - i c o n   { 
+         w i d t h :   6 4 p x ; 
+         h e i g h t :   6 4 p x ; 
+         b o r d e r - r a d i u s :   v a r ( - - r a d i u s - m d ) ; 
+         m a r g i n - b o t t o m :   0   ! i m p o r t a n t ; 
+ } 
+ . t u i l e - i c o n   s v g   { 
+         w i d t h :   3 2 p x ; 
+         h e i g h t :   3 2 p x ; 
+ } 
+ . t u i l e - i n f o   h 3   { 
+         f o n t - w e i g h t :   6 0 0 ; 
+ } 
+ . t u i l e - i n f o   p   { 
+         l i n e - h e i g h t :   1 . 4 ; 
+ } 
+ . t u i l e - a r r o w   { 
+         d i s p l a y :   f l e x ; 
+         a l i g n - i t e m s :   c e n t e r ; 
+         j u s t i f y - c o n t e n t :   c e n t e r ; 
+         w i d t h :   3 2 p x ; 
+         h e i g h t :   3 2 p x ; 
+         b o r d e r - r a d i u s :   v a r ( - - r a d i u s - s m ) ; 
+         b a c k g r o u n d :   v a r ( - - b g - t e r t i a r y ) ; 
+         c o l o r :   v a r ( - - t e x t - m u t e d ) ; 
+         t r a n s i t i o n :   a l l   0 . 3 s   e a s e ; 
+         f l e x - s h r i n k :   0 ; 
+ } 
+ . t u i l e : h o v e r   . t u i l e - a r r o w   { 
+         b a c k g r o u n d :   v a r ( - - p r i m a r y ) ; 
+         c o l o r :   v a r ( - - c h a r c o a l ) ; 
+         t r a n s f o r m :   t r a n s l a t e X ( 4 p x ) ; 
+ } 
+  
+ 
+ / *   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+       P r o f i l   u t i l i s a t e u r 
+       = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =   * / 
+ 
+ . p r o f i l e - h e a d e r   { 
+         d i s p l a y :   f l e x ; 
+         a l i g n - i t e m s :   c e n t e r ; 
+         g a p :   v a r ( - - s p a c i n g - l g ) ; 
+         p a d d i n g :   v a r ( - - s p a c i n g - l g ) ; 
+ } 
+ 
+ . p r o f i l e - a v a t a r   { 
+         d i s p l a y :   f l e x ; 
+         a l i g n - i t e m s :   c e n t e r ; 
+         j u s t i f y - c o n t e n t :   c e n t e r ; 
+         w i d t h :   8 0 p x ; 
+         h e i g h t :   8 0 p x ; 
+         b a c k g r o u n d :   v a r ( - - p r i m a r y - g r a d i e n t ) ; 
+         b o r d e r - r a d i u s :   v a r ( - - r a d i u s - l g ) ; 
+         c o l o r :   v a r ( - - c h a r c o a l ) ; 
+         f l e x - s h r i n k :   0 ; 
+ } 
+ 
+ . p r o f i l e - a v a t a r   s v g   { 
+         w i d t h :   4 0 p x ; 
+         h e i g h t :   4 0 p x ; 
+ } 
+ 
+ . p r o f i l e - i n f o   { 
+         f l e x :   1 ; 
+ } 
+ 
+ . p r o f i l e - i n f o   h 2   { 
+         m a r g i n :   0   0   v a r ( - - s p a c i n g - s m ) ; 
+         f o n t - s i z e :   v a r ( - - f o n t - s i z e - x l ) ; 
+ } 
+ 
+ . b a d g e - p r i m a r y   { 
+         d i s p l a y :   i n l i n e - b l o c k ; 
+         p a d d i n g :   v a r ( - - s p a c i n g - x s )   v a r ( - - s p a c i n g - s m ) ; 
+         b a c k g r o u n d :   v a r ( - - p r i m a r y - g r a d i e n t ) ; 
+         c o l o r :   v a r ( - - c h a r c o a l ) ; 
+         b o r d e r - r a d i u s :   v a r ( - - r a d i u s - s m ) ; 
+         f o n t - s i z e :   v a r ( - - f o n t - s i z e - s m ) ; 
+         f o n t - w e i g h t :   6 0 0 ; 
+ } 
+ 
+ . i n f o - g r i d   { 
+         d i s p l a y :   g r i d ; 
+         g r i d - t e m p l a t e - c o l u m n s :   r e p e a t ( a u t o - f i t ,   m i n m a x ( 2 0 0 p x ,   1 f r ) ) ; 
+         g a p :   v a r ( - - s p a c i n g - l g ) ; 
+         p a d d i n g :   v a r ( - - s p a c i n g - l g ) ; 
+ } 
+ 
+ . i n f o - i t e m   { 
+         d i s p l a y :   f l e x ; 
+         f l e x - d i r e c t i o n :   c o l u m n ; 
+         g a p :   v a r ( - - s p a c i n g - x s ) ; 
+ } 
+ 
+ . i n f o - i t e m   l a b e l   { 
+         f o n t - s i z e :   v a r ( - - f o n t - s i z e - s m ) ; 
+         c o l o r :   v a r ( - - t e x t - m u t e d ) ; 
+         f o n t - w e i g h t :   5 0 0 ; 
+ } 
+ 
+ . i n f o - i t e m   s t r o n g   { 
+         f o n t - s i z e :   v a r ( - - f o n t - s i z e - l g ) ; 
+         c o l o r :   v a r ( - - t e x t - p r i m a r y ) ; 
+ } 
+  
+ 
+/* Bloc 7 — Congés (écran Nouvelle demande) */
+.conge-layout { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 900px) { .conge-layout { grid-template-columns: 1fr; } }
+.conge-solde-box .solde-row { display: flex; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0; border-top: 1px solid var(--border, #E5E7EB); }
+.conge-solde-box .solde-row:first-of-type { border-top: 0; }
+.conge-solde-box label { margin-bottom: 0.5rem; }
+.conge-checks { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.conge-checks label { flex-direction: row; align-items: center; font-weight: 400; }
+.conge-checks input { width: auto; }
+
+/* Bloc 7 — Congés (calendrier planning) */
+.conge-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.conge-cal .cal-head { font-weight: 600; font-size: 0.8rem; text-align: center; color: var(--text-muted, #6B7280); padding: 4px 0; text-transform: capitalize; }
+.conge-cal .cal-cell { min-height: 72px; border: 1px solid var(--border, #E5E7EB); border-radius: 8px; padding: 4px 6px; font-size: 0.8rem; background: var(--white, #fff); }
+.conge-cal .cal-cell.vide { background: transparent; border-color: transparent; }
+.conge-cal .cal-cell.we { background: var(--bg-secondary, #F9FAFB); color: var(--text-muted, #9CA3AF); }
+.conge-cal .cal-cell.ferie { background: #F5F3FF; color: #5B21B6; }
+.conge-cal .cal-cell.ajd { outline: 2px solid var(--primary, #EBB644); }
+.conge-cal .cal-jour { font-weight: 700; }
+.conge-cal .cal-chip { display: block; margin-top: 2px; padding: 1px 4px; border-radius: 4px; font-size: 0.72rem; line-height: 1.2; }
+.conge-cal .cal-chip.conge { background: #DBEAFE; color: #1E40AF; }
+.conge-cal .cal-chip.maladie { background: #FEF3C7; color: #92400E; }
+.conge-cal .cal-chip.injustifiee { background: #FEE2E2; color: #991B1B; }
+.conge-cal .cal-chip.autre { background: #E5E7EB; color: #374151; }
+.conge-cal .cal-chip.ferie { background: #EDE9FE; color: #5B21B6; }
+@media (max-width: 720px) { .conge-cal .cal-cell { min-height: 48px; font-size: 0.65rem; } }
+.conge-titre-cal { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; }
+.conge-titre-cal button { padding: 0.35rem 0.8rem; }
+.conge-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted, #6B7280); }
+
+/* Listes (soldes, demandes, absences, validations) — disposition normale */
+.solde-row,
+.demande-row,
+.absence-row,
+.planning-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border, #E5E7EB);
+}
+.solde-row:first-of-type,
+.demande-row:first-of-type,
+.absence-row:first-of-type,
+.planning-row:first-of-type { border-top: 0; padding-top: 0; }
+.solde-info,
+.demande-info,
+.absence-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    text-align: left;
+}
+.demande-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--primary-light, #F4D06A);
+    color: var(--charcoal, #26272A);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.statut-en-cours { background: #DBEAFE; color: #1E40AF; }
+.statut-realisee { background: #D1FAE5; color: #065F46; }
+.statut-bloquee { background: #FEE2E2; color: #991B1B; }
+.statut-annulee { background: #E5E7EB; color: #374151; }
+
+/* Tableau de bord — carte utilisateur */
+.profil-entete { display: flex; align-items: center; gap: 1rem; }
+.profil-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--primary, #EBB644); color: #26272A; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem; flex-shrink: 0; }
+.profil-identite { display: flex; flex-direction: column; gap: 0.15rem; }
+.profil-identite strong { font-size: 1.25rem; }
+#profil-details { margin-top: 1rem; }
+#profil-details div { display: flex; flex-direction: column; gap: 0.15rem; }
+#profil-details small { color: var(--text-muted, #6B7280); font-size: 0.8rem; }
+
+/* Bulletin de paie — aperçu détaillé (gains / retenues) */
+/* Base .modal (définie dans components.css, non chargé par le layout) */
+.modal { position: fixed; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(38, 39, 42, 0.8); z-index: 1000; }
+.modal .modal-overlay { position: fixed; inset: 0; background: rgba(38, 39, 42, 0.6); z-index: -1; }
+.bulletin-actions { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
+.bulletin-preview-panel { width: min(780px, 94vw) !important; background: var(--white, #fff); border-radius: 12px; padding: 1.25rem; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); }
+.bulletin-preview-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.bulletin-preview-head h2 { margin: 0; }
+.bulletin-preview-head .modal-actions { margin-top: 0; }
+.bulletin-preview-body { margin-top: 1rem; }
+.bulletin-doc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; border-bottom: 2px solid var(--primary, #EBB644); padding-bottom: 0.75rem; margin-bottom: 0.75rem; }
+.bulletin-doc-head strong { display: block; font-size: 1.1rem; }
+.bulletin-doc-head span { display: block; color: var(--text-muted, #6B7280); font-size: 0.85rem; }
+.bulletin-doc-meta { text-align: right; display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-end; }
+.bulletin-table { width: 100%; border-collapse: collapse; }
+.bulletin-table th, .bulletin-table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border, #E5E7EB); text-align: left; font-size: 0.9rem; }
+.bulletin-table th { background: var(--bg-secondary, #F9FAFB); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted, #6B7280); }
+.bulletin-table .bulletin-montant { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bulletin-table tr.section td { background: var(--bg-secondary, #F9FAFB); font-weight: 700; }
+.bulletin-table tr.gain .bulletin-montant { color: #065F46; }
+.bulletin-table tr.retenue .bulletin-montant { color: #991B1B; }
+.bulletin-table tr.sous-total td { font-weight: 600; background: var(--bg-secondary, #F9FAFB); }
+.bulletin-table tr.info td { color: var(--text-muted, #6B7280); }
+.bulletin-table tr.total td { font-weight: 700; border-top: 2px solid var(--border, #E5E7EB); }
+.bulletin-table tr.total.net td { font-size: 1.05rem; background: #FFFBEB; }
+.bulletin-alerte { margin-top: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 8px; background: #FEF3C7; color: #92400E; font-size: 0.85rem; }
+.bulletin-formule { margin-top: 0.75rem; font-size: 0.8rem; }
+
+@media print {
+  body * { visibility: hidden; }
+  .bulletin-preview-panel, .bulletin-preview-panel * { visibility: visible; }
+  .bulletin-preview-panel { position: absolute; inset: 0 auto auto 0; width: 100% !important; max-height: none; overflow: visible; }
+  .bulletin-preview-head .modal-actions { display: none; }
+}

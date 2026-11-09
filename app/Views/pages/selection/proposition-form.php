@@ -10,7 +10,7 @@
                 <option value="">Chargement…</option>
             </select>
         </label>
-        <label>Rémunération proposée (€)
+        <label>Rémunération proposée (AR)
             <input name="remunerationProposee" type="number" min="0" step="0.01" required>
         </label>
         <label>Date d'embauche proposée
