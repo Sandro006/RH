@@ -32,6 +32,8 @@ class OnboardingController extends BaseController
         $filtre = [
             'statut'     => $this->request->getGet('statut'),
             'idSalarie'  => $this->request->getGet('idSalarie'),
+            'tri'        => $this->request->getGet('tri'),
+            'ordre'      => $this->request->getGet('ordre'),
         ];
         return $this->response->setJSON($this->service->lister($filtre));
     }
@@ -137,6 +139,31 @@ class OnboardingController extends BaseController
         }
     }
 
+    // showTache
+    public function showTache(int $idTache)
+    {
+        $tache = $this->service->consulterTache($idTache);
+        if ($tache === null) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND']);
+        }
+        return $this->response->setJSON($tache);
+    }
+
+    // updateTache
+    public function updateTache(int $idTache)
+    {
+        $body = $this->request->getJSON(true) ?? [];
+
+        try {
+            $this->service->modifierTache($idTache, $body, SessionUtilisateur::courante());
+            return $this->response->setStatusCode(200)->setJSON(['ok' => true]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        }
+    }
+
     // progression
     public function progression(int $idOnboarding)
     {
@@ -184,5 +211,58 @@ class OnboardingController extends BaseController
     public function listerTaches(int $idOnboarding)
     {
         return $this->response->setJSON($this->service->listerTaches($idOnboarding));
+    }
+
+    // Mes tâches onboarding (salarié connecté)
+    public function mesTaches()
+    {
+        $u = SessionUtilisateur::courante();
+
+        if ($u === null) {
+            return $this->reponseNonAuthentifie();
+        }
+
+        if ($u->idEmploye === null) {
+            return $this->response->setJSON([]);
+        }
+
+        $employe = \Config\Database::connect()->table('employe')
+            ->select('id_salarie')
+            ->where('id', $u->idEmploye)
+            ->get()
+            ->getRow();
+
+        if ($employe === null || $employe->id_salarie === null) {
+            return $this->response->setJSON([]);
+        }
+
+        $onboarding = $this->service->onboardingActif((int) $employe->id_salarie);
+
+        if ($onboarding === null) {
+            return $this->response->setJSON([]);
+        }
+
+        $taches = $this->service->listerTaches($onboarding->id_onboarding);
+
+        return $this->response->setJSON([
+            'idOnboarding' => $onboarding->id_onboarding,
+            'statut'       => $onboarding->statut,
+            'taches'       => $taches,
+        ]);
+    }
+
+    // update
+    public function update(int $id)
+    {
+        $body = $this->request->getJSON(true) ?? [];
+
+        try {
+            $this->service->modifier($id, $body, SessionUtilisateur::courante());
+            return $this->response->setStatusCode(200)->setJSON(['ok' => true]);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        }
     }
 }

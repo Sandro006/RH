@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Admin;
 
 use App\Controllers\ApiController;
+use App\Models\Admin\EmployeModel;
 use App\Services\Common\ReferentielService;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -46,17 +47,13 @@ class ReferentielController extends ApiController
         ]);
     }
 
-    public function grilles(int $idPoste): ResponseInterface
+    public function grilles(): ResponseInterface
     {
-        return $this->executer(function () use ($idPoste): array {
-            $grille = $this->service->grilleActive($idPoste);
-
-            if ($grille === null) {
-                return ['donnees' => null];
-            }
-
-            return ['donnees' => $grille];
-        });
+        return $this->executer(fn (): array => [
+            'donnees' => $this->service->lister('grilles', [
+                'idPoste' => (int) $this->request->getGet('idPoste'),
+            ]),
+        ]);
     }
 
     public function grillesPoste(int $idPoste): ResponseInterface
@@ -105,6 +102,13 @@ class ReferentielController extends ApiController
     {
         return $this->executer(fn (): array => [
             'donnees' => $this->service->lister('natures_revendication'),
+        ]);
+    }
+
+    public function employes(): ResponseInterface
+    {
+        return $this->executer(fn (): array => [
+            'donnees' => model(EmployeModel::class)->listerPourSelect(),
         ]);
     }
 

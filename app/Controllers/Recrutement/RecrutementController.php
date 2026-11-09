@@ -2,18 +2,17 @@
 declare(strict_types=1);
 namespace App\Controllers\Recrutement;
 use App\Controllers\BaseController;
+use App\Libraries\Common\SessionUtilisateur;
 use App\Services\Recrutement\{DemandeRecrutementService, OffreEmploiService, CandidatureService, EligibiliteService};
 class RecrutementController extends BaseController
 {
-    public function page(string $page = 'demandes')
-    {
-        $allowed = ['demandes','demande-form','demande','demandes-a-traiter','offres','offre-form','offre','candidatures','candidature','vitrine-offres','candidature-form','suivi-candidature'];
-        if (!in_array($page, $allowed, true)) return $this->response->setStatusCode(404);
-        return view('recrutement/' . $page);
-    }
     private function data(): array
     {
         return $this->request->getJSON(true) ?? $this->request->getPost();
+    }
+    private function utilisateur(): ?array
+    {
+        return SessionUtilisateur::courante()?->toArray();
     }
     private function ok($data, int $code = 200)
     {
@@ -39,11 +38,11 @@ class RecrutementController extends BaseController
     }
     public function creerDemande()
     {
-        return $this->run(fn() => (new DemandeRecrutementService())->creer($this->data()));
+        return $this->run(fn() => (new DemandeRecrutementService())->creer($this->data(), $this->utilisateur()));
     }
     public function modifierDemande(int $id)
     {
-        return $this->run(fn() => (new DemandeRecrutementService())->modifier($id, $this->data()) ?? true);
+        return $this->run(fn() => (new DemandeRecrutementService())->modifier($id, $this->data(), $this->utilisateur()) ?? true);
     }
     public function demandeHistorique(int $id)
     {
@@ -55,13 +54,14 @@ class RecrutementController extends BaseController
     }
     public function demandeValidations(int $id)
     {
-        return $this->ok(db_connect()->table('validation')->where('id_demande', $id)->orderBy('date_validation', 'DESC')->get()->getResultArray());
+        return $this->ok((new DemandeRecrutementService())->validations($id));
     }
     public function actionDemande(int $id, string $a)
     {
         $s = new DemandeRecrutementService();
         $d = $this->data();
-        return $this->run(fn() => match ($a) { 'soumettre' => $s->soumettre($id), 'controle-rh' => $s->controlerRh($id, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? ''), 'validation-budget' => $s->validerBudget($id, $d['montant_approuve'] ?? null, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? ''), 'validation-hierarchie' => $s->validerHierarchie($id, $d['decision'] ?? 'FEU_VERT', (bool) ($d['consultation'] ?? false), $d['commentaire'] ?? ''), 'consultation' => $s->demanderConsultation($id, $d['delai'] ?? null), 'cloture-consultation' => $s->cloturerConsultation($id, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? ''), 'feu-vert' => $s->donnerFeuVert($id, $d['canal_diffusion'] ?? null), 'annuler' => $s->annuler($id, $d['motif'] ?? null), default => throw new \InvalidArgumentException('Action inconnue')});
+        $u = $this->utilisateur();
+        return $this->run(fn() => match ($a) { 'soumettre' => $s->soumettre($id, $u), 'controle-rh' => $s->controlerRh($id, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? '', null, $u), 'validation-budget' => $s->validerBudget($id, $d['montant_approuve'] ?? null, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? '', null, $u), 'validation-hierarchie' => $s->validerHierarchie($id, $d['decision'] ?? 'FEU_VERT', (bool) ($d['consultation'] ?? false), $d['commentaire'] ?? '', null, $u), 'consultation' => $s->demanderConsultation($id, $d['delai'] ?? null, $u), 'cloture-consultation' => $s->cloturerConsultation($id, $d['decision'] ?? 'VALIDER', $d['commentaire'] ?? '', null, $u), 'feu-vert' => $s->donnerFeuVert($id, $d['canal_diffusion'] ?? null, $u), 'annuler' => $s->annuler($id, $d['motif'] ?? null, $u), default => throw new \InvalidArgumentException('Action inconnue')});
     }
     public function offres()
     {
@@ -99,7 +99,7 @@ class RecrutementController extends BaseController
     }
     public function offreHistorique(int $id)
     {
-        return $this->ok(db_connect()->table('offre_emploi_status_historique')->where('id_offre', $id)->orderBy('date_changement')->get()->getResultArray());
+        return $this->ok((new OffreEmploiService())->historique($id));
     }
     public function offreCandidatures(int $id)
     {
@@ -109,7 +109,8 @@ class RecrutementController extends BaseController
     {
         $s = new OffreEmploiService();
         $d = $this->data();
-        return $this->run(fn() => match ($a) { 'publier' => $s->publier($id, $d['canal_diffusion'] ?? 'Site carrières', $d['date_cloture'] ?? null), 'suspendre' => $s->suspendre($id, $d['motif'] ?? null), 'reprendre' => $s->reprendre($id), 'clore' => $s->clore($id), 'annuler' => $s->annuler($id), default => throw new \InvalidArgumentException('Action inconnue')});
+        $u = $this->utilisateur();
+        return $this->run(fn() => match ($a) { 'publier' => $s->publier($id, $d['canal_diffusion'] ?? 'Site carrières', $d['date_cloture'] ?? null, $u), 'suspendre' => $s->suspendre($id, $d['motif'] ?? null, $u), 'reprendre' => $s->reprendre($id, $u), 'clore' => $s->clore($id, $u), 'annuler' => $s->annuler($id, $u), default => throw new \InvalidArgumentException('Action inconnue')});
     }
     public function candidatures()
     {
@@ -123,6 +124,10 @@ class RecrutementController extends BaseController
     {
         return $this->ok((new CandidatureService())->historique($id));
     }
+    public function candidatureTransitions(int $id)
+    {
+        return $this->run(fn() => (new CandidatureService())->transitions($id));
+    }
     public function postuler(int $id)
     {
         $d = $this->data();
@@ -133,7 +138,7 @@ class RecrutementController extends BaseController
     {
         $s = new CandidatureService();
         $d = $this->data();
-        return $this->run(fn() => match ($a) { 'retirer' => $s->retirer($id), 'preselection' => $s->mettreEnPreselection($id), 'selectionner' => $s->preselectionner($id, (bool) ($d['retenir'] ?? true)), 'planifier-entretien' => $s->planifierEntretien($id, $d), 'evaluer' => $s->marquerEvaluee($id), 'retenir' => $s->retenir($id), 'refuser' => $s->refuser($id, $d['motif'] ?? null), default => throw new \InvalidArgumentException('Action inconnue')});
+        return $this->run(fn() => match ($a) { 'retirer' => $s->retirer($id), 'preselection' => $s->mettreEnPreselection($id), 'selectionner' => $s->preselectionner($id, (bool) ($d['retenir'] ?? true)), 'planifier-entretien' => $s->planifierEntretien($id, $d), 'evaluer' => $s->marquerEvaluee($id), 'retenir' => $s->retenir($id), 'refuser' => $s->refuser($id, $d['motif'] ?? null), 'statut' => $s->changerStatut($id, (string) ($d['statut'] ?? ''), $d['commentaire'] ?? null, $this->utilisateur()), default => throw new \InvalidArgumentException('Action inconnue')});
     }
     public function eligibilite(int $id)
     {

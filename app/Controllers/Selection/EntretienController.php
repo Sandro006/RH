@@ -1,165 +1,172 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers\Selection;
 
 use App\Controllers\BaseController;
-use App\Models\Selection\EntretienModel;
-use App\Models\Selection\HistoriqueEntretienModel;
+use App\Services\Selection\EntretienService;
+use App\Libraries\Common\SessionUtilisateur;
+use App\Exceptions\AccesRefuseException;
+use App\Exceptions\ConflitException;
+use App\Exceptions\DonneesIncoherentesException;
+use App\Exceptions\ObjetIntrouvableException;
+use App\Exceptions\StatutInvalideException;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class EntretienController extends BaseController
 {
+    private EntretienService $service;
+
+    public function initController(
+        \CodeIgniter\HTTP\RequestInterface $request,
+        ResponseInterface $response,
+        \Psr\Log\LoggerInterface $logger
+    ): void {
+        parent::initController($request, $response, $logger);
+        $this->service = service('entretienService');
+    }
+
     public function page()
     {
-        return view('selection/entretiens');
+        return redirect()->to('/selection/entretiens');
     }
 
-    /**
-     * Liste des entretiens avec filtres.
-     */
+    // GET /api/entretiens — lister (filtres)
     public function index()
     {
-        $filtres = [
-            'statut'     => $this->request->getGet('statut'),
-            'idRecruteur'=> $this->request->getGet('idRecruteur'),
-            'idOffre'    => $this->request->getGet('idOffre'),
-            'dateDebut'  => $this->request->getGet('dateDebut'),
-            'dateFin'    => $this->request->getGet('dateFin'),
+        $filtre = [
+            'statut'        => $this->request->getGet('statut'),
+            'idRecruteur'   => $this->request->getGet('idRecruteur'),
+            'idOffre'       => $this->request->getGet('idOffre'),
+            'idCandidature' => $this->request->getGet('idCandidature'),
+            'dateDebut'     => $this->request->getGet('dateDebut'),
+            'dateFin'       => $this->request->getGet('dateFin'),
+            'tri'           => $this->request->getGet('tri'),
+            'ordre'         => $this->request->getGet('ordre'),
         ];
 
-        $query = db_connect()
-            ->table('entretien e')
-            ->select([
-                'e.id_entretien',
-                'e.date_entretien',
-                'e.id_recruteur',
-                'e.statut AS statut_id',
-                'se.designation AS statut',
-                'te.designation AS type_entretien',
-                'c.id_candidature',
-                'ca.nom AS nom_candidat',
-                'ca.prenom AS prenom_candidat',
-                'oe.id_offre',
-                'oe.titre AS offre',
-                'emp.nom AS recruteur',
-            ])
-            ->join(
-                'candidature c',
-                'c.id_candidature = e.id_candidature'
-            )
-            ->join(
-                'candidat ca',
-                'ca.id_candidat = c.id_candidat'
-            )
-            ->join(
-                'offre_emploi oe',
-                'oe.id_offre = c.id_offre'
-            )
-            ->join(
-                'employe emp',
-                'emp.id = e.id_recruteur'
-            )
-            ->join(
-                'status_entretien se',
-                'se.id = e.statut',
-                'left'
-            )
-            ->join(
-                'type_entrentien te',
-                'te.id = e.type_entretien',
-                'left'
-            );
-
-        if (! empty($filtres['statut'])) {
-            $query->where('se.designation', $filtres['statut']);
-        }
-
-        if (! empty($filtres['idRecruteur'])) {
-            $query->where(
-                'e.id_recruteur',
-                (int) $filtres['idRecruteur']
-            );
-        }
-
-        if (! empty($filtres['idOffre'])) {
-            $query->where(
-                'oe.id_offre',
-                (int) $filtres['idOffre']
-            );
-        }
-
-        if (! empty($filtres['dateDebut'])) {
-            $query->where(
-                'e.date_entretien >=',
-                $filtres['dateDebut'] . ' 00:00:00'
-            );
-        }
-
-        if (! empty($filtres['dateFin'])) {
-            $query->where(
-                'e.date_entretien <=',
-                $filtres['dateFin'] . ' 23:59:59'
-            );
-        }
-
-        $entretiens = $query
-            ->orderBy('e.date_entretien', 'ASC')
-            ->get()
-            ->getResultArray();
-
-        return $this->response->setJSON($entretiens);
+        return $this->response->setJSON($this->service->lister($filtre));
     }
 
-    /**
-     * Confirme un entretien planifié.
-     */
-    public function confirmer(int $id)
+    // GET /api/entretiens/{id} — fiche
+    public function show(int $id)
     {
-        $db = db_connect();
-
-        $entretienModel = new EntretienModel();
-
-        $entretien = $entretienModel->find($id);
+        $entretien = $this->service->consulter($id);
 
         if ($entretien === null) {
-            return $this->response
-                ->setStatusCode(404)
-                ->setJSON(['error' => 'NOT_FOUND']);
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND']);
         }
 
-        $statutConfirme = $db->table('status_entretien')
-            ->where('designation', 'Confirmé')
-            ->get()
-            ->getRowArray();
+        return $this->response->setJSON($entretien);
+    }
 
-        if ($statutConfirme === null) {
-            return $this->response
-                ->setStatusCode(500)
-                ->setJSON([
-                    'error' => 'STATUT_CONFIRMATION_ABSENT'
-                ]);
+    // POST /api/entretiens — planifier
+    public function planifier()
+    {
+        $body = $this->request->getJSON(true) ?? $this->request->getPost();
+
+        return $this->executer(function (SessionUtilisateur $u) use ($body) {
+            $id = $this->service->planifier($body, $u);
+
+            return $this->response->setStatusCode(201)->setJSON(['idEntretien' => $id]);
+        });
+    }
+
+    // POST /api/entretiens/{id}/confirmer
+    public function confirmer(int $id)
+    {
+        return $this->executer(function (SessionUtilisateur $u) use ($id) {
+            $this->service->confirmer($id, $u);
+
+            return $this->response->setJSON(['ok' => true, 'statut' => 'Confirmé']);
+        });
+    }
+
+    // POST /api/entretiens/{id}/reporter
+    public function reporter(int $id)
+    {
+        $body = $this->request->getJSON(true) ?? $this->request->getPost();
+        $date = $body['dateEntretien'] ?? $body['nouvelleDate'] ?? null;
+
+        if ($date === null || $date === '') {
+            return $this->response->setStatusCode(400)->setJSON([
+                'error'   => 'DONNEES_INCOHERENTES',
+                'message' => 'dateEntretien requis',
+            ]);
         }
 
-        $statutActuel = $db->table('status_entretien')
-            ->where('id', $entretien['statut'])
-            ->get()
-            ->getRowArray();
+        return $this->executer(function (SessionUtilisateur $u) use ($id, $date, $body) {
+            $this->service->reporter($id, (string) $date, $body['motif'] ?? null, $u);
 
-        if (
-            $statutActuel === null
-            || $statutActuel['designation'] !== 'Planifié'
-        ) {
-            return $this->response
-                ->setStatusCode(400)
-                ->setJSON(['error' => 'STATUT_INVALIDE']);
+            return $this->response->setJSON(['ok' => true]);
+        });
+    }
+
+    // POST /api/entretiens/{id}/realiser
+    public function realiser(int $id)
+    {
+        $body = $this->request->getJSON(true) ?? $this->request->getPost();
+
+        return $this->executer(function (SessionUtilisateur $u) use ($id, $body) {
+            $this->service->realiser($id, (string) ($body['compteRendu'] ?? ''), $u);
+
+            return $this->response->setJSON(['ok' => true, 'statut' => 'Réalisé']);
+        });
+    }
+
+    // POST /api/entretiens/{id}/annuler
+    public function annuler(int $id)
+    {
+        $body = $this->request->getJSON(true) ?? $this->request->getPost();
+
+        return $this->executer(function (SessionUtilisateur $u) use ($id, $body) {
+            $this->service->annuler($id, $body['motif'] ?? null, $u);
+
+            return $this->response->setJSON(['ok' => true, 'statut' => 'Annulé']);
+        });
+    }
+
+    // GET /api/entretiens/{id}/historique
+    public function historique(int $id)
+    {
+        return $this->response->setJSON($this->service->historique($id));
+    }
+
+    // GET /api/candidatures/{id}/entretiens
+    public function listerParCandidature(int $id)
+    {
+        return $this->response->setJSON($this->service->listerParCandidature($id));
+    }
+
+    // POST /api/offres/{id}/entretiens — planifier pour les candidatures présélectionnées
+    public function planifierPourOffre(int $id)
+    {
+        return $this->executer(function (SessionUtilisateur $u) use ($id) {
+            $ids = $this->service->planifierPourOffre($id, $u);
+
+            return $this->response->setStatusCode(201)->setJSON(['idEntretiens' => $ids]);
+        });
+    }
+
+    private function executer(callable $action)
+    {
+        $u = SessionUtilisateur::courante();
+
+        if ($u === null) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'NON_AUTHENTIFIE']);
         }
 
-        $entretienModel->update($id, [
-            'statut' => $statutConfirme['id']
-        ]);
-
-        return $this->response->setJSON([
-            'ok' => true,
-            'statut' => 'Confirmé'
-        ]);
+        try {
+            return $action($u);
+        } catch (AccesRefuseException $e) {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'FORBIDDEN', 'message' => $e->getMessage()]);
+        } catch (ObjetIntrouvableException $e) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'NOT_FOUND', 'message' => $e->getMessage()]);
+        } catch (ConflitException $e) {
+            return $this->response->setStatusCode(409)->setJSON(['error' => 'CONFLIT', 'message' => $e->getMessage()]);
+        } catch (DonneesIncoherentesException | StatutInvalideException $e) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'DONNEES_INCOHERENTES', 'message' => $e->getMessage()]);
+        }
     }
 }

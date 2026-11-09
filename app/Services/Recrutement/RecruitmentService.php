@@ -20,4 +20,5 @@ abstract class RecruitmentService
         return $row;
     }
     protected function actor(?array $user): ?int { return isset($user['idUtilisateur']) ? (int)$user['idUtilisateur'] : (isset($user['id_utilisateur']) ? (int)$user['id_utilisateur'] : null); }
+    protected function actorEmploye(?array $user): ?int { return isset($user['idEmploye']) && $user['idEmploye'] !== null ? (int)$user['idEmploye'] : (isset($user['id_employe']) && $user['id_employe'] !== null ? (int)$user['id_employe'] : null); }
 }

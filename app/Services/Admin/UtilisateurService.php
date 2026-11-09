@@ -15,6 +15,7 @@ use App\Libraries\Common\Roles;
 use App\Libraries\Common\SessionUtilisateur;
 use App\Models\Admin\EmployeModel;
 use App\Models\Admin\UtilisateurModel;
+use App\Models\Personnel\SalarieModel;
 
 class UtilisateurService
 {
@@ -23,14 +24,31 @@ class UtilisateurService
     public function __construct(
         private readonly UtilisateurModel $utilisateurModel,
         private readonly EmployeModel $employeModel,
-        private readonly PasswordHasher $passwordHasher,
-        private readonly AuditService $auditService,
+        SalarieModel|PasswordHasher $salarieModelOrHasher = null,
+        PasswordHasher|AuditService|null $passwordHasherOrAudit = null,
+        ?AuditService $auditService = null,
     ) {
+        // Support both old and new constructor signatures for compatibility
+        if ($salarieModelOrHasher instanceof PasswordHasher) {
+            // Old signature: (UtilisateurModel, EmployeModel, PasswordHasher, AuditService)
+            $this->salarieModel = model(\App\Models\Personnel\SalarieModel::class);
+            $this->passwordHasher = $salarieModelOrHasher;
+            $this->auditService = $passwordHasherOrAudit instanceof AuditService ? $passwordHasherOrAudit : service('auditService');
+        } else {
+            // New signature
+            $this->salarieModel = $salarieModelOrHasher ?? model(\App\Models\Personnel\SalarieModel::class);
+            $this->passwordHasher = $passwordHasherOrAudit instanceof PasswordHasher ? $passwordHasherOrAudit : new PasswordHasher();
+            $this->auditService = $auditService ?? service('auditService');
+        }
     }
+
+    private readonly SalarieModel $salarieModel;
+    private readonly PasswordHasher $passwordHasher;
+    private readonly AuditService $auditService;
 
     public function lister(array $filtres, SessionUtilisateur $administrateur): array
     {
-        $this->exigerAdmin($administrateur);
+        $this->exigerAdminOuInformatique($administrateur);
 
         $page    = (int) ($filtres['page'] ?? 1);
         $parPage = (int) ($filtres['parPage'] ?? 20);
@@ -40,7 +58,7 @@ class UtilisateurService
 
     public function creer(array $donnees, SessionUtilisateur $administrateur): int
     {
-        $this->exigerAdmin($administrateur);
+        $this->exigerAdminOuInformatique($administrateur);
 
         $identifiant = trim((string) ($donnees['identifiant'] ?? ''));
         $motDePasse  = (string) ($donnees['motDePasse'] ?? '');
@@ -62,7 +80,7 @@ class UtilisateurService
             );
         }
 
-        $idEmploye = $this->resoudreEmploye($donnees['idEmploye'] ?? null);
+        $idEmploye = $this->resoudreOuCreerEmploye($donnees);
         $actif     = array_key_exists('actif', $donnees)
             ? filter_var($donnees['actif'], FILTER_VALIDATE_BOOLEAN)
             : true;
@@ -221,7 +239,7 @@ class UtilisateurService
 
     public function reinitialiserMotDePasse(int $id, SessionUtilisateur $administrateur): string
     {
-        $this->exigerAdmin($administrateur);
+        $this->exigerAdminOuInformatique($administrateur);
 
         $utilisateur = $this->utilisateurModel->trouverParId($id);
 
@@ -294,10 +312,70 @@ class UtilisateurService
         return $id;
     }
 
+    /**
+     * Résout l'employé lié au compte utilisateur :
+     * - soit un employé existant (idEmploye fourni),
+     * - soit la création d'un employé à partir d'un salarié (idSalarie) + poste (idPoste).
+     */
+    private function resoudreOuCreerEmploye(array $donnees): ?int
+    {
+        $idEmployeFourni = isset($donnees['idEmploye']) ? (int) $donnees['idEmploye'] : 0;
+
+        if ($idEmployeFourni > 0) {
+            if (!$this->employeModel->existe($idEmployeFourni)) {
+                throw new ObjetIntrouvableException("Employé #{$idEmployeFourni} introuvable");
+            }
+
+            return $idEmployeFourni;
+        }
+
+        $idSalarie = isset($donnees['idSalarie']) ? (int) $donnees['idSalarie'] : 0;
+        $idPoste   = isset($donnees['idPoste']) ? (int) $donnees['idPoste'] : 0;
+
+        if ($idSalarie <= 0 || $idPoste <= 0) {
+            return null;
+        }
+
+        $salarie = $this->salarieModel->find($idSalarie);
+
+        if ($salarie === null) {
+            throw new ObjetIntrouvableException("Salarié #{$idSalarie} introuvable");
+        }
+
+        $employe = $this->employeModel->trouverParSalarie($idSalarie);
+
+        if ($employe !== null) {
+            return (int) $employe->id;
+        }
+
+        return $this->employeModel->insererDepuisSalarie(
+            $idSalarie,
+            $idPoste,
+            trim(((string) ($salarie->prenom ?? '')) . ' ' . ((string) ($salarie->nom ?? ''))),
+            (string) ($salarie->date_naissance ?? date('Y-m-d')),
+        );
+    }
+
     private function exigerAdmin(SessionUtilisateur $utilisateur): void
     {
         if (!$utilisateur->aLeRole([Roles::ADMIN])) {
             throw new AccesRefuseException('Rôle administrateur requis');
         }
+    }
+
+    private function exigerAdminOuInformatique(SessionUtilisateur $utilisateur): void
+    {
+        if ($utilisateur->aLeRole([Roles::ADMIN])) {
+            return;
+        }
+
+        if ($utilisateur->idEmploye !== null) {
+            $departement = $this->employeModel->getDepartementDeEmploye($utilisateur->idEmploye);
+            if ($departement !== null && $departement === 'Informatique') {
+                return;
+            }
+        }
+
+        throw new AccesRefuseException('Accès réservé aux administrateurs ou au département Informatique');
     }
 }

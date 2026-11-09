@@ -23,7 +23,7 @@ final class MatriculeServiceTest extends CIUnitTestCase
         parent::setUp();
 
         // Charge la fixture minimale
-        $this->db->query(file_get_contents(ROOTPATH . 'script/fixtures_embauche.sql'));
+        $this->db->query(file_get_contents(ROOTPATH . 'script/db/03_seeds_demo.sql'));
     }
 
     public function testPremierMatricule(): void

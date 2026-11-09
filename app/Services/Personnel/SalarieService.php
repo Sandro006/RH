@@ -19,6 +19,7 @@ use App\Exceptions\ConflitException;
 use App\Exceptions\AccesRefuseException;
 use App\Libraries\Common\AuditService;
 use App\Libraries\Common\SessionUtilisateur;
+use App\Libraries\Common\Tri;
 use App\Libraries\Common\WorkflowService;
 
 /**
@@ -154,7 +155,11 @@ class SalarieService
         }
 
         // Champs modifiables uniquement (pas matricule, pas statut, pas date_embauche)
-        $autorises = ['nom', 'prenom', 'email', 'telephone'];
+        $autorises = [
+            'nom', 'prenom', 'email', 'telephone',
+            'date_naissance', 'lieu_naissance', 'nationalite', 'situation_familiale',
+            'adresse', 'ville', 'pays',
+        ];
         $payload   = array_intersect_key($modifications, array_flip($autorises));
 
         if (empty($payload)) {
@@ -261,34 +266,63 @@ class SalarieService
     }
 
     // consulter
-    public function consulter(int $idSalarie): ?Salarie
+    public function consulter(int $idSalarie): ?object
     {
-        return $this->salarieModel->find($idSalarie);
+        return $this->requeteSalaries()
+            ->where('s.id_salarie', $idSalarie)
+            ->get()
+            ->getRow();
     }
 
     // lister
     public function lister(array $filtre = []): array
     {
-        $this->salarieModel->resetQuery();
+        $requete = $this->requeteSalaries();
 
         if (!empty($filtre['statut'])) {
-            $this->salarieModel->where('statut', $filtre['statut']);
+            $requete->where('s.statut', (int) $filtre['statut']);
         }
         if (!empty($filtre['id_poste'])) {
-            $ids = array_column(
-                $this->affectationModel
-                     ->select('id_salarie')
-                     ->where('id_poste', $filtre['id_poste'])
-                     ->where('date_fin', null)
-                     ->findAll(),
-                'id_salarie'
-            );
-            if (empty($ids)) {
-                return [];
-            }
-            $this->salarieModel->whereIn('id_salarie', $ids);
+            $requete->where('p.id_poste', (int) $filtre['id_poste']);
         }
-        return $this->salarieModel->findAll();
+        if (!empty($filtre['id_departement'])) {
+            $requete->where('d.id_departement', (int) $filtre['id_departement']);
+        }
+        if (!empty($filtre['recherche'])) {
+            $recherche = $filtre['recherche'];
+            $requete->groupStart()
+                ->like('s.matricule', $recherche)
+                ->orLike('s.nom', $recherche)
+                ->orLike('s.prenom', $recherche)
+                ->orLike("CONCAT(s.prenom, ' ', s.nom)", $recherche)
+                ->groupEnd();
+        }
+
+        [$colonne, $ordre] = Tri::resoudre($filtre, [
+            'id_salarie'    => 's.id_salarie',
+            'matricule'     => 's.matricule',
+            'nom'           => 's.nom',
+            'email'         => 's.email',
+            'date_embauche' => 's.date_embauche',
+            'poste'         => 'p.intitule',
+            'statut'        => 'ss.designation',
+        ], 's.matricule', 'ASC');
+
+        return $requete->orderBy($colonne, $ordre)->get()->getResultArray();
+    }
+
+    private function requeteSalaries()
+    {
+        return $this->salarieModel->db->table('salarie s')
+            ->select('s.id_salarie, s.id_candidat, s.matricule, s.nom, s.prenom, s.email, s.telephone, '
+                . 's.date_naissance, s.lieu_naissance, s.nationalite, s.situation_familiale, '
+                . 's.adresse, s.ville, s.pays, s.date_embauche, s.date_sortie, s.statut, '
+                . 'ss.designation AS statut_designation, p.id_poste, p.intitule AS poste')
+            ->join('status_salarie ss', 'ss.id = s.statut', 'left')
+            ->join('affectation a', 'a.id_salarie = s.id_salarie AND a.date_fin IS NULL', 'left')
+            ->join('poste p', 'p.id_poste = a.id_poste', 'left')
+            ->join('service sv', 'sv.id_service = p.id_service', 'left')
+            ->join('departement d', 'd.id_departement = sv.id_departement', 'left');
     }
 
     // historique
