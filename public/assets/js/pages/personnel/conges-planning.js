@@ -114,7 +114,11 @@
       params.set('debut', debutEl.value || debutFinMois(moisCourant)[0]);
       params.set('fin', finEl.value || debutFinMois(moisCourant)[1]);
 
-      const lignes = await appelApi(`${API_BASE}/planning?${params.toString()}`);
+      const [lignes, feries] = await Promise.all([
+        appelApi(`${API_BASE}/planning?${params.toString()}`),
+        // Les fériés enrichissent l'affichage sans bloquer le planning en cas d'erreur.
+        appelApi(`${API_BASE}/jours-feries?debut=${encodeURIComponent(params.get('debut'))}&fin=${encodeURIComponent(params.get('fin'))}`).catch(() => []),
+      ]);
 
       const parJour = new Map();
       (Array.isArray(lignes) ? lignes : []).forEach((l) => {
@@ -123,15 +127,23 @@
         parJour.get(jour).push(l);
       });
 
-      rendreCalendrier(parJour);
-      rendreListe(parJour);
+      const parFerie = new Map();
+      (Array.isArray(feries) ? feries : []).forEach((f) => {
+        const jour = f.date_ferie ?? '';
+        if (!jour) return;
+        if (!parFerie.has(jour)) parFerie.set(jour, []);
+        parFerie.get(jour).push(f.libelle ?? 'Jour férié');
+      });
+
+      rendreCalendrier(parJour, parFerie);
+      rendreListe(parJour, parFerie);
     } catch (err) {
       calEl.innerHTML = `<p class="error">Impossible de charger le planning : ${escapeHtml(err.message)}</p>`;
       listEl.innerHTML = '';
     }
   }
 
-  function rendreCalendrier(parJour) {
+  function rendreCalendrier(parJour, parFerie = new Map()) {
     const aujourdHui = isoDuJour(new Date());
     const premierDuMois = new Date(moisCourant.getFullYear(), moisCourant.getMonth(), 1);
     const nbJours = new Date(moisCourant.getFullYear(), moisCourant.getMonth() + 1, 0).getDate();
@@ -149,6 +161,10 @@
       const iso = isoDuJour(date);
       const veille = [0, 6].includes(date.getDay());
       const absents = parJour.get(iso) ?? [];
+      const feries = parFerie.get(iso) ?? [];
+      const chipFerie = feries.length
+        ? `<span class="cal-chip ferie" title="Jour férié — ${escapeHtml(feries.join(', '))}">Férié</span>`
+        : '';
       const liste = absents.map((a) => `
         <span class="cal-chip ${classeType(a.code_type_absence)}" title="${escapeHtml(`${a.prenom ?? ''} ${a.nom ?? ''}`.trim())} — ${escapeHtml(a.libelle_type_absence ?? '')}">
           ${escapeHtml(`${a.prenom?.[0] ?? ''}${a.nom?.[0] ?? ''}` || `${a.prenom ?? ''} ${a.nom ?? ''}`.trim())}
@@ -156,8 +172,9 @@
       `).join('');
 
       html += `
-        <div class="cal-cell${veille ? ' we' : ''}${iso === aujourdHui ? ' ajd' : ''}" role="gridcell">
+        <div class="cal-cell${veille ? ' we' : ''}${feries.length ? ' ferie' : ''}${iso === aujourdHui ? ' ajd' : ''}" role="gridcell">
           <span class="cal-jour">${jour}</span>
+          ${chipFerie}
           ${liste}
         </div>
       `;
@@ -166,17 +183,29 @@
     calEl.innerHTML = html;
   }
 
-  function rendreListe(parJour) {
-    if (parJour.size === 0) {
+  function rendreListe(parJour, parFerie = new Map()) {
+    if (parJour.size === 0 && parFerie.size === 0) {
       listEl.innerHTML = '<p class="muted">Aucune absence ce mois-ci.</p>';
       return;
     }
 
-    listEl.innerHTML = [...parJour.entries()]
-      .sort((a, b) => (a[0] < b[0] ? -1 : 1))
-      .map(([jour, absents]) => `
+    const jours = [...new Set([...parJour.keys(), ...parFerie.keys()])].sort();
+
+    listEl.innerHTML = jours
+      .map((jour) => {
+        const absents = parJour.get(jour) ?? [];
+        const feries = parFerie.get(jour) ?? [];
+        const ligneFerie = feries.map((libelle) => `
+            <div class="planning-row">
+              <span>Jour férié — ${escapeHtml(libelle)}</span>
+              <span class="badge">férié</span>
+            </div>
+          `).join('');
+
+        return `
         <article class="planning-jour">
           <strong>${escapeHtml(formaterDate(jour))}</strong>
+          ${ligneFerie}
           ${absents.map((a) => `
             <div class="planning-row">
               <span>${escapeHtml(`${a.prenom ?? ''} ${a.nom ?? ''}`.trim() || `Salarié #${a.id_salarie ?? ''}`)} — ${escapeHtml(a.libelle_type_absence ?? a.code_type_absence ?? 'Absent')}</span>
@@ -184,7 +213,9 @@
             </div>
           `).join('')}
         </article>
-      `).join('');
+      `;
+      })
+      .join('');
   }
 
   function escapeHtml(texte) {

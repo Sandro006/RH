@@ -55,6 +55,9 @@ $sections = [
         'congesSoldes' => ['label' => 'Soldes des congés (RH)', 'url' => '/personnel/conges-soldes', 'roles' => [Roles::ADMIN, Roles::RH]],
         'congesAbsences' => ['label' => 'Absences (RH)', 'url' => '/personnel/conges-absences', 'roles' => [Roles::ADMIN, Roles::RH]],
     ],
+    'Finances' => [
+        'gestionPaie' => ['label' => 'Gestion paie', 'url' => '/finance/bulletins', 'roles' => [Roles::ADMIN, Roles::RH, Roles::FINANCE]],
+    ],
     'Sécurité & confidentialité' => [
         'audit' => ['label' => 'Audit des accès documents', 'url' => '/securite/audit', 'roles' => [Roles::ADMIN, Roles::RH]],
         'acces' => ['label' => 'Gestion des accès', 'url' => '/securite/acces', 'roles' => [Roles::ADMIN, Roles::RH]],

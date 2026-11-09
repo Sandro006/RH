@@ -34,6 +34,7 @@
         <span class="cal-chip maladie">Maladie</span>
         <span class="cal-chip injustifiee">Injustifié</span>
         <span class="cal-chip autre">Mission / autre</span>
+        <span class="cal-chip ferie">Férié</span>
     </div>
 
     <div id="calendrier" class="conge-cal" role="grid" aria-label="Calendrier des congés"></div>

@@ -15,6 +15,8 @@ Ce dossier remplace tous les anciens scripts SQL, désormais déplacés dans
 | `11_correctif_conges_paternite.sql` | Correctif | `PATERNITE deduit_solde = false` |
 | `12_correctif_conges_sans_solde.sql` | Correctif | `SANS_SOLDE deduit_solde = false`, `justificatif_requis = false` |
 | `13_responsables_services_conges.sql` | Fixtures | responsables par service (Développement, Comptabilité, Ventes) + délégation |
+| `14_migration_paie.sql` | Migration Bloc Paie | tables bulletins/éléments/taux + vue `v_bulletins_mois` |
+| `15_test_paie_retenues.sql` | Test paie (optionnel) | absences/congés/éléments de novembre 2026 pour tester la retenue automatique sur bulletin |
 
 ## Installation sur une base vierge
 

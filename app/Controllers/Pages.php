@@ -446,6 +446,16 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/securite/audit.js'],
         ],
+        'finance/bulletins' => [
+            'vue'      => 'pages/finance/bulletins',
+            'titre'    => 'Bulletins de paie · Gestion RH',
+            'actif'    => 'gestionPaie',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Finances / Bulletins'],
+            ],
+            'scripts'  => ['/assets/js/pages/finance/bulletins.js'],
+        ],
         'securite/acces' => [
             'vue'      => 'pages/securite/acces',
             'titre'    => 'Gestion des accès · Gestion RH',

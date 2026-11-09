@@ -1256,6 +1256,7 @@ select[multiple] { min-height: 140px; }
 .conge-cal .cal-cell { min-height: 72px; border: 1px solid var(--border, #E5E7EB); border-radius: 8px; padding: 4px 6px; font-size: 0.8rem; background: var(--white, #fff); }
 .conge-cal .cal-cell.vide { background: transparent; border-color: transparent; }
 .conge-cal .cal-cell.we { background: var(--bg-secondary, #F9FAFB); color: var(--text-muted, #9CA3AF); }
+.conge-cal .cal-cell.ferie { background: #F5F3FF; color: #5B21B6; }
 .conge-cal .cal-cell.ajd { outline: 2px solid var(--primary, #EBB644); }
 .conge-cal .cal-jour { font-weight: 700; }
 .conge-cal .cal-chip { display: block; margin-top: 2px; padding: 1px 4px; border-radius: 4px; font-size: 0.72rem; line-height: 1.2; }
@@ -1263,6 +1264,7 @@ select[multiple] { min-height: 140px; }
 .conge-cal .cal-chip.maladie { background: #FEF3C7; color: #92400E; }
 .conge-cal .cal-chip.injustifiee { background: #FEE2E2; color: #991B1B; }
 .conge-cal .cal-chip.autre { background: #E5E7EB; color: #374151; }
+.conge-cal .cal-chip.ferie { background: #EDE9FE; color: #5B21B6; }
 @media (max-width: 720px) { .conge-cal .cal-cell { min-height: 48px; font-size: 0.65rem; } }
 .conge-titre-cal { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; }
 .conge-titre-cal button { padding: 0.35rem 0.8rem; }
@@ -1324,3 +1326,38 @@ select[multiple] { min-height: 140px; }
 #profil-details { margin-top: 1rem; }
 #profil-details div { display: flex; flex-direction: column; gap: 0.15rem; }
 #profil-details small { color: var(--text-muted, #6B7280); font-size: 0.8rem; }
+
+/* Bulletin de paie — aperçu détaillé (gains / retenues) */
+/* Base .modal (définie dans components.css, non chargé par le layout) */
+.modal { position: fixed; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(38, 39, 42, 0.8); z-index: 1000; }
+.modal .modal-overlay { position: fixed; inset: 0; background: rgba(38, 39, 42, 0.6); z-index: -1; }
+.bulletin-actions { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
+.bulletin-preview-panel { width: min(780px, 94vw) !important; background: var(--white, #fff); border-radius: 12px; padding: 1.25rem; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); }
+.bulletin-preview-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.bulletin-preview-head h2 { margin: 0; }
+.bulletin-preview-head .modal-actions { margin-top: 0; }
+.bulletin-preview-body { margin-top: 1rem; }
+.bulletin-doc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; border-bottom: 2px solid var(--primary, #EBB644); padding-bottom: 0.75rem; margin-bottom: 0.75rem; }
+.bulletin-doc-head strong { display: block; font-size: 1.1rem; }
+.bulletin-doc-head span { display: block; color: var(--text-muted, #6B7280); font-size: 0.85rem; }
+.bulletin-doc-meta { text-align: right; display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-end; }
+.bulletin-table { width: 100%; border-collapse: collapse; }
+.bulletin-table th, .bulletin-table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border, #E5E7EB); text-align: left; font-size: 0.9rem; }
+.bulletin-table th { background: var(--bg-secondary, #F9FAFB); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted, #6B7280); }
+.bulletin-table .bulletin-montant { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bulletin-table tr.section td { background: var(--bg-secondary, #F9FAFB); font-weight: 700; }
+.bulletin-table tr.gain .bulletin-montant { color: #065F46; }
+.bulletin-table tr.retenue .bulletin-montant { color: #991B1B; }
+.bulletin-table tr.sous-total td { font-weight: 600; background: var(--bg-secondary, #F9FAFB); }
+.bulletin-table tr.info td { color: var(--text-muted, #6B7280); }
+.bulletin-table tr.total td { font-weight: 700; border-top: 2px solid var(--border, #E5E7EB); }
+.bulletin-table tr.total.net td { font-size: 1.05rem; background: #FFFBEB; }
+.bulletin-alerte { margin-top: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 8px; background: #FEF3C7; color: #92400E; font-size: 0.85rem; }
+.bulletin-formule { margin-top: 0.75rem; font-size: 0.8rem; }
+
+@media print {
+  body * { visibility: hidden; }
+  .bulletin-preview-panel, .bulletin-preview-panel * { visibility: visible; }
+  .bulletin-preview-panel { position: absolute; inset: 0 auto auto 0; width: 100% !important; max-height: none; overflow: visible; }
+  .bulletin-preview-head .modal-actions { display: none; }
+}

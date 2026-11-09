@@ -9,6 +9,7 @@ use App\Exceptions\CongeException;
 use App\Libraries\Common\Roles;
 use App\Libraries\Common\SessionUtilisateur;
 use App\Models\Admin\EmployeModel;
+use App\Models\Conges\JourFerieModel;
 use App\Models\Conges\TypeCongeModel;
 use App\Services\Conges\AbsenceService;
 use App\Services\Conges\CongeService;
@@ -31,6 +32,7 @@ class CongeController extends ApiController
     private PaieCongeService $paieService;
     private AbsenceService $absenceService;
     private TypeCongeModel $typeCongeModel;
+    private JourFerieModel $jourFerieModel;
     private EmployeModel $employeModel;
 
     public function initController(
@@ -45,6 +47,7 @@ class CongeController extends ApiController
         $this->paieService = service('paieCongeService');
         $this->absenceService = service('absenceCongeService');
         $this->typeCongeModel = model(TypeCongeModel::class);
+        $this->jourFerieModel = model(JourFerieModel::class);
         $this->employeModel = model(EmployeModel::class);
     }
 
@@ -278,6 +281,21 @@ class CongeController extends ApiController
             $fin = (string) ($this->request->getGet('fin') ?: date('Y-m-t'));
 
             return $this->paieService->planningEquipe((int) $idService, $debut, $fin);
+        });
+    }
+
+    // GET /api/conges/jours-feries?debut=&fin= — fériés d'une plage (affichage planning)
+    public function joursFeries()
+    {
+        return $this->executer(function () {
+            $debut = (string) ($this->request->getGet('debut') ?: date('Y-m-01'));
+            $fin = (string) ($this->request->getGet('fin') ?: date('Y-m-t'));
+
+            if ($fin < $debut) {
+                return $this->erreur('DONNEES_INCOHERENTES', 'fin doit être postérieure à debut', 400);
+            }
+
+            return $this->jourFerieModel->listerEntreAvecRecurrents($debut, $fin);
         });
     }
 

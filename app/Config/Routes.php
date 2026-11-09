@@ -228,6 +228,7 @@ $routes->group('api/conges', ['namespace' => 'App\Controllers\Personnel', 'filte
     $routes->post('demandes/(:num)/refuser', 'CongeController::refuser/$1');
     $routes->get('a-valider', 'CongeController::aValider', ['filter' => 'role:manager,rh,admin,direction']);
     $routes->get('planning', 'CongeController::planning');
+    $routes->get('jours-feries', 'CongeController::joursFeries');
     $routes->get('absences', 'CongeController::absences', ['filter' => 'role:rh,admin']);
     $routes->post('absences', 'CongeController::saisirAbsence', ['filter' => 'role:rh,admin']);
 });
@@ -266,12 +267,25 @@ $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel', 'fi
 });
 
 // grille salaire (CRUD Finance)
+$routes->get('finance/bulletins', 'Pages::afficher/finance/bulletins', ['filter' => 'role:rh,admin,finance']);
 $routes->group('api/finance/grilles-salariales', ['namespace' => 'App\Controllers\Finance', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/',           'GrilleSalarialeController::index', ['filter' => 'role:finance,admin']);
     $routes->post('/',          'GrilleSalarialeController::create', ['filter' => 'role:finance,admin']);
     $routes->get('(:num)',      'GrilleSalarialeController::show/$1', ['filter' => 'role:finance,admin']);
     $routes->patch('(:num)',    'GrilleSalarialeController::update/$1', ['filter' => 'role:finance,admin']);
     $routes->delete('(:num)',  'GrilleSalarialeController::delete/$1', ['filter' => 'role:finance,admin']);
+});
+
+// paie : bulletins (rh/admin)
+$routes->group('api/paie', ['namespace' => 'App\Controllers\Paie', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('bulletins', 'BulletinController::liste', ['filter' => 'role:rh,admin']);
+    $routes->post('bulletins/calculer', 'BulletinController::calculer', ['filter' => 'role:rh,admin']);
+    $routes->get('bulletins/(:num)/detail', 'BulletinController::detail/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('bulletins/(:num)', 'BulletinController::show/$1', ['filter' => 'role:rh,admin']);
+    $routes->post('bulletins/(:num)/valider', 'BulletinController::valider/$1', ['filter' => 'role:rh,admin']);
+    $routes->get('elements', 'BulletinController::elements', ['filter' => 'role:rh,admin']);
+    $routes->post('elements', 'BulletinController::saisirElement', ['filter' => 'role:rh,admin']);
+    $routes->get('taux', 'BulletinController::taux', ['filter' => 'role:rh,admin']);
 });
 
 //entretiens

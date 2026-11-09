@@ -56,6 +56,66 @@ class JourFerieModel extends Model
     }
 
     /**
+     * Fériés d'une plage $debut..$fin (Y-m-d), occurrences réelles incluses.
+     * Les lignes `recurrent` (date fixe) sont projetées sur chaque année de
+     * la plage, comme `estJourFerie()` compare mois/jour. `listerEntre()`
+     * seul raterait un récurrent stocké une autre année (ex. Noël 2026
+     * affiché en décembre 2027).
+     *
+     * @return list<object> objets {date_ferie: Y-m-d, libelle, recurrent}, triés par date
+     */
+    public function listerEntreAvecRecurrents(string $debut, string $fin): array
+    {
+        $lignes = $this->groupStart()
+            ->where('date_ferie >=', $debut)
+            ->where('date_ferie <=', $fin)
+            ->groupEnd()
+            ->orWhere('recurrent', true)
+            ->orderBy('date_ferie', 'ASC')
+            ->findAll();
+
+        $anneeDebut = (int) substr($debut, 0, 4);
+        $anneeFin   = (int) substr($fin, 0, 4);
+        $occurrences = [];
+
+        foreach ($lignes as $ligne) {
+            $dateStockee = substr((string) $ligne->date_ferie, 0, 10);
+
+            if (empty($ligne->recurrent)) {
+                if ($dateStockee >= $debut && $dateStockee <= $fin) {
+                    $occurrences[$dateStockee . '|' . $ligne->libelle] = (object) [
+                        'date_ferie' => $dateStockee,
+                        'libelle'    => $ligne->libelle,
+                        'recurrent'  => false,
+                    ];
+                }
+                continue;
+            }
+
+            $moisJour = substr($dateStockee, 5, 5);
+            for ($annee = $anneeDebut; $annee <= $anneeFin; $annee++) {
+                $candidate = sprintf('%04d-%s', $annee, $moisJour);
+                // Ignore les dates inexistantes (29 février hors année bissextile).
+                if (date('Y-m-d', strtotime($candidate)) !== $candidate) {
+                    continue;
+                }
+                if ($candidate >= $debut && $candidate <= $fin) {
+                    $occurrences[$candidate . '|' . $ligne->libelle] = (object) [
+                        'date_ferie' => $candidate,
+                        'libelle'    => $ligne->libelle,
+                        'recurrent'  => true,
+                    ];
+                }
+            }
+        }
+
+        $resultat = array_values($occurrences);
+        usort($resultat, static fn (object $a, object $b): int => strcmp((string) $a->date_ferie, (string) $b->date_ferie));
+
+        return $resultat;
+    }
+
+    /**
      * Vrai si $date (Y-m-d) tombe sur un jour férié.
      * Gère recurrent = true en comparant (mois, jour).
      */

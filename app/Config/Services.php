@@ -398,4 +398,39 @@ class Services extends BaseService
 		);
 	}
 
+	// -- Bloc Paie : bulletins de paie --------------------------------------
+
+	public static function cotisationService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('cotisationService');
+
+		return new \App\Services\Paie\CotisationService(
+			model(\App\Models\Paie\TauxCotisationModel::class),
+		);
+	}
+
+	public static function elementPaieService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('elementPaieService');
+
+		return new \App\Services\Paie\ElementPaieService(
+			model(\App\Models\Paie\ElementPaieModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			service('auditService'),
+		);
+	}
+
+	public static function bulletinService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('bulletinService');
+
+		return new \App\Services\Paie\BulletinService(
+			model(\App\Models\Paie\BulletinPaieModel::class),
+			model(\App\Models\Paie\ElementPaieModel::class),
+			model(\App\Models\Personnel\ContratModel::class),
+			service('cotisationService'),
+			service('calendrierService'),
+		);
+	}
+
 }
