@@ -333,4 +333,3 @@ $routes->group('api/paie', ['namespace' => 'App\Controllers\Paie', 'filter' => '
 
 //entretiens
 $routes->get('entretiens', 'Selection\EntretienController::page');
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e

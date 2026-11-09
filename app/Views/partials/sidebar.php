@@ -38,6 +38,8 @@ $sections = [
         'evaluations' => ['label' => 'Évaluations', 'url' => '/selection/evaluation', 'roles' => [Roles::ADMIN, Roles::RH, Roles::RECRUTEUR]],
         'propositions' => ['label' => "Propositions d'embauche", 'url' => '/selection/propositions', 'roles' => [Roles::ADMIN, Roles::RH, Roles::DIRECTION, Roles::CONTROLE_GESTION]],
     ],
+    'Temps de travail' => [
+        'temps' => ['label' => 'Calendrier et pointage', 'url' => '/temps/calendrier', 'roles' => [Roles::ADMIN, Roles::RH]],
     'Mon espace' => [
         'congesPlanning' => ['label' => 'Planning des congés', 'url' => '/personnel/conges-planning', 'roles' => [Roles::SALARIE]],
         'mesDocuments' => ['label' => 'Mes documents', 'url' => '/personnel/mes-documents', 'roles' => [Roles::SALARIE]],

@@ -59,8 +59,17 @@ class AuthController extends ApiController
             };
         }
 
+        $avertissement = null;
+        try {
+            $session = SessionUtilisateur::courante();
+            if ($session !== null) (new \App\Libraries\Temps\PointageAutomatique())->enregistrer($session, 'entree');
+        } catch (\Throwable $e) {
+            log_message('error', 'Pointage automatique à la connexion : ' . $e->getMessage());
+            $avertissement = 'Connexion réussie, mais le pointage d’entrée n’a pas pu être enregistré. Contactez les RH.';
+        }
         return $this->ok([
             'utilisateur' => $resultat->utilisateur?->toPublicArray(),
+            'avertissement_pointage' => $avertissement,
         ]);
     }
 
@@ -69,6 +78,12 @@ class AuthController extends ApiController
         $session = SessionUtilisateur::courante();
 
         if ($session !== null) {
+            try {
+                (new \App\Libraries\Temps\PointageAutomatique())->enregistrer($session, 'sortie');
+            } catch (\Throwable $e) {
+                log_message('error', 'Pointage automatique à la déconnexion : ' . $e->getMessage());
+                return $this->erreur('POINTAGE_ECHEC', 'La sortie n’a pas pu être enregistrée. Réessayez ou contactez les RH.', 409);
+            }
             $this->service->deconnecter($session, $this->request->getIPAddress());
         }
 
