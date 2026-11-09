@@ -3,6 +3,24 @@
     'subtitle' => "La vue d'ensemble de votre activité RH.",
 ]) ?>
 
+<section id="mon-profil" class="card">
+    <div class="profil-entete">
+        <div class="profil-avatar" id="profil-initiales">—</div>
+        <div class="profil-identite">
+            <strong id="profil-nom">Chargement…</strong>
+            <span id="profil-poste" class="muted">—</span>
+        </div>
+    </div>
+    <div class="form-grid" id="profil-details">
+        <div><small>Matricule</small><strong id="profil-matricule">—</strong></div>
+        <div><small>Service</small><strong id="profil-service">—</strong></div>
+        <div><small>Département</small><strong id="profil-departement">—</strong></div>
+        <div><small>E-mail</small><strong id="profil-email">—</strong></div>
+        <div><small>Téléphone</small><strong id="profil-telephone">—</strong></div>
+        <div><small>Rôle</small><strong id="profil-role">—</strong></div>
+    </div>
+</section>
+
 <section id="metrics" class="metrics">
     <div class="metric metric-primary">
         <div class="metric-icon">

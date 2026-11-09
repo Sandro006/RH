@@ -33,6 +33,7 @@ $routes->group('personnel', ['filter' => 'auth'], static function ($routes) {
     $routes->get('salarie', 'Pages::afficher/personnel/salarie', ['filter' => 'role:rh,admin']);
     $routes->get('salarie-form', 'Pages::afficher/personnel/salarie-form', ['filter' => 'role:rh,admin']);
     $routes->get('grille', 'Pages::afficher/personnel/grille', ['filter' => 'role:rh,admin,controle_gestion']);
+    $routes->get('grille-form', 'Pages::afficher/personnel/grille-form', ['filter' => 'role:rh,admin,controle_gestion']);
     $routes->get('contrats', 'Pages::afficher/personnel/contrats', ['filter' => 'role:rh,admin']);
     $routes->get('contrat', 'Pages::afficher/personnel/contrat', ['filter' => 'role:rh,admin']);
     $routes->get('contrat-preview', 'Pages::afficher/personnel/contrat-preview', ['filter' => 'role:rh,admin']);
@@ -44,6 +45,12 @@ $routes->group('personnel', ['filter' => 'auth'], static function ($routes) {
     $routes->get('onboarding-form', 'Pages::afficher/personnel/onboarding-form', ['filter' => 'role:rh,admin']);
     $routes->get('onboarding-tache-form', 'Pages::afficher/personnel/onboarding-tache-form', ['filter' => 'role:rh,admin']);
     $routes->get('document-form', 'Pages::afficher/personnel/document-form', ['filter' => 'role:rh,admin']);
+    $routes->get('mes-conges', 'Pages::afficher/personnel/mes-conges');
+    $routes->get('conge-form', 'Pages::afficher/personnel/conge-form');
+    $routes->get('conges-a-valider', 'Pages::afficher/personnel/conges-a-valider', ['filter' => 'role:manager,rh,admin,direction']);
+    $routes->get('conges-planning', 'Pages::afficher/personnel/conges-planning');
+    $routes->get('conges-soldes', 'Pages::afficher/personnel/conges-soldes', ['filter' => 'role:rh,admin']);
+    $routes->get('conges-absences', 'Pages::afficher/personnel/conges-absences', ['filter' => 'role:rh,admin']);
     $routes->get('mes-documents', 'Pages::afficher/personnel/mes-documents');
     $routes->get('mes-taches', 'Pages::afficher/personnel/mes-taches');
 });
@@ -52,8 +59,8 @@ $routes->get('profil/mot-de-passe', 'Pages::afficher/profil/mot-de-passe', ['fil
 
 // Département Informatique
 $routes->get('departement/informatique', 'Pages::afficher/departement/informatique', ['filter' => 'auth']);
-$routes->get('departement/informatique/creer-utilisateur', 'Pages::creerUtilisateur', ['filter' => 'auth']);
-$routes->get('departement/informatique/reinitialiser-mdp', 'Pages::reinitialiserMdp', ['filter' => 'auth']);
+$routes->get('departement/informatique/creer-utilisateur', 'Pages::creerUtilisateur', ['filter' => 'accesInformatique']);
+$routes->get('departement/informatique/reinitialiser-mdp', 'Pages::reinitialiserMdp', ['filter' => 'accesInformatique']);
 
 $routes->get('securite/audit', 'Pages::afficher/securite/audit', ['filter' => 'auth']);
 $routes->get('securite/acces', 'Pages::afficher/securite/acces', ['filter' => 'auth']);
@@ -68,7 +75,7 @@ $routes->group('api/auth', ['namespace' => 'App\\Controllers\\Auth'], static fun
 });
 $routes->group('api/utilisateurs', ['namespace' => 'App\\Controllers\\Admin', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/', 'UtilisateurController::index');
-    $routes->post('/', 'UtilisateurController::create');
+    $routes->post('/', 'UtilisateurController::create', ['filter' => 'accesInformatique']);
     $routes->patch('(:num)', 'UtilisateurController::update/$1');
     $routes->post('(:num)/activer', 'UtilisateurController::activer/$1');
     $routes->post('(:num)/desactiver', 'UtilisateurController::desactiver/$1');
@@ -147,7 +154,7 @@ $routes->get('api/public/offres/(:num)', 'Recrutement\\RecrutementController::of
 
 // salaire
 $routes->group('api/salaries', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
-    $routes->get('/',           'SalarieController::index', ['filter' => 'role:rh,admin']);
+    $routes->get('/',           'SalarieController::index', ['filter' => 'accesInformatique']);
     $routes->post('/',          'SalarieController::createDepuisCandidature', ['filter' => 'role:rh,admin']);
     $routes->get('(:num)',      'SalarieController::show/$1', ['filter' => 'role:rh,admin']);
     $routes->patch('(:num)',    'SalarieController::update/$1', ['filter' => 'role:rh,admin']);
@@ -201,6 +208,29 @@ $routes->group('api/onboardings', ['namespace' => 'App\Controllers\Personnel', '
 });
 
 $routes->get('api/personnel/mes-taches', 'Personnel\OnboardingController::mesTaches', ['filter' => 'auth']);
+
+// demandes de congé (ancien schéma 07_ : dashboard, conservé pour rétrocompatibilité)
+$routes->group('api/conges', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('/', 'DemandeCongeController::index');
+    $routes->post('/', 'DemandeCongeController::creer');
+
+    // Bloc 7 — Congés et absences (nouveau schéma, CongeController)
+    $routes->get('types', 'CongeController::types');
+    $routes->get('soldes', 'CongeController::soldes');
+    $routes->get('soldes/tous', 'CongeController::soldesTous', ['filter' => 'role:rh,admin']);
+    $routes->get('alertes', 'CongeController::alertes', ['filter' => 'role:rh,admin']);
+    $routes->post('soldes/ajuster', 'CongeController::ajuster', ['filter' => 'role:rh,admin']);
+    $routes->post('cloturer-annee', 'CongeController::cloturerAnnee', ['filter' => 'role:rh,admin']);
+    $routes->get('demandes', 'CongeController::historique');
+    $routes->post('demandes', 'CongeController::creer');
+    $routes->post('demandes/(:num)/annuler', 'CongeController::annuler/$1');
+    $routes->post('demandes/(:num)/valider', 'CongeController::valider/$1');
+    $routes->post('demandes/(:num)/refuser', 'CongeController::refuser/$1');
+    $routes->get('a-valider', 'CongeController::aValider', ['filter' => 'role:manager,rh,admin,direction']);
+    $routes->get('planning', 'CongeController::planning');
+    $routes->get('absences', 'CongeController::absences', ['filter' => 'role:rh,admin']);
+    $routes->post('absences', 'CongeController::saisirAbsence', ['filter' => 'role:rh,admin']);
+});
 
 // document salaire
 $routes->group('api/salaries/(:num)/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {

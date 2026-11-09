@@ -973,4 +973,25 @@ COMMENT ON TABLE type_entrentien IS 'Référentiel des types d''entretien.';
 CREATE INDEX IF NOT EXISTS idx_utilisateur_actif ON utilisateur (actif);
 CREATE INDEX IF NOT EXISTS idx_journal_audit_utilisateur_date ON journal_audit (id_utilisateur, date_action);
 
+-- Demandes de congé (voir script/db/07_migration_conge.sql)
+CREATE TABLE IF NOT EXISTS demande_conge (
+    id_conge      bigserial NOT NULL,
+    id_utilisateur bigint NOT NULL,
+    id_employe    bigint,
+    type_conge    varchar(255) NOT NULL,
+    date_debut    date NOT NULL,
+    date_fin      date NOT NULL,
+    motif         varchar(255) NOT NULL,
+    justification text,
+    statut        varchar(50) NOT NULL DEFAULT 'En attente',
+    date_creation timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (id_conge),
+    CONSTRAINT demande_conge_dates_check CHECK (date_fin >= date_debut),
+    CONSTRAINT demande_conge_statut_check CHECK (statut IN ('En attente', 'Validée', 'Refusée', 'Annulée'))
+);
+CREATE INDEX IF NOT EXISTS idx_conge_utilisateur ON demande_conge (id_utilisateur);
+CREATE INDEX IF NOT EXISTS idx_conge_employe ON demande_conge (id_employe);
+CREATE INDEX IF NOT EXISTS idx_conge_statut ON demande_conge (statut);
+CREATE INDEX IF NOT EXISTS idx_conge_dates ON demande_conge (date_debut, date_fin);
+
 COMMIT;

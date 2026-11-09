@@ -9,6 +9,12 @@ Ce dossier remplace tous les anciens scripts SQL, désormais déplacés dans
 | `02_seeds.sql` | Données réelles | référentiels + départements/services/postes + grilles + comptes de démo |
 | `03_seeds_demo.sql` | Démo (optionnel) | 50 candidats, 50 offres, 50 candidatures, 50 propositions |
 | `04_migration_dossier_administratif.sql` | Migration Bloc 5 | colonnes identité, validité et confidentialité des documents |
+| `08_migration_conges_bloc7.sql` | Migration Bloc 7 | tables congés/absences/soldes, contraintes, index, 15 vues |
+| `09_seeds_conges_bloc7.sql` | Fixtures Bloc 7 | contrats, soldes, demandes, absences, mouvements, justificatifs |
+| `10_employes_workflow_conges.sql` | Fixtures Workflow | 5 employés multi-départements (contrats, historique, affectations) |
+| `11_correctif_conges_paternite.sql` | Correctif | `PATERNITE deduit_solde = false` |
+| `12_correctif_conges_sans_solde.sql` | Correctif | `SANS_SOLDE deduit_solde = false`, `justificatif_requis = false` |
+| `13_responsables_services_conges.sql` | Fixtures | responsables par service (Développement, Comptabilité, Ventes) + délégation |
 
 ## Installation sur une base vierge
 

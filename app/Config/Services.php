@@ -278,15 +278,123 @@ class Services extends BaseService
 		);
 	}
 
-	public static function grilleSalarialeService(bool $getShared = true)
+	public static function demandeCongeService(bool $getShared = true)
 	{
-		if ($getShared) return static::getSharedInstance('grilleSalarialeService');
+		if ($getShared) return static::getSharedInstance('demandeCongeService');
 
-		return new \App\Services\Finance\GrilleSalarialeService(
-			model(\App\Models\Finance\GrilleSalarialeModel::class),
-			model(\App\Models\Personnel\PosteModel::class),
-			model(\App\Models\Personnel\RangModel::class),
+		return new \App\Services\Personnel\DemandeCongeService(
+			model(\App\Models\Personnel\DemandeCongeModel::class),
 			service('auditService'),
+		);
+	}
+
+	// -- Bloc 7 : Congés et absences (Services/Conges) -----------------------
+
+	public static function auditCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('auditCongeService');
+
+		return new \App\Services\Conges\AuditService(
+			service('auditService'),
+		);
+	}
+
+	public static function calendrierService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('calendrierService');
+
+		return new \App\Services\Conges\CalendrierService(
+			model(\App\Models\Conges\JourFerieModel::class),
+		);
+	}
+
+	public static function controleDemandeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('controleDemandeService');
+
+		return new \App\Services\Conges\ControleDemandeService(
+			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			model(\App\Models\Conges\TypeCongeModel::class),
+			model(\App\Models\Conges\DroitCongeModel::class),
+			model(\App\Models\Conges\DemandeCongeModel::class),
+			model(\App\Models\Conges\AbsenceModel::class),
+			service('calendrierService'),
+		);
+	}
+
+	public static function soldeCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('soldeCongeService');
+
+		return new \App\Services\Conges\SoldeService(
+			model(\App\Models\Conges\SoldeCongeModel::class),
+			model(\App\Models\Conges\MouvementSoldeModel::class),
+			model(\App\Models\Conges\TypeCongeModel::class),
+			model(\App\Models\Conges\DroitCongeModel::class),
+			model(\App\Models\Conges\DemandeCongeModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			service('calendrierService'),
+			service('auditCongeService'),
+		);
+	}
+
+	public static function absenceCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('absenceCongeService');
+
+		return new \App\Services\Conges\AbsenceService(
+			model(\App\Models\Conges\AbsenceModel::class),
+			model(\App\Models\Conges\TypeAbsenceModel::class),
+			model(\App\Models\Conges\TypeCongeModel::class),
+			model(\App\Models\Conges\DemandeCongeModel::class),
+			service('calendrierService'),
+		);
+	}
+
+	public static function notificationCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('notificationCongeService');
+
+		return new \App\Services\Conges\NotificationService();
+	}
+
+	public static function congeWorkflowService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('congeWorkflowService');
+
+		return new \App\Services\Conges\CongeService(
+			model(\App\Models\Conges\DemandeCongeModel::class),
+			model(\App\Models\Conges\TypeCongeModel::class),
+			model(\App\Models\Conges\StatutDemandeCongeModel::class),
+			model(\App\Models\Personnel\SalarieModel::class),
+			model(\App\Models\Personnel\ContratModel::class),
+			model(\App\Models\Conges\DelegationValidationModel::class),
+			service('calendrierService'),
+			service('controleDemandeService'),
+			service('soldeCongeService'),
+			service('absenceCongeService'),
+			service('auditCongeService'),
+			service('notificationCongeService'),
+		);
+	}
+
+	public static function paieCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('paieCongeService');
+
+		return new \App\Services\Conges\PaieCongeService(
+			service('calendrierService'),
+		);
+	}
+
+	public static function justificatifCongeService(bool $getShared = true)
+	{
+		if ($getShared) return static::getSharedInstance('justificatifCongeService');
+
+		return new \App\Services\Conges\JustificatifService(
+			model(\App\Models\Conges\JustificatifAbsenceModel::class),
+			service('auditCongeService'),
 		);
 	}
 

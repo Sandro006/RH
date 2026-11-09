@@ -32,6 +32,10 @@ class DashboardService
 
     public function indicateurs(SessionUtilisateur $utilisateur): array
     {
+        if ($utilisateur->role === Roles::SALARIE) {
+            return $this->indicateursSalarie($utilisateur);
+        }
+
         return [
             'demandesEnAttente'  => $this->compterSecurise(fn (): int => $this->compterDemandesEnAttente()),
             'offresPubliees'     => $this->compterSecurise(fn (): int => $this->compterOffresPubliees()),
@@ -41,6 +45,76 @@ class DashboardService
             'tachesOnboarding'   => $this->compterSecurise(fn (): int => $this->compterTachesOnboarding()),
             'documentsExpirant'  => $this->compterSecurise(fn (): int => $this->compterDocumentsExpirant($utilisateur)),
             'documentsExpires'   => $this->compterSecurise(fn (): int => $this->compterDocumentsExpires($utilisateur)),
+        ];
+    }
+
+    /**
+     * Informations d'affichage de l'utilisateur connecté (en-tête du tableau de bord) :
+     * identifiant + rôle, et si lié à un employé : identité complète, poste, service, département.
+     */
+    public function infosUtilisateur(SessionUtilisateur $utilisateur): array
+    {
+        $infos = [
+            'identifiant' => $utilisateur->identifiant,
+            'role'        => $utilisateur->role,
+        ];
+
+        if ($utilisateur->idEmploye === null) {
+            return $infos;
+        }
+
+        try {
+            $ligne = $this->db->table('employe e')
+                ->select('s.matricule, s.nom, s.prenom, s.email, s.telephone, p.intitule AS poste, sv.nom AS service, d.nom AS departement')
+                ->join('salarie s', 's.id_salarie = e.id_salarie', 'left')
+                ->join('poste p', 'p.id_poste = e.poste_id', 'left')
+                ->join('service sv', 'sv.id_service = p.id_service', 'left')
+                ->join('departement d', 'd.id_departement = sv.id_departement', 'left')
+                ->where('e.id', $utilisateur->idEmploye)
+                ->get()
+                ->getRow();
+
+            if ($ligne !== null) {
+                $nomComplet = trim(($ligne->prenom ?? '') . ' ' . ($ligne->nom ?? ''));
+                if ($nomComplet === '') {
+                    $nomComplet = (string) ($ligne->nom ?? $utilisateur->identifiant);
+                }
+                $infos += [
+                    'matricule'    => $ligne->matricule,
+                    'nom'          => $ligne->nom,
+                    'prenom'       => $ligne->prenom,
+                    'nomComplet'   => $nomComplet,
+                    'email'        => $ligne->email,
+                    'telephone'    => $ligne->telephone,
+                    'poste'        => $ligne->poste,
+                    'service'      => $ligne->service,
+                    'departement'  => $ligne->departement,
+                ];
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Infos utilisateur dashboard indisponibles : ' . $e->getMessage());
+        }
+
+        return $infos;
+    }
+
+    /**
+     * Tableau de bord salarié « Mon service » : son propre solde, ses demandes
+     * et la présence de son service aujourd'hui (voir ecran Congés Bloc 7).
+     * Les clés sont mappées par dashboard.js vers les cartes existantes.
+     */
+    private function indicateursSalarie(SessionUtilisateur $utilisateur): array
+    {
+        $idSalarie = $this->idSalarieDepuisEmploye($utilisateur->idEmploye);
+
+        return [
+            'mesDemandesEnAttente' => $this->compterSecurise(fn (): int => $this->compterMesDemandesEnAttente($idSalarie)),
+            // Réutilise les clés historiques de dashboard.js (libellés remplacés côté JS).
+            'demandesEnAttente'   => $this->compterSecurise(fn (): int => $this->compterMesDemandesEnAttente($idSalarie)),
+            'offresPubliees'      => $this->compterSecurise(fn (): float => $this->soldesDisponibleSalarie($idSalarie)),
+            'candidatures'        => $this->compterSecurise(fn (): int => $this->compterAbsentsServiceAujourdHui($idSalarie)),
+            'tachesOnboarding'    => $this->compterSecurise(fn (): int => $this->compterTachesSalarie($idSalarie)),
+            'service'             => $this->compterSecurise(fn () => $this->serviceDuSalarie($idSalarie)),
         ];
     }
 
@@ -215,9 +289,16 @@ class DashboardService
     private function actionsSalarie(SessionUtilisateur $utilisateur): array
     {
         $idSalarie = $this->idSalarieDepuisEmploye($utilisateur->idEmploye);
-        $nombre = $this->compterSecurise(fn (): int => $this->compterTachesSalarie($idSalarie));
 
-        return $this->ligne('mesTachesOnboarding', 'Mes tâches d’onboarding', $nombre, '/personnel/mes-taches');
+        $taches = $this->compterSecurise(fn (): int => $this->compterTachesSalarie($idSalarie));
+        $demandes = $this->compterSecurise(fn (): int => $this->compterMesDemandesEnAttente($idSalarie));
+        $absents = $this->compterSecurise(fn (): int => $this->compterAbsentsServiceAujourdHui($idSalarie));
+
+        return [
+            ...$this->ligne('mesTachesOnboarding', 'Mes tâches d’onboarding', $taches, '/personnel/mes-taches'),
+            ...$this->ligne('mesDemandesEnAttente', 'Mes demandes de congé en attente', $demandes, '/personnel/mes-conges'),
+            ...$this->ligne('servicePlanning', 'Planning de mon service (absents aujourd’hui)', $absents, '/personnel/conges-planning'),
+        ];
     }
 
     private function compterDemandesParStatuts(array $statuts, ?int $idDemandeur = null): int
@@ -273,6 +354,84 @@ class DashboardService
             ->where('o.id_salarie', $idSalarie)
             ->whereIn('st.designation', self::TACHES_ONBOARDING_ACTIVES)
             ->countAllResults();
+    }
+
+    private function compterMesDemandesEnAttente(?int $idSalarie): int
+    {
+        if ($idSalarie === null) {
+            return 0;
+        }
+
+        return $this->db->table('demande_conge dc')
+            ->join('statut_demande_conge sdc', 'sdc.id_statut = dc.id_statut')
+            ->where('dc.id_salarie', $idSalarie)
+            ->whereIn('sdc.code', ['EN_ATTENTE_MANAGER', 'EN_ATTENTE_RH'])
+            ->countAllResults();
+    }
+
+    /**
+     * Total des jours disponibles sur l'année courante, tous types déduits.
+     */
+    private function soldesDisponibleSalarie(?int $idSalarie): float
+    {
+        if ($idSalarie === null) {
+            return 0.0;
+        }
+
+        $ligne = $this->db->table('solde_conge')
+            ->select('COALESCE(SUM(droit_acquis + report - pris - en_attente), 0) AS total')
+            ->where('id_salarie', $idSalarie)
+            ->where('annee', (int) date('Y'))
+            ->get()
+            ->getRow();
+
+        return $ligne !== null ? (float) $ligne->total : 0.0;
+    }
+
+    /**
+     * Nombre de salariés absents aujourd'hui dans le service du salarié courant.
+     */
+    private function compterAbsentsServiceAujourdHui(?int $idSalarie): int
+    {
+        if ($idSalarie === null) {
+            return 0;
+        }
+
+        $ligne = $this->db->table('employe e')
+            ->select('poste.id_service')
+            ->join('poste', 'poste.id_poste = e.poste_id')
+            ->where('e.id_salarie', $idSalarie)
+            ->get()
+            ->getRow();
+
+        if ($ligne === null || $ligne->id_service === null) {
+            return 0;
+        }
+
+        return $this->db->table('absence a')
+            ->join('employe e2', 'e2.id_salarie = a.id_salarie')
+            ->join('poste p2', 'p2.id_poste = e2.poste_id')
+            ->where('p2.id_service', $ligne->id_service)
+            ->where('a.date_debut <=', date('Y-m-d'))
+            ->where('a.date_fin >=', date('Y-m-d'))
+            ->countAllResults('a.id_salarie', true);
+    }
+
+    private function serviceDuSalarie(?int $idSalarie): ?string
+    {
+        if ($idSalarie === null) {
+            return null;
+        }
+
+        $ligne = $this->db->table('employe e')
+            ->select('service.nom AS service')
+            ->join('poste', 'poste.id_poste = e.poste_id')
+            ->join('service', 'service.id_service = poste.id_service')
+            ->where('e.id_salarie', $idSalarie)
+            ->get()
+            ->getRow();
+
+        return $ligne !== null ? (string) $ligne->service : null;
     }
 
     private function idSalarieDepuisEmploye(?int $idEmploye): ?int

@@ -28,3 +28,10 @@
         <div id="list" class="state">Chargement…</div>
     </div>
 </section>
+
+<!-- Bouton Créer -->
+<div class="card">
+    <a href="/personnel/grille-form?mode=create" class="button-secondary float-right">
+        <i class="fas fa-plus"></i> Créer une grille
+    </a>
+</section>

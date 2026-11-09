@@ -1240,3 +1240,87 @@ select[multiple] { min-height: 140px; }
  } 
   
  
+/* Bloc 7 — Congés (écran Nouvelle demande) */
+.conge-layout { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 900px) { .conge-layout { grid-template-columns: 1fr; } }
+.conge-solde-box .solde-row { display: flex; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0; border-top: 1px solid var(--border, #E5E7EB); }
+.conge-solde-box .solde-row:first-of-type { border-top: 0; }
+.conge-solde-box label { margin-bottom: 0.5rem; }
+.conge-checks { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.conge-checks label { flex-direction: row; align-items: center; font-weight: 400; }
+.conge-checks input { width: auto; }
+
+/* Bloc 7 — Congés (calendrier planning) */
+.conge-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.conge-cal .cal-head { font-weight: 600; font-size: 0.8rem; text-align: center; color: var(--text-muted, #6B7280); padding: 4px 0; text-transform: capitalize; }
+.conge-cal .cal-cell { min-height: 72px; border: 1px solid var(--border, #E5E7EB); border-radius: 8px; padding: 4px 6px; font-size: 0.8rem; background: var(--white, #fff); }
+.conge-cal .cal-cell.vide { background: transparent; border-color: transparent; }
+.conge-cal .cal-cell.we { background: var(--bg-secondary, #F9FAFB); color: var(--text-muted, #9CA3AF); }
+.conge-cal .cal-cell.ajd { outline: 2px solid var(--primary, #EBB644); }
+.conge-cal .cal-jour { font-weight: 700; }
+.conge-cal .cal-chip { display: block; margin-top: 2px; padding: 1px 4px; border-radius: 4px; font-size: 0.72rem; line-height: 1.2; }
+.conge-cal .cal-chip.conge { background: #DBEAFE; color: #1E40AF; }
+.conge-cal .cal-chip.maladie { background: #FEF3C7; color: #92400E; }
+.conge-cal .cal-chip.injustifiee { background: #FEE2E2; color: #991B1B; }
+.conge-cal .cal-chip.autre { background: #E5E7EB; color: #374151; }
+@media (max-width: 720px) { .conge-cal .cal-cell { min-height: 48px; font-size: 0.65rem; } }
+.conge-titre-cal { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; }
+.conge-titre-cal button { padding: 0.35rem 0.8rem; }
+.conge-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted, #6B7280); }
+
+/* Listes (soldes, demandes, absences, validations) — disposition normale */
+.solde-row,
+.demande-row,
+.absence-row,
+.planning-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border, #E5E7EB);
+}
+.solde-row:first-of-type,
+.demande-row:first-of-type,
+.absence-row:first-of-type,
+.planning-row:first-of-type { border-top: 0; padding-top: 0; }
+.solde-info,
+.demande-info,
+.absence-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    text-align: left;
+}
+.demande-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--primary-light, #F4D06A);
+    color: var(--charcoal, #26272A);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.statut-en-cours { background: #DBEAFE; color: #1E40AF; }
+.statut-realisee { background: #D1FAE5; color: #065F46; }
+.statut-bloquee { background: #FEE2E2; color: #991B1B; }
+.statut-annulee { background: #E5E7EB; color: #374151; }
+
+/* Tableau de bord — carte utilisateur */
+.profil-entete { display: flex; align-items: center; gap: 1rem; }
+.profil-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--primary, #EBB644); color: #26272A; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem; flex-shrink: 0; }
+.profil-identite { display: flex; flex-direction: column; gap: 0.15rem; }
+.profil-identite strong { font-size: 1.25rem; }
+#profil-details { margin-top: 1rem; }
+#profil-details div { display: flex; flex-direction: column; gap: 0.15rem; }
+#profil-details small { color: var(--text-muted, #6B7280); font-size: 0.8rem; }

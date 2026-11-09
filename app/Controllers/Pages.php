@@ -211,6 +211,17 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/personnel/grille.js'],
         ],
+        'personnel/grille-form' => [
+            'vue'      => 'pages/personnel/grille-form',
+            'titre'    => 'Grille salariale · Gestion RH',
+            'actif'    => 'grille',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Grille salariale', 'url' => '/personnel/grille'],
+                ['label' => 'Formulaire grille'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/grille-form.js'],
+        ],
         'personnel/contrats' => [
             'vue'      => 'pages/personnel/contrats',
             'titre'    => 'Contrats · Gestion RH',
@@ -343,6 +354,67 @@ final class Pages extends BaseController
                 ['label' => 'Changer le mot de passe'],
             ],
             'scripts'  => ['/assets/js/pages/profil/mot-de-passe.js'],
+        ],
+        'personnel/conge-form' => [
+            'vue'      => 'pages/personnel/conge-form',
+            'titre'    => 'Nouvelle demande de congé · Gestion RH',
+            'actif'    => 'mesConges',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Mes congés', 'url' => '/personnel/mes-conges'],
+                ['label' => 'Nouvelle demande'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conge-form.js'],
+        ],
+        'personnel/conges-a-valider' => [
+            'vue'      => 'pages/personnel/conges-a-valider',
+            'titre'    => 'Validations des congés · Gestion RH',
+            'actif'    => 'congesAValider',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Validations'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-a-valider.js'],
+        ],
+        'personnel/conges-absences' => [
+            'vue'      => 'pages/personnel/conges-absences',
+            'titre'    => 'Absences · Gestion RH',
+            'actif'    => 'congesAbsences',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Absences'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-absences.js'],
+        ],
+        'personnel/conges-soldes' => [
+            'vue'      => 'pages/personnel/conges-soldes',
+            'titre'    => 'Soldes des congés · Gestion RH',
+            'actif'    => 'congesSoldes',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Soldes'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-soldes.js'],
+        ],
+        'personnel/conges-planning' => [
+            'vue'      => 'pages/personnel/conges-planning',
+            'titre'    => 'Planning des congés · Gestion RH',
+            'actif'    => 'congesPlanning',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Planning'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-planning.js'],
+        ],
+        'personnel/mes-conges' => [
+            'vue'      => 'pages/personnel/mes-conges',
+            'titre'    => 'Mes congés · Gestion RH',
+            'actif'    => 'mesConges',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Mes congés'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/mes-conges.js'],
         ],
         'personnel/mes-documents' => [
             'vue'      => 'pages/personnel/mes-documents',
