@@ -65,6 +65,9 @@ $routes->get('departement/informatique/reinitialiser-mdp', 'Pages::reinitialiser
 $routes->get('securite/audit', 'Pages::afficher/securite/audit', ['filter' => 'auth']);
 $routes->get('securite/acces', 'Pages::afficher/securite/acces', ['filter' => 'auth']);
 
+// Temps de travail et pointage
+$routes->get('temps/calendrier', 'Pages::afficher/temps/calendrier', ['filter' => 'role:rh,admin']);
+
 // ressources statiques servies depuis public/assets
 $routes->get('api/dashboard', 'DashboardController::index', ['filter' => 'auth']);
 $routes->group('api/auth', ['namespace' => 'App\\Controllers\\Auth'], static function ($routes) {
@@ -211,7 +214,7 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
     $routes->get('services', 'ReferentielController::services');
     $routes->get('postes', 'ReferentielController::postes');
     $routes->get('postes/(:num)/grilles', 'ReferentielController::grillesPoste/$1');
-    $routes->get('grilles/(:num)', 'ReferentielController::grilles/$1');
+    $routes->get('grilles/(:num)', 'ReferentielController::grillesPoste/$1');
     $routes->get('rangs', 'ReferentielController::rangs');
     $routes->get('types-contrat', 'ReferentielController::typesContrat');
     $routes->get('types-entretien', 'ReferentielController::typesEntretien');
@@ -223,7 +226,7 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
 
 // Piste A - tableau de bord
 $routes->get('api/dashboard', 'DashboardController::index', ['filter' => 'auth']);
-=======
+
 // onboardings
 $routes->group('api/onboardings', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/',           'OnboardingController::index', ['filter' => 'role:rh,admin']);
@@ -296,12 +299,6 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
 $routes->get('api/referentiels/types-document', 'Personnel\DocumentController::listerTypes', ['filter' => 'auth']);
 
 // supprimer
-<<<<<<< HEAD
-$routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
-    $routes->delete('(:num)', 'DocumentController::supprimer/$1');
-});
->>>>>>> origin/dev
-=======
 $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
     $routes->get('expirant', 'DocumentController::expirant', ['filter' => 'role:rh,admin']);
     $routes->post('(:num)/remplacer', 'DocumentController::remplacer/$1', ['filter' => 'role:rh,admin']);
@@ -329,6 +326,18 @@ $routes->group('api/paie', ['namespace' => 'App\Controllers\Paie', 'filter' => '
     $routes->get('elements', 'BulletinController::elements', ['filter' => 'role:rh,admin']);
     $routes->post('elements', 'BulletinController::saisirElement', ['filter' => 'role:rh,admin']);
     $routes->get('taux', 'BulletinController::taux', ['filter' => 'role:rh,admin']);
+});
+
+// Temps de travail et pointage (API)
+$routes->group('api/temps', ['namespace' => 'App\Controllers\Temps', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('roles-salaries', 'TempsController::rolesSalaries', ['filter' => 'role:rh,admin']);
+    $routes->get('calendrier', 'TempsController::calendrier', ['filter' => 'role:rh,admin']);
+    $routes->get('mon-calendrier', 'TempsController::monCalendrier');
+    $routes->post('planning-role', 'TempsController::planningRole', ['filter' => 'role:rh,admin']);
+    $routes->post('planning', 'TempsController::planning', ['filter' => 'role:rh,admin']);
+    $routes->post('pointage', 'TempsController::pointage', ['filter' => 'role:rh,admin']);
+    $routes->get('taux', 'TempsController::taux', ['filter' => 'role:rh,admin']);
+    $routes->post('taux', 'TempsController::ajouterTaux', ['filter' => 'role:rh,admin']);
 });
 
 //entretiens

@@ -12,10 +12,7 @@ use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
-<<<<<<< HEAD
-=======
 use App\Filters\AccesInformatiqueFilter;
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 use App\Filters\AuthFilter;
 use App\Filters\RoleFilter;
 
@@ -42,10 +39,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth'          => AuthFilter::class,
         'role'          => RoleFilter::class,
-<<<<<<< HEAD
-=======
         'accesInformatique' => AccesInformatiqueFilter::class,
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     ];
 
     /**
