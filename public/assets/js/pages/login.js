@@ -19,6 +19,8 @@ loginForm?.addEventListener('submit', async event => {
 
     try {
         const result = await api.post('/api/auth/login', Object.fromEntries(new FormData(loginForm)));
+        if (result.avertissement_pointage) sessionStorage.setItem('avertissement_pointage', result.avertissement_pointage);
+        else sessionStorage.removeItem('avertissement_pointage');
         sessionStorage.setItem('user', JSON.stringify(result.utilisateur || result));
         location.href = '/dashboard';
     } catch (error) {

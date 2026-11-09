@@ -63,6 +63,12 @@ class AuthController extends ApiController
         $session = SessionUtilisateur::courante();
 
         if ($session !== null) {
+            try {
+                (new \App\Libraries\Temps\PointageAutomatique())->enregistrer($session, 'sortie');
+            } catch (\Throwable $e) {
+                log_message('error', 'Pointage automatique à la déconnexion : ' . $e->getMessage());
+                return $this->erreur('POINTAGE_ECHEC', 'La sortie n’a pas pu être enregistrée. Réessayez ou contactez les RH.', 409);
+            }
             $this->service->deconnecter($session, $this->request->getIPAddress());
         }
 

@@ -1,25 +1,10 @@
 <h1>Temps de travail et pointage</h1>
-<p>Choisissez un salarié et un mois, puis sélectionnez un jour pour enregistrer son planning ou ses pointages.</p>
-<div class="temps-filtres"><label>Salarié <select id="salarie"><option value="">Chargement…</option></select></label><label>Mois <input type="month" id="mois"></label></div>
+<p>Choisissez un rôle et un mois, puis sélectionnez un jour pour définir le planning de tous les salariés associés à ce rôle. Les pointages proviennent des connexions et déconnexions.</p>
+<div class="temps-filtres"><label>Rôle <select id="role"><option value="">Chargement…</option></select></label><label>Mois <input type="month" id="mois"></label></div>
 <p id="message" role="status"></p>
 <div class="temps-legende"><span>● Présence et planning</span><span class="alerte">● Anomalie à vérifier</span></div><div class="temps-calendrier"><div class="temps-jours" id="calendrier" aria-label="Calendrier mensuel"></div></div><p class="temps-conseil">Sélectionnez un jour pour renseigner les formulaires ci-dessous.</p>
-<section class="temps-estimation" aria-labelledby="titre-estimation">
- <div class="estimation-entete"><span class="estimation-etiquette">HEURES SUPPLÉMENTAIRES</span><h2 id="titre-estimation">Montant estimé selon la grille</h2><p>Le taux horaire dépend du régime du planning et de la date de la journée. Il comprend déjà la majoration éventuelle.</p></div>
- <div class="estimation-resultat" id="estimation-resultat" role="status" aria-live="polite">Sélectionnez un salarié pour commencer.</div>
- <p class="estimation-note">Estimation indicative : les journées avec une anomalie ou sans taux applicable sont exclues. Aucun montant n’est transmis à la paie.</p>
- <details class="temps-grille"><summary>Configurer et consulter la grille des taux</summary>
- <p>Ajoutez un taux pour chaque régime. Pour changer un taux, ajoutez une nouvelle ligne avec sa date de début. Le régime doit correspondre à celui saisi dans le planning.</p>
- <form id="form-taux" class="temps-parametres">
-  <label>Régime <input name="regime" list="regimes-taux" maxlength="100" placeholder="Ex. Temps plein" required></label><datalist id="regimes-taux"></datalist>
-  <label>Applicable à partir du <input type="date" name="date_debut" required></label>
-  <label>Montant par heure supplémentaire <input type="number" name="taux_horaire" min="0" max="999999999999" step="0.01" placeholder="Ex. 5000" required></label>
-  <label>Devise <input name="devise" maxlength="10" placeholder="Ex. Ar" required></label>
-  <button type="submit">Ajouter le taux</button>
- </form><p id="taux-message" role="status"></p><div id="liste-taux"></div></details>
-</section>
 <section class="temps-formulaires">
- <form id="planning"><h2>Planning du jour</h2><label>Date <input type="date" name="jour" required></label><label>Début <input type="time" name="debut" required></label><label>Fin <input type="time" name="fin" required></label><label>Pause prévue (minutes) <input type="number" name="pause_minutes" min="0" value="0" required></label><label>Régime <input name="regime" maxlength="100" placeholder="Temps plein, temps partiel…" required></label><button type="submit">Enregistrer le planning</button></form>
- <form id="pointage"><h2>Ajouter un pointage</h2><label>Date et heure <input type="datetime-local" name="instant" required></label><label>Type <select name="type"><option value="entree">Entrée</option><option value="sortie">Sortie</option></select></label><button type="submit">Enregistrer le pointage</button><p>Pour déduire une pause réelle, enregistrez une sortie puis une nouvelle entrée.</p></form>
+ <form id="planning"><h2>Planning du jour pour le rôle sélectionné</h2><p>Les salariés ayant déjà un planning ce jour-là le conservent.</p><label>Date <input type="date" name="jour" required></label><label>Début <input type="time" name="debut" required></label><label>Fin <input type="time" name="fin" required></label><label>Pause prévue (minutes) <input type="number" name="pause_minutes" min="0" value="0" required></label><label>Régime <input name="regime" maxlength="100" placeholder="Temps plein, temps partiel…" required></label><button type="submit">Enregistrer le planning</button></form>
 </section>
 <style>
 .temps-filtres,.temps-formulaires{display:flex;gap:1rem;flex-wrap:wrap;margin:1.25rem 0}.temps-filtres label,.temps-formulaires label{display:flex;flex-direction:column;gap:.35rem;font-size:.85rem;font-weight:600;color:#526075}.temps-filtres label:first-child{min-width:260px}

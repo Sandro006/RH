@@ -23,10 +23,36 @@ final class TempsController extends ApiController
         $date = \DateTimeImmutable::createFromFormat('!' . $format, $value);
         return $date !== false && $date->format($format) === $value;
     }
-    public function calendrier()
+    public function rolesSalaries()
     {
         return $this->executer(function () {
-            $this->autoriser(); $id = (int) $this->request->getGet('salarie'); $this->salarie($id);
+            $this->autoriser();
+            return db_connect()->table('utilisateur u')
+                ->select('u.role, s.id_salarie, s.nom, s.prenom, s.matricule')
+                ->join('employe e', 'e.id = u.id_employe')
+                ->join('salarie s', 's.id_salarie = e.id_salarie')
+                ->where('u.actif', true)->distinct()->orderBy('u.role')->orderBy('s.nom')->get()->getResultArray();
+        });
+    }
+    public function calendrier()
+    {
+        return $this->chargerCalendrier(false);
+    }
+    public function monCalendrier()
+    {
+        return $this->chargerCalendrier(true);
+    }
+    private function chargerCalendrier(bool $personnel)
+    {
+        return $this->executer(function () use ($personnel) {
+            if ($personnel) {
+                $session = SessionUtilisateur::courante();
+                $id = $session ? (new \App\Libraries\Temps\PointageAutomatique())->salarie($session) : null;
+                if (!$id) throw new DonneesIncoherentesException('Votre compte n’est pas encore lié à un salarié. Contactez les RH.');
+            } else {
+                $this->autoriser(); $id = (int) $this->request->getGet('salarie');
+            }
+            $this->salarie($id);
             $mois = (string) $this->request->getGet('mois');
             if (!$this->valide($mois, 'Y-m')) throw new DonneesIncoherentesException('Mois invalide.');
             $debut = $mois . '-01'; $fin = (new \DateTimeImmutable($debut))->modify('+1 month')->format('Y-m-d'); $db = db_connect();
@@ -60,8 +86,7 @@ final class TempsController extends ApiController
                 $data += ['minutes_travaillees' => $minutes, 'minutes_prevues' => $prevu, 'retard_minutes' => $retard, 'heures_supplementaires_minutes' => $plan ? max(0, $minutes - $prevu) : 0, 'anomalies' => array_values(array_unique($anomalies))];
             }
             unset($data); ksort($jours);
-            $taux = $db->table('temps_taux_supplementaire')->where('date_debut <', $fin)->orderBy('date_debut', 'DESC')->get()->getResultArray();
-            return ['jours' => $jours, 'taux' => $taux];
+            return ['jours' => $jours];
         });
     }
     public function taux()
@@ -83,6 +108,29 @@ final class TempsController extends ApiController
             if ($existe) throw new DonneesIncoherentesException('Un taux existe déjà pour ce régime à cette date.');
             $db->table('temps_taux_supplementaire')->insert(['regime' => $regime, 'date_debut' => $date, 'taux_horaire' => $taux, 'devise' => $devise]);
             return ['message' => 'Taux enregistré.'];
+        }, 201);
+    }
+    public function planningRole()
+    {
+        return $this->executer(function () {
+            $this->autoriser(); $v = (array) $this->request->getJSON(true);
+            $role = (string) ($v['role'] ?? ''); $jour = (string) ($v['jour'] ?? '');
+            $debut = (string) ($v['debut'] ?? ''); $fin = (string) ($v['fin'] ?? '');
+            $pause = filter_var($v['pause_minutes'] ?? 0, FILTER_VALIDATE_INT); $regime = trim((string) ($v['regime'] ?? ''));
+            if (!Roles::estValide($role) || !$this->valide($jour, 'Y-m-d') || !$this->valide($debut, 'H:i') || !$this->valide($fin, 'H:i') || $fin <= $debut || $pause === false || $pause < 0 || $pause >= (strtotime($fin) - strtotime($debut)) / 60 || $regime === '' || mb_strlen($regime) > 100) throw new DonneesIncoherentesException('Vérifiez le rôle, la date, les horaires, la pause et le régime.');
+            $db = db_connect();
+            $employes = $db->table('utilisateur u')->select('s.id_salarie')
+                ->join('employe e', 'e.id = u.id_employe')->join('salarie s', 's.id_salarie = e.id_salarie')
+                ->where('u.role', $role)->where('u.actif', true)->distinct()->get()->getResultArray();
+            if (!$employes) throw new DonneesIncoherentesException('Aucun salarié lié à un compte actif ne possède ce rôle.');
+            $db->transStart(); $crees = 0;
+            foreach ($employes as $employe) {
+                $db->query('INSERT INTO temps_planning (id_salarie, jour, debut, fin, pause_minutes, regime) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id_salarie, jour) DO NOTHING', [(int) $employe['id_salarie'], $jour, $debut, $fin, $pause, $regime]);
+                $crees += $db->affectedRows();
+            }
+            $db->transComplete();
+            if (!$db->transStatus()) throw new \RuntimeException('Impossible de créer les plannings.');
+            return ['crees' => $crees, 'existants' => count($employes) - $crees, 'total' => count($employes)];
         }, 201);
     }
     public function planning()

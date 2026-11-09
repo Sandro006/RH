@@ -222,7 +222,10 @@ $routes->get('entretiens', 'Selection\EntretienController::page');
 $routes->get('temps/calendrier', 'Pages::afficher/temps/calendrier', ['filter' => 'auth']);
 $routes->group('api/temps', ['namespace' => 'App\\Controllers\\Temps', 'filter' => 'auth'], static function ($routes) {
     $routes->get('calendrier', 'TempsController::calendrier');
+    $routes->get('mon-calendrier', 'TempsController::monCalendrier');
+    $routes->get('roles-salaries', 'TempsController::rolesSalaries');
     $routes->post('planning', 'TempsController::planning');
+    $routes->post('planning-role', 'TempsController::planningRole');
     $routes->post('pointage', 'TempsController::pointage');
     $routes->get('taux', 'TempsController::taux');
     $routes->post('taux', 'TempsController::ajouterTaux');
