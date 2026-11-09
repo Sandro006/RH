@@ -53,8 +53,17 @@ class AuthController extends ApiController
             };
         }
 
+        $avertissement = null;
+        try {
+            $session = SessionUtilisateur::courante();
+            if ($session !== null) (new \App\Libraries\Temps\PointageAutomatique())->enregistrer($session, 'entree');
+        } catch (\Throwable $e) {
+            log_message('error', 'Pointage automatique à la connexion : ' . $e->getMessage());
+            $avertissement = 'Connexion réussie, mais le pointage d’entrée n’a pas pu être enregistré. Contactez les RH.';
+        }
         return $this->ok([
             'utilisateur' => $resultat->utilisateur?->toPublicArray(),
+            'avertissement_pointage' => $avertissement,
         ]);
     }
 
