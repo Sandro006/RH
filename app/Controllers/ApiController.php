@@ -6,6 +6,10 @@ namespace App\Controllers;
 
 use App\Exceptions\AccesRefuseException;
 use App\Exceptions\ConflitException;
+<<<<<<< HEAD
+=======
+use App\Exceptions\CongeException;
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 use App\Exceptions\DonneesIncoherentesException;
 use App\Exceptions\ObjetIntrouvableException;
 use App\Exceptions\StatutInvalideException;
@@ -35,6 +39,11 @@ abstract class ApiController extends BaseController
     {
         try {
             return $this->ok($action(), $statutSucces);
+<<<<<<< HEAD
+=======
+        } catch (CongeException $e) {
+            return $this->erreur($e->getCodeMetier(), $e->getMessage(), $this->statutHttpPourCodeConge($e->getCodeMetier()));
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
         } catch (AccesRefuseException $e) {
             return $this->erreur('FORBIDDEN', $e->getMessage(), 403);
         } catch (ObjetIntrouvableException $e) {
@@ -49,4 +58,27 @@ abstract class ApiController extends BaseController
             return $this->erreur('ERREUR_INTERNE', 'Une erreur interne est survenue', 500);
         }
     }
+<<<<<<< HEAD
+=======
+
+    private function statutHttpPourCodeConge(string $code): int
+    {
+        return match ($code) {
+            CongeException::NON_AUTORISE => 403,
+            CongeException::OBJET_INTROUVABLE => 404,
+            CongeException::CHEVAUCHEMENT,
+            CongeException::STATUT_INVALIDE => 409,
+            CongeException::SOLDE_INSUFFISANT,
+            CongeException::DELAI_NON_RESPECTE,
+            CongeException::DUREE_MAX,
+            CongeException::ANCIENNETE,
+            CongeException::CONTRAT_INACTIF,
+            CongeException::JUSTIFICATIF_REQUIS,
+            CongeException::DATES_INVALIDES,
+            CongeException::DEMI_JOURNEE_NON_AUTORISEE,
+            CongeException::TYPE_INACTIF => 422,
+            default => 400,
+        };
+    }
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 }

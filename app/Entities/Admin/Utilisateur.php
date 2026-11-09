@@ -8,11 +8,23 @@ use CodeIgniter\Entity\Entity;
 
 class Utilisateur extends Entity
 {
+<<<<<<< HEAD
     protected $casts = [
         'id_utilisateur'          => 'integer',
         'actif'                   => 'boolean',
         'tentatives_echec'        => 'integer',
         'doit_changer_mot_de_passe' => 'boolean',
+=======
+    protected $castHandlers = [
+        'postgres-bool' => \App\Entities\Cast\PostgresBooleanCast::class,
+    ];
+
+    protected $casts = [
+        'id_utilisateur'          => 'integer',
+        'actif'                   => 'postgres-bool',
+        'tentatives_echec'        => 'integer',
+        'doit_changer_mot_de_passe' => 'postgres-bool',
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     ];
 
     protected $hidden = [

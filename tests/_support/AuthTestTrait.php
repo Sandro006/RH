@@ -15,8 +15,12 @@ trait AuthTestTrait
 {
     protected function chargerDonneesAuth(): void
     {
+<<<<<<< HEAD
         $this->executerScriptSql(ROOTPATH . 'script/migration_auth.sql');
         $this->executerScriptSql(ROOTPATH . 'script/fixtures_auth.sql');
+=======
+        $this->executerScriptSql(ROOTPATH . 'script/db/02_seeds.sql');
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 
         $this->db->table('journal_audit')->emptyTable();
         $this->db->table('utilisateur')

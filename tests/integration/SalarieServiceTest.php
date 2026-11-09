@@ -27,7 +27,7 @@ final class SalarieServiceTest extends CIUnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->db->query(file_get_contents(ROOTPATH . 'script/fixtures_embauche.sql'));
+        $this->db->query(file_get_contents(ROOTPATH . 'script/db/03_seeds_demo.sql'));
 
         $this->service      = service('salarieService');
         $this->salarieModel = model(SalarieModel::class);

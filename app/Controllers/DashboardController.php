@@ -31,6 +31,10 @@ class DashboardController extends ApiController
 
         return $this->executer(fn (): array => [
             'role'             => $session->role,
+<<<<<<< HEAD
+=======
+            'utilisateur'      => $this->service->infosUtilisateur($session),
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
             'indicateurs'      => $this->service->indicateurs($session),
             'actionsEnAttente' => $this->service->actionsEnAttente($session),
         ]);

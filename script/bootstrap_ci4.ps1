@@ -83,15 +83,11 @@ $Dirs = @(
     'app/Libraries/Common',
     # Tests
     'tests/unit', 'tests/integration', 'tests/database',
-    # Front statique servi par public/
-    'web',
-    'web/css',
-    'web/js',
-    'web/js/pages',
-    'web/pages',
-    'web/pages/admin',
-    'web/pages/recrutement',
-    'web/pages/personnel'
+    # Ressources front servies par public/assets/
+    'public/assets',
+    'public/assets/css',
+    'public/assets/js',
+    'public/assets/js/pages'
 )
 
 Write-Host "Creation de l'arborescence metier ..." -ForegroundColor Cyan
@@ -105,7 +101,7 @@ $Placeholders = @(
     'app/Models/Admin', 'app/Models/Recrutement', 'app/Models/Personnel',
     'app/Entities/Admin', 'app/Entities/Recrutement', 'app/Entities/Personnel',
     'app/Libraries/Common', 'tests/unit', 'tests/integration', 'tests/database',
-    'web/css', 'web/js/pages', 'web/pages/admin', 'web/pages/recrutement', 'web/pages/personnel'
+    'public/assets/css', 'public/assets/js/pages'
 )
 foreach ($p in $Placeholders) {
     $keep = Join-Path $Root (Join-Path $p '.gitkeep')

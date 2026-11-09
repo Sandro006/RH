@@ -91,7 +91,13 @@ class ReferentielModel extends Model
             'postes'   => $this->postesAvecHierarchie(
                 isset($filtres['idService']) ? (int) $filtres['idService'] : null
             ),
+<<<<<<< HEAD
             'grilles'  => $this->listerGrilles((int) ($filtres['idPoste'] ?? 0)),
+=======
+            'grilles'  => $this->listerGrilles(
+                isset($filtres['idPoste']) && (int) $filtres['idPoste'] > 0 ? (int) $filtres['idPoste'] : null
+            ),
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
             default    => $this->listerSimple($ressource),
         };
     }
@@ -217,6 +223,7 @@ class ReferentielModel extends Model
         ], $lignes);
     }
 
+<<<<<<< HEAD
     private function listerGrilles(int $idPoste): array
     {
         if ($idPoste <= 0) {
@@ -238,6 +245,43 @@ class ReferentielModel extends Model
             'salaireMax' => (float) $ligne['salaire_max'],
             'dateDebut'  => $ligne['date_debut'],
             'dateFin'    => $ligne['date_fin'],
+=======
+    private function listerGrilles(?int $idPoste = null): array
+    {
+        $builder = $this->db->table('grille_salariale g')
+            ->select('g.id_grille, g.id_poste, g.rang, g.salaire_min, g.salaire_max, g.date_debut, g.date_fin, '
+                . 'p.intitule AS poste, p.id_service, s.nom AS service, s.id_departement, d.nom AS departement, r.designation AS libelle_rang')
+            ->join('poste p', 'p.id_poste = g.id_poste', 'left')
+            ->join('service s', 's.id_service = p.id_service', 'left')
+            ->join('departement d', 'd.id_departement = s.id_departement', 'left')
+            ->join('rang r', 'r.id = g.rang', 'left')
+            ->orderBy('p.intitule', 'ASC')
+            ->orderBy('g.date_debut', 'DESC');
+
+        if ($idPoste !== null && $idPoste > 0) {
+            $builder->where('g.id_poste', $idPoste);
+        }
+
+        $lignes = $builder->get()->getResultArray();
+        $aujourdhui = date('Y-m-d');
+
+        return array_map(static fn (array $ligne): array => [
+            'id'            => (int) $ligne['id_grille'],
+            'idPoste'       => (int) $ligne['id_poste'],
+            'poste'         => $ligne['poste'],
+            'idService'     => $ligne['id_service'] !== null ? (int) $ligne['id_service'] : null,
+            'service'       => $ligne['service'],
+            'idDepartement' => $ligne['id_departement'] !== null ? (int) $ligne['id_departement'] : null,
+            'departement'   => $ligne['departement'],
+            'idRang'        => (int) $ligne['rang'],
+            'rang'          => $ligne['libelle_rang'],
+            'salaireMin'    => (float) $ligne['salaire_min'],
+            'salaireMax'    => (float) $ligne['salaire_max'],
+            'dateDebut'     => $ligne['date_debut'],
+            'dateFin'       => $ligne['date_fin'],
+            'actif'         => $ligne['date_debut'] <= $aujourdhui
+                && ($ligne['date_fin'] === null || $ligne['date_fin'] >= $aujourdhui),
+>>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
         ], $lignes);
     }
 }

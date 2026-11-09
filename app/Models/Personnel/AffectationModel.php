@@ -19,9 +19,15 @@ class AffectationModel extends Model
 
     public function listerParSalarie(int $idSalarie): array
     {
-        return $this->where('id_salarie', $idSalarie)
-                    ->orderBy('date_debut', 'DESC')
-                    ->findAll();
+        return $this->db->table('affectation a')
+            ->select('a.id_affectation, a.id_salarie, a.id_poste, a.date_debut, a.date_fin, a.motif, p.intitule AS poste, d.nom AS departement')
+            ->join('poste p', 'p.id_poste = a.id_poste', 'left')
+            ->join('service sv', 'sv.id_service = p.id_service', 'left')
+            ->join('departement d', 'd.id_departement = sv.id_departement', 'left')
+            ->where('a.id_salarie', $idSalarie)
+            ->orderBy('a.date_debut', 'DESC')
+            ->get()
+            ->getResultArray();
     }
 
     /**
