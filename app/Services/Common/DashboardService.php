@@ -32,13 +32,10 @@ class DashboardService
 
     public function indicateurs(SessionUtilisateur $utilisateur): array
     {
-<<<<<<< HEAD
-=======
         if ($utilisateur->role === Roles::SALARIE) {
             return $this->indicateursSalarie($utilisateur);
         }
 
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
         return [
             'demandesEnAttente'  => $this->compterSecurise(fn (): int => $this->compterDemandesEnAttente()),
             'offresPubliees'     => $this->compterSecurise(fn (): int => $this->compterOffresPubliees()),
@@ -46,8 +43,6 @@ class DashboardService
             'entretiensAVenir'   => $this->compterSecurise(fn (): int => $this->compterEntretiensAVenir()),
             'propositionsEnCours' => $this->compterSecurise(fn (): int => $this->compterPropositionsEnCours()),
             'tachesOnboarding'   => $this->compterSecurise(fn (): int => $this->compterTachesOnboarding()),
-<<<<<<< HEAD
-=======
             'documentsExpirant'  => $this->compterSecurise(fn (): int => $this->compterDocumentsExpirant($utilisateur)),
             'documentsExpires'   => $this->compterSecurise(fn (): int => $this->compterDocumentsExpires($utilisateur)),
         ];
@@ -120,7 +115,6 @@ class DashboardService
             'candidatures'        => $this->compterSecurise(fn (): int => $this->compterAbsentsServiceAujourdHui($idSalarie)),
             'tachesOnboarding'    => $this->compterSecurise(fn (): int => $this->compterTachesSalarie($idSalarie)),
             'service'             => $this->compterSecurise(fn () => $this->serviceDuSalarie($idSalarie)),
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
         ];
     }
 
@@ -194,8 +188,6 @@ class DashboardService
             ->countAllResults();
     }
 
-<<<<<<< HEAD
-=======
     /**
      * Pièces actives qui expirent dans les 30 prochains jours (RH / admin).
      */
@@ -229,18 +221,13 @@ class DashboardService
             ->countAllResults();
     }
 
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     private function actionsAdmin(): array
     {
         $nombre = $this->compterSecurise(fn (): int => $this->db->table('utilisateur')
             ->where('actif', false)
             ->countAllResults());
 
-<<<<<<< HEAD
-        return $this->ligne('comptesInactifs', 'Comptes désactivés', $nombre, 'pages/admin/utilisateurs.html?actif=0');
-=======
         return $this->ligne('comptesInactifs', 'Comptes désactivés', $nombre, '/securite/acces');
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     }
 
     private function actionsManager(SessionUtilisateur $utilisateur): array
@@ -250,15 +237,11 @@ class DashboardService
             $utilisateur->idEmploye
         ));
 
-<<<<<<< HEAD
-        return $this->ligne('demandesAModifier', 'Mes demandes à compléter', $nombre, 'pages/recrutement/demandes.html');
-=======
         $lien = $utilisateur->idEmploye !== null
             ? '/recrutement/demandes?id_demandeur=' . $utilisateur->idEmploye
             : '/recrutement/demandes';
 
         return $this->ligne('demandesAModifier', 'Mes demandes à compléter', $nombre, $lien);
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     }
 
     private function actionsControleGestion(): array
@@ -267,11 +250,7 @@ class DashboardService
             ['En validation budgétaire']
         ));
 
-<<<<<<< HEAD
-        return $this->ligne('validationsBudget', 'Demandes à valider (budget)', $nombre, 'pages/recrutement/demandes.html?statut=En%20validation%20budg%C3%A9taire');
-=======
         return $this->ligne('validationsBudget', 'Demandes à valider (budget)', $nombre, '/recrutement/demandes?statut=En%20validation%20budg%C3%A9taire');
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     }
 
     private function actionsDirection(): array
@@ -280,11 +259,7 @@ class DashboardService
             ['En validation hiérarchique']
         ));
 
-<<<<<<< HEAD
-        return $this->ligne('validationsHierarchiques', 'Demandes à valider (hiérarchie)', $nombre, 'pages/recrutement/demandes.html?statut=En%20validation%20hi%C3%A9rarchique');
-=======
         return $this->ligne('validationsHierarchiques', 'Demandes à valider (hiérarchie)', $nombre, '/recrutement/demandes?statut=En%20validation%20hi%C3%A9rarchique');
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     }
 
     private function actionsRh(): array
@@ -294,15 +269,9 @@ class DashboardService
         $onboarding = $this->compterSecurise(fn (): int => $this->compterTachesOnboardingEnRetard());
 
         return [
-<<<<<<< HEAD
-            ...$this->ligne('controlesRh', 'Demandes à contrôler', $demandes, 'pages/recrutement/demandes.html?statut=En%20contr%C3%B4le%20RH'),
-            ...$this->ligne('propositionsAEnvoyer', 'Propositions à envoyer', $propositions, 'pages/recrutement/propositions.html'),
-            ...$this->ligne('onboardingEnRetard', 'Tâches d’onboarding en retard', $onboarding, 'pages/personnel/onboarding.html'),
-=======
             ...$this->ligne('controlesRh', 'Demandes à contrôler', $demandes, '/recrutement/demandes?statut=En%20contr%C3%B4le%20RH'),
             ...$this->ligne('propositionsAEnvoyer', 'Propositions à envoyer', $propositions, '/selection/propositions'),
             ...$this->ligne('onboardingEnRetard', 'Tâches d’onboarding en retard', $onboarding, '/personnel/onboardings'),
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
         ];
     }
 
@@ -312,24 +281,14 @@ class DashboardService
         $entretiens   = $this->compterSecurise(fn (): int => $this->compterEntretiensAVenir());
 
         return [
-<<<<<<< HEAD
-            ...$this->ligne('candidaturesATraiter', 'Candidatures à traiter', $candidatures, 'pages/recrutement/candidatures.html'),
-            ...$this->ligne('entretiensAVenir', 'Entretiens à venir', $entretiens, 'pages/recrutement/entretiens.html'),
-=======
             ...$this->ligne('candidaturesATraiter', 'Candidatures à traiter', $candidatures, '/recrutement/candidatures'),
             ...$this->ligne('entretiensAVenir', 'Entretiens à venir', $entretiens, '/selection/entretiens'),
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
         ];
     }
 
     private function actionsSalarie(SessionUtilisateur $utilisateur): array
     {
         $idSalarie = $this->idSalarieDepuisEmploye($utilisateur->idEmploye);
-<<<<<<< HEAD
-        $nombre = $this->compterSecurise(fn (): int => $this->compterTachesSalarie($idSalarie));
-
-        return $this->ligne('mesTachesOnboarding', 'Mes tâches d’onboarding', $nombre, 'pages/personnel/onboarding.html');
-=======
 
         $taches = $this->compterSecurise(fn (): int => $this->compterTachesSalarie($idSalarie));
         $demandes = $this->compterSecurise(fn (): int => $this->compterMesDemandesEnAttente($idSalarie));
@@ -340,7 +299,6 @@ class DashboardService
             ...$this->ligne('mesDemandesEnAttente', 'Mes demandes de congé en attente', $demandes, '/personnel/mes-conges'),
             ...$this->ligne('servicePlanning', 'Planning de mon service (absents aujourd’hui)', $absents, '/personnel/conges-planning'),
         ];
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     }
 
     private function compterDemandesParStatuts(array $statuts, ?int $idDemandeur = null): int
@@ -398,8 +356,6 @@ class DashboardService
             ->countAllResults();
     }
 
-<<<<<<< HEAD
-=======
     private function compterMesDemandesEnAttente(?int $idSalarie): int
     {
         if ($idSalarie === null) {
@@ -478,7 +434,6 @@ class DashboardService
         return $ligne !== null ? (string) $ligne->service : null;
     }
 
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     private function idSalarieDepuisEmploye(?int $idEmploye): ?int
     {
         if ($idEmploye === null) {

@@ -91,13 +91,9 @@ class ReferentielModel extends Model
             'postes'   => $this->postesAvecHierarchie(
                 isset($filtres['idService']) ? (int) $filtres['idService'] : null
             ),
-<<<<<<< HEAD
-            'grilles'  => $this->listerGrilles((int) ($filtres['idPoste'] ?? 0)),
-=======
             'grilles'  => $this->listerGrilles(
                 isset($filtres['idPoste']) && (int) $filtres['idPoste'] > 0 ? (int) $filtres['idPoste'] : null
             ),
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
             default    => $this->listerSimple($ressource),
         };
     }
@@ -223,29 +219,6 @@ class ReferentielModel extends Model
         ], $lignes);
     }
 
-<<<<<<< HEAD
-    private function listerGrilles(int $idPoste): array
-    {
-        if ($idPoste <= 0) {
-            throw new \InvalidArgumentException('idPoste obligatoire pour lister les grilles');
-        }
-
-        $lignes = $this->db->table('grille_salariale g')
-            ->select('g.id_grille, g.id_poste, g.rang, g.salaire_min, g.salaire_max, g.date_debut, g.date_fin')
-            ->where('g.id_poste', $idPoste)
-            ->orderBy('g.date_debut', 'DESC')
-            ->get()
-            ->getResultArray();
-
-        return array_map(static fn (array $ligne): array => [
-            'id'         => (int) $ligne['id_grille'],
-            'idPoste'    => (int) $ligne['id_poste'],
-            'idRang'     => (int) $ligne['rang'],
-            'salaireMin' => (float) $ligne['salaire_min'],
-            'salaireMax' => (float) $ligne['salaire_max'],
-            'dateDebut'  => $ligne['date_debut'],
-            'dateFin'    => $ligne['date_fin'],
-=======
     private function listerGrilles(?int $idPoste = null): array
     {
         $builder = $this->db->table('grille_salariale g')
@@ -281,7 +254,6 @@ class ReferentielModel extends Model
             'dateFin'       => $ligne['date_fin'],
             'actif'         => $ligne['date_debut'] <= $aujourdhui
                 && ($ligne['date_fin'] === null || $ligne['date_fin'] >= $aujourdhui),
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
         ], $lignes);
     }
 }

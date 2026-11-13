@@ -6,10 +6,7 @@ namespace App\Controllers;
 
 use App\Exceptions\AccesRefuseException;
 use App\Exceptions\ConflitException;
-<<<<<<< HEAD
-=======
 use App\Exceptions\CongeException;
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 use App\Exceptions\DonneesIncoherentesException;
 use App\Exceptions\ObjetIntrouvableException;
 use App\Exceptions\StatutInvalideException;
@@ -39,11 +36,8 @@ abstract class ApiController extends BaseController
     {
         try {
             return $this->ok($action(), $statutSucces);
-<<<<<<< HEAD
-=======
         } catch (CongeException $e) {
             return $this->erreur($e->getCodeMetier(), $e->getMessage(), $this->statutHttpPourCodeConge($e->getCodeMetier()));
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
         } catch (AccesRefuseException $e) {
             return $this->erreur('FORBIDDEN', $e->getMessage(), 403);
         } catch (ObjetIntrouvableException $e) {
@@ -58,8 +52,6 @@ abstract class ApiController extends BaseController
             return $this->erreur('ERREUR_INTERNE', 'Une erreur interne est survenue', 500);
         }
     }
-<<<<<<< HEAD
-=======
 
     private function statutHttpPourCodeConge(string $code): int
     {
@@ -80,5 +72,4 @@ abstract class ApiController extends BaseController
             default => 400,
         };
     }
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 }

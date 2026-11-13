@@ -49,8 +49,6 @@ class EmployeModel extends Model
     {
         return $this->where('id_salarie', $idSalarie)->first();
     }
-<<<<<<< HEAD
-=======
 
     /**
      * Insère un employé rattaché à un salarié et à un poste.
@@ -95,5 +93,4 @@ class EmployeModel extends Model
 
         return $row !== null ? (string) $row->departement : null;
     }
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 }

@@ -85,7 +85,14 @@ final class TempsController extends ApiController
                 } elseif ($data['pointages']) $anomalies[] = 'Pointage sans planning';
                 $data += ['minutes_travaillees' => $minutes, 'minutes_prevues' => $prevu, 'retard_minutes' => $retard, 'heures_supplementaires_minutes' => $plan ? max(0, $minutes - $prevu) : 0, 'anomalies' => array_values(array_unique($anomalies))];
             }
-            unset($data); ksort($jours);
+            unset($data);
+            $saisies = $db->table('temps_heures_saisies')->where('id_salarie', $id)->where('jour >=', $debut)->where('jour <', $fin)->get()->getResultArray();
+            foreach ($saisies as $saisie) {
+                $j = $saisie['jour'];
+                if (!isset($jours[$j])) $jours[$j] = ['planning' => null, 'pointages' => [], 'minutes_travaillees' => 0, 'minutes_prevues' => 0, 'retard_minutes' => 0, 'heures_supplementaires_minutes' => 0, 'anomalies' => []];
+                $jours[$j]['heures_saisies_minutes'] = (int) $saisie['minutes'];
+            }
+            ksort($jours);
             return ['jours' => $jours];
         });
     }
@@ -110,6 +117,20 @@ final class TempsController extends ApiController
             return ['message' => 'Taux enregistré.'];
         }, 201);
     }
+    public function heuresSaisies()
+    {
+        return $this->executer(function () {
+            $this->autoriser(); $v = (array) $this->request->getJSON(true);
+            $id = (int) ($v['id_salarie'] ?? 0); $this->salarie($id);
+            $jour = (string) ($v['jour'] ?? ''); $minutes = filter_var($v['minutes'] ?? null, FILTER_VALIDATE_INT); $commentaire = trim((string) ($v['commentaire'] ?? ''));
+            if (!$this->valide($jour, 'Y-m-d') || $minutes === false || $minutes < 1 || $minutes > 1440 || mb_strlen($commentaire) > 500) throw new DonneesIncoherentesException('Vérifiez la date, la durée (1 à 1440 minutes) et le commentaire.');
+            $db = db_connect();
+            $exists = $db->table('temps_heures_saisies')->where('id_salarie', $id)->where('jour', $jour)->countAllResults();
+            if ($exists) throw new DonneesIncoherentesException('Une saisie existe déjà pour ce salarié et ce jour.');
+            $db->table('temps_heures_saisies')->insert(['id_salarie' => $id, 'jour' => $jour, 'minutes' => $minutes, 'commentaire' => $commentaire]);
+            return ['message' => 'Heures enregistrées.'];
+        }, 201);
+    }
     public function planningRole()
     {
         return $this->executer(function () {
@@ -123,14 +144,23 @@ final class TempsController extends ApiController
                 ->join('employe e', 'e.id = u.id_employe')->join('salarie s', 's.id_salarie = e.id_salarie')
                 ->where('u.role', $role)->where('u.actif', true)->distinct()->get()->getResultArray();
             if (!$employes) throw new DonneesIncoherentesException('Aucun salarié lié à un compte actif ne possède ce rôle.');
+            $mode = (string) ($v['mode'] ?? 'mois');
+            if (!in_array($mode, ['mois', 'modifier'], true)) throw new DonneesIncoherentesException('Mode invalide.');
+            $dates = [];
+            if ($mode === 'mois') {
+                $date = new \DateTimeImmutable(substr($jour, 0, 7) . '-01');
+                $limite = $date->modify('+1 month');
+                while ($date < $limite) { $dates[] = $date->format('Y-m-d'); $date = $date->modify('+1 day'); }
+            } else { $dates[] = $jour; }
             $db->transStart(); $crees = 0;
-            foreach ($employes as $employe) {
-                $db->query('INSERT INTO temps_planning (id_salarie, jour, debut, fin, pause_minutes, regime) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id_salarie, jour) DO NOTHING', [(int) $employe['id_salarie'], $jour, $debut, $fin, $pause, $regime]);
+            foreach ($employes as $employe) foreach ($dates as $jourCourant) {
+                $conflit = $mode === 'modifier' ? 'DO UPDATE SET debut = EXCLUDED.debut, fin = EXCLUDED.fin, pause_minutes = EXCLUDED.pause_minutes, regime = EXCLUDED.regime' : 'DO NOTHING';
+                $db->query('INSERT INTO temps_planning (id_salarie, jour, debut, fin, pause_minutes, regime) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id_salarie, jour) ' . $conflit, [(int) $employe['id_salarie'], $jourCourant, $debut, $fin, $pause, $regime]);
                 $crees += $db->affectedRows();
             }
             $db->transComplete();
             if (!$db->transStatus()) throw new \RuntimeException('Impossible de créer les plannings.');
-            return ['crees' => $crees, 'existants' => count($employes) - $crees, 'total' => count($employes)];
+            return ['crees' => $crees, 'existants' => count($employes) * count($dates) - $crees, 'total' => count($employes) * count($dates)];
         }, 201);
     }
     public function planning()

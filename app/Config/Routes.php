@@ -223,7 +223,7 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
 
 // Piste A - tableau de bord
 $routes->get('api/dashboard', 'DashboardController::index', ['filter' => 'auth']);
-=======
+
 // onboardings
 $routes->group('api/onboardings', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
     $routes->get('/',           'OnboardingController::index', ['filter' => 'role:rh,admin']);
@@ -296,12 +296,7 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
 $routes->get('api/referentiels/types-document', 'Personnel\DocumentController::listerTypes', ['filter' => 'auth']);
 
 // supprimer
-<<<<<<< HEAD
-$routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
-    $routes->delete('(:num)', 'DocumentController::supprimer/$1');
-});
->>>>>>> origin/dev
-=======
+
 $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
     $routes->get('expirant', 'DocumentController::expirant', ['filter' => 'role:rh,admin']);
     $routes->post('(:num)/remplacer', 'DocumentController::remplacer/$1', ['filter' => 'role:rh,admin']);
@@ -333,3 +328,17 @@ $routes->group('api/paie', ['namespace' => 'App\Controllers\Paie', 'filter' => '
 
 //entretiens
 $routes->get('entretiens', 'Selection\EntretienController::page');
+
+// Temps de travail et calendrier personnel
+$routes->get('temps/calendrier', 'Pages::afficher/temps/calendrier', ['filter' => 'auth']);
+$routes->group('api/temps', ['namespace' => 'App\Controllers\Temps', 'filter' => 'auth'], static function ($routes) {
+    $routes->get('calendrier', 'TempsController::calendrier');
+    $routes->get('mon-calendrier', 'TempsController::monCalendrier');
+    $routes->get('roles-salaries', 'TempsController::rolesSalaries');
+    $routes->post('planning', 'TempsController::planning');
+    $routes->post('planning-role', 'TempsController::planningRole');
+    $routes->post('heures-saisies', 'TempsController::heuresSaisies');
+    $routes->post('pointage', 'TempsController::pointage');
+    $routes->get('taux', 'TempsController::taux');
+    $routes->post('taux', 'TempsController::ajouterTaux');
+});

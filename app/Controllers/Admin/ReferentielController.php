@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Admin;
 
 use App\Controllers\ApiController;
-<<<<<<< HEAD
-=======
 use App\Models\Admin\EmployeModel;
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
 use App\Services\Common\ReferentielService;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -50,19 +47,6 @@ class ReferentielController extends ApiController
         ]);
     }
 
-<<<<<<< HEAD
-    public function grilles(int $idPoste): ResponseInterface
-    {
-        return $this->executer(function () use ($idPoste): array {
-            $grille = $this->service->grilleActive($idPoste);
-
-            if ($grille === null) {
-                return ['donnees' => null];
-            }
-
-            return ['donnees' => $grille];
-        });
-=======
     public function grilles(): ResponseInterface
     {
         return $this->executer(fn (): array => [
@@ -70,7 +54,6 @@ class ReferentielController extends ApiController
                 'idPoste' => (int) $this->request->getGet('idPoste'),
             ]),
         ]);
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     }
 
     public function grillesPoste(int $idPoste): ResponseInterface
@@ -122,8 +105,6 @@ class ReferentielController extends ApiController
         ]);
     }
 
-<<<<<<< HEAD
-=======
     public function employes(): ResponseInterface
     {
         return $this->executer(fn (): array => [
@@ -131,7 +112,6 @@ class ReferentielController extends ApiController
         ]);
     }
 
->>>>>>> 57f1b34f20901561d84f17b8b34950d5e25ea61e
     public function statuts(string $domaine): ResponseInterface
     {
         return $this->executer(fn (): array => [
