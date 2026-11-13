@@ -377,6 +377,17 @@ final class Pages extends BaseController
             ],
             'scripts'  => ['/assets/js/pages/personnel/conges-a-valider.js'],
         ],
+        'personnel/conges-demande' => [
+            'vue'      => 'pages/personnel/conges-demande',
+            'titre'    => 'Détail de la demande de congé · Gestion RH',
+            'actif'    => 'congesAValider',
+            'fil'      => [
+                ['label' => 'Tableau de bord', 'url' => '/dashboard'],
+                ['label' => 'Personnel / Validations', 'url' => '/personnel/conges-a-valider'],
+                ['label' => 'Détail de la demande'],
+            ],
+            'scripts'  => ['/assets/js/pages/personnel/conges-demande.js'],
+        ],
         'personnel/conges-absences' => [
             'vue'      => 'pages/personnel/conges-absences',
             'titre'    => 'Absences · Gestion RH',

@@ -48,6 +48,7 @@ $routes->group('personnel', ['filter' => 'auth'], static function ($routes) {
     $routes->get('mes-conges', 'Pages::afficher/personnel/mes-conges');
     $routes->get('conge-form', 'Pages::afficher/personnel/conge-form');
     $routes->get('conges-a-valider', 'Pages::afficher/personnel/conges-a-valider', ['filter' => 'role:manager,rh,admin,direction']);
+    $routes->get('conges-demande', 'Pages::afficher/personnel/conges-demande', ['filter' => 'role:manager,rh,admin,direction']);
     $routes->get('conges-planning', 'Pages::afficher/personnel/conges-planning');
     $routes->get('conges-soldes', 'Pages::afficher/personnel/conges-soldes', ['filter' => 'role:rh,admin']);
     $routes->get('conges-absences', 'Pages::afficher/personnel/conges-absences', ['filter' => 'role:rh,admin']);
@@ -267,6 +268,7 @@ $routes->group('api/conges', ['namespace' => 'App\Controllers\Personnel', 'filte
     $routes->post('demandes/(:num)/valider', 'CongeController::valider/$1');
     $routes->post('demandes/(:num)/refuser', 'CongeController::refuser/$1');
     $routes->get('a-valider', 'CongeController::aValider', ['filter' => 'role:manager,rh,admin,direction']);
+    $routes->get('demandes/(:num)/detail', 'CongeController::detail/$1', ['filter' => 'role:manager,rh,admin,direction']);
     $routes->get('planning', 'CongeController::planning');
     $routes->get('jours-feries', 'CongeController::joursFeries');
     $routes->get('absences', 'CongeController::absences', ['filter' => 'role:rh,admin']);

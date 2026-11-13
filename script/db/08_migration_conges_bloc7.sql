@@ -1123,3 +1123,15 @@ COMMENT ON VIEW v_demandes_en_retard IS 'Demandes en attente depuis plus de 7 jo
 COMMENT ON VIEW v_mouvements_solde IS 'Journal lisible des mouvements de solde par salarié.';
 
 COMMIT;
+
+
+
+INSERT INTO jour_ferie (date_ferie, libelle, recurrent)
+SELECT v.date_ferie, v.libelle, v.recurrent
+FROM (VALUES
+    (DATE '2026-06-26', 'Jour de l''Indépendance',                          true),
+    (DATE '2026-03-29', '29 Mars',                 true)
+) AS v(date_ferie, libelle, recurrent)
+WHERE NOT EXISTS (
+    SELECT 1 FROM jour_ferie WHERE jour_ferie.date_ferie = v.date_ferie AND jour_ferie.libelle = v.libelle
+);

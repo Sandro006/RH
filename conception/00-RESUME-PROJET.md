@@ -535,10 +535,12 @@ EN_ATTENTE_MANAGER ──valider manager──► EN_ATTENTE_RH ──valider RH
         └──annuler──► ANNULEE ◄─────────────────────────────────────────┘ (avant le début)
 ```
 
-- **Écrans / API** : « Mes congés », nouvelle demande, validations, planning, soldes (RH),
-  absences (RH) ; `GET|POST /api/conges/demandes`, `POST /api/conges/demandes/{id}/valider|refuser|annuler`,
-  `GET /api/conges/a-valider`, `GET /api/conges/planning`, `GET /api/conges/soldes`,
-  `POST /api/conges/soldes/ajuster`, `POST /api/conges/absences`.
+- **Écrans / API** : « Mes congés », nouvelle demande, validations, **détail d'une demande**
+  (avec collègues du même emploi/service et leurs indisponibilités sur la période), planning,
+  soldes (RH), absences (RH) ; `GET|POST /api/conges/demandes`,
+  `POST /api/conges/demandes/{id}/valider|refuser|annuler`,
+  `GET /api/conges/demandes/{id}/detail`, `GET /api/conges/a-valider`, `GET /api/conges/planning`,
+  `GET /api/conges/soldes`, `POST /api/conges/soldes/ajuster`, `POST /api/conges/absences`.
 - **Tâches planifiées** : `php spark conges:taches`, chaque jour, enchaîne relance, requalification,
   acquisition (1er du mois) et clôture d'année (1er janvier).
 - **À retenir** : c'est le module le plus **règlementaire** ; il ne supprime jamais rien, il
@@ -576,7 +578,7 @@ base_proratée    = salaire_base × couverture / jours du mois
 taux_journalier  = base_proratée / jours ouvrés du mois
 retenue_congés   = taux_journalier × (jours sans solde + jours injustifiés)
 brut             = base_proratée + Σ éléments de paie − retenue_congés
-cotisations      = brut × taux employé / total / 100
+cotisations      = brut × taux employé / total / 100 ou le CNAPS (0.01) 
 net              = brut − cotisations
 coût patronal    = brut × taux patronal / 100
 ```

@@ -265,6 +265,21 @@ class CongeController extends ApiController
         });
     }
 
+    // GET /api/conges/demandes/{id}/detail (manager ou RH selon le rôle)
+    public function detail(int $id)
+    {
+        return $this->executer(function () use ($id) {
+            $u = SessionUtilisateur::courante();
+            $valideur = $this->idSalarieCourant();
+
+            return $this->congeService->detailDemande(
+                $id,
+                $u !== null ? $u->role : '',
+                $valideur,
+            );
+        });
+    }
+
     // GET /api/conges/planning?id_service=&debut=&fin=
     public function planning()
     {

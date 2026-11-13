@@ -311,21 +311,274 @@ class CongeService
     public function demandesAValider(string $role, int $idSalarieManager): array
     {
         if ($role === 'rh' || $role === 'admin') {
-            return $this->demandeModel->db->table('v_demandes_a_valider_rh')
+            $demandes = $this->demandeModel->db->table('v_demandes_a_valider_rh')
+                ->select('*')
+                ->select("'EN_ATTENTE_RH' AS code_statut", false)
                 ->orderBy('date_demande', 'ASC')
                 ->get()
                 ->getResult();
+
+            foreach ($demandes as $demande) {
+                $demande->peut_valider = true;
+            }
+
+            return $demandes;
         }
 
         $idService = $this->serviceDuSalarie($idSalarieManager);
         $builder = $this->demandeModel->db->table('v_demandes_a_valider_manager')
+            ->select('*')
+            ->select("'EN_ATTENTE_MANAGER' AS code_statut", false)
             ->orderBy('date_demande', 'ASC');
 
         if ($idService !== null) {
             $builder->where('id_service', $idService);
         }
 
-        return $builder->get()->getResult();
+        $demandes = $builder->get()->getResult();
+
+        foreach ($demandes as $demande) {
+            // RG16 : un salarié ne valide jamais sa propre demande.
+            $demande->peut_valider = $this->peutValider($idSalarieManager, (int) $demande->id_demande_conge);
+        }
+
+        return $demandes;
+    }
+
+    /**
+     * Détail complet d'une demande + collègues partageant le même emploi (poste)
+     * ou le même service que le demandeur, avec leurs indisponibilités sur la
+     * période demandée (congés actifs et absences enregistrées).
+     *
+     * Autorisation : RH / admin / direction = toutes les demandes ; manager =
+     * uniquement les demandes de son propre service.
+     */
+    public function detailDemande(int $idDemande, string $role, int $idSalarieValidateur): array
+    {
+        $db = $this->demandeModel->db;
+
+        $demande = $db->table('v_demande_conge_detail')
+            ->where('id_demande_conge', $idDemande)
+            ->get()
+            ->getRow();
+
+        if ($demande === null) {
+            throw new CongeException("Demande #{$idDemande} introuvable", CongeException::OBJET_INTROUVABLE);
+        }
+
+        $idSalarie = (int) $demande->id_salarie;
+
+        if ($role === 'manager') {
+            $idServiceManager = $this->serviceDuSalarie($idSalarieValidateur);
+            $idServiceDemande = $demande->id_service !== null
+                ? (int) $demande->id_service
+                : $this->serviceDuSalarie($idSalarie);
+
+            // Un manager rattaché à un service ne voit que les demandes de son
+            // service. S'il n'a aucun poste (donc aucun service), on reste
+            // aligné sur demandesAValider() : lecture autorisée, validation
+            // contrôlée séparément par peutValider().
+            if ($idServiceManager !== null && $idServiceManager !== $idServiceDemande) {
+                throw new CongeException('Cette demande ne relève pas de votre service', CongeException::NON_AUTORISE);
+            }
+        } elseif (! in_array($role, ['rh', 'admin', 'direction'], true)) {
+            throw new CongeException('Accès non autorisé à cette demande', CongeException::NON_AUTORISE);
+        }
+
+        $annee = (int) substr((string) $demande->date_debut, 0, 4);
+
+        $solde = $db->table('v_solde_conge_salarie')
+            ->where('id_salarie', $idSalarie)
+            ->where('id_type_conge', (int) $demande->id_type_conge)
+            ->where('annee', $annee)
+            ->get()
+            ->getRow();
+
+        $justificatifPresent = $db->table('justificatif_absence')
+            ->where('id_demande_conge', $idDemande)
+            ->countAllResults() > 0;
+
+        $typeConge = $db->table('type_conge')
+            ->select('justificatif_requis')
+            ->where('id_type_conge', (int) $demande->id_type_conge)
+            ->get()
+            ->getRow();
+
+        $posteDemandeur = $db->table('employe e')
+            ->select('p.id_poste, p.intitule AS poste, sv.id_service, sv.nom AS service, d.nom AS departement')
+            ->join('poste p', 'p.id_poste = e.poste_id')
+            ->join('service sv', 'sv.id_service = p.id_service')
+            ->join('departement d', 'd.id_departement = sv.id_departement')
+            ->where('e.id_salarie', $idSalarie)
+            ->get()
+            ->getRow();
+
+        $collegues = $posteDemandeur !== null
+            ? $this->colleguesDuSalarie(
+                $idSalarie,
+                (int) $posteDemandeur->id_poste,
+                (int) $posteDemandeur->id_service,
+                (string) $demande->date_debut,
+                (string) $demande->date_fin,
+            )
+            : [];
+
+        $codeStatut = (string) $demande->code_statut;
+        $peutValider = false;
+        if ($codeStatut === 'EN_ATTENTE_MANAGER' && $role === 'manager') {
+            // Même règle que validerManager() : supérieur hiérarchique ou délégué.
+            $peutValider = $this->peutValider($idSalarieValidateur, $idDemande);
+        } elseif ($codeStatut === 'EN_ATTENTE_RH' && in_array($role, ['rh', 'admin'], true)) {
+            $peutValider = true;
+        }
+
+        return [
+            'demande'              => $demande,
+            'solde'                => $solde,
+            'justificatif_present' => $justificatifPresent,
+            'justificatif_requis'  => $typeConge !== null ? ($typeConge->justificatif_requis === true
+                || $typeConge->justificatif_requis === 't'
+                || $typeConge->justificatif_requis === 1
+                || $typeConge->justificatif_requis === '1') : false,
+            'poste_demandeur'      => $posteDemandeur,
+            'collegues'            => $collegues,
+            'peut_valider'         => $peutValider,
+        ];
+    }
+
+    /**
+     * Salariés actifs partageant le poste (même emploi) ou le service du demandeur,
+     * enrichis de leurs indisponibilités qui chevauchent [debut, fin].
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function colleguesDuSalarie(
+        int $idSalarie,
+        int $idPoste,
+        int $idService,
+        string $debut,
+        string $fin,
+    ): array {
+        $db = $this->demandeModel->db;
+
+        $lignes = $db->table('salarie s')
+            ->distinct()
+            ->select('s.id_salarie, s.matricule, s.nom, s.prenom, s.date_sortie')
+            ->select('p.id_poste, p.intitule AS poste, sv.id_service, sv.nom AS service, d.nom AS departement')
+            ->join('employe e', 'e.id_salarie = s.id_salarie')
+            ->join('poste p', 'p.id_poste = e.poste_id')
+            ->join('service sv', 'sv.id_service = p.id_service')
+            ->join('departement d', 'd.id_departement = sv.id_departement')
+            ->where('s.id_salarie !=', $idSalarie)
+            ->groupStart()
+                ->where('p.id_poste', $idPoste)
+                ->orWhere('sv.id_service', $idService)
+            ->groupEnd()
+            ->groupStart()
+                ->where('s.date_sortie', null)
+                ->orWhere('s.date_sortie >=', date('Y-m-d'))
+            ->groupEnd()
+            ->get()
+            ->getResult();
+
+        if ($lignes === []) {
+            return [];
+        }
+
+        $ids = array_map(static fn (object $l): int => (int) $l->id_salarie, $lignes);
+        $indisponibilites = $this->indisponibilites($ids, $debut, $fin);
+
+        $resultat = [];
+        foreach ($lignes as $ligne) {
+            $id = (int) $ligne->id_salarie;
+            $items = $indisponibilites[$id] ?? [];
+
+            $resultat[] = [
+                'id_salarie'       => $id,
+                'matricule'        => (string) $ligne->matricule,
+                'nom'              => (string) $ligne->nom,
+                'prenom'           => (string) $ligne->prenom,
+                'poste'            => (string) $ligne->poste,
+                'service'          => (string) $ligne->service,
+                'departement'      => (string) $ligne->departement,
+                'meme_poste'       => (int) $ligne->id_poste === $idPoste,
+                'indisponible'     => $items !== [],
+                'indisponibilites' => $items,
+            ];
+        }
+
+        usort($resultat, static function (array $a, array $b): int {
+            if ($a['meme_poste'] !== $b['meme_poste']) {
+                return $a['meme_poste'] ? -1 : 1;
+            }
+
+            return strcmp($a['nom'] . ' ' . $a['prenom'], $b['nom'] . ' ' . $b['prenom']);
+        });
+
+        return $resultat;
+    }
+
+    /**
+     * Congés actifs + absences chevauchant [debut, fin], indexés par salarié.
+     *
+     * @param list<int> $idsSalaries
+     *
+     * @return array<int, list<array<string, mixed>>>
+     */
+    private function indisponibilites(array $idsSalaries, string $debut, string $fin): array
+    {
+        if ($idsSalaries === []) {
+            return [];
+        }
+
+        $db = $this->demandeModel->db;
+        $resultat = [];
+
+        $conges = $db->table('demande_conge dc')
+            ->select('dc.id_salarie, dc.date_debut, dc.date_fin, sd.code, sd.libelle')
+            ->join('statut_demande_conge sd', 'sd.id_statut = dc.id_statut')
+            ->whereIn('dc.id_salarie', $idsSalaries)
+            ->where('dc.date_debut <=', $fin)
+            ->where('dc.date_fin >=', $debut)
+            ->whereIn('sd.code', ['EN_ATTENTE_MANAGER', 'EN_ATTENTE_RH', 'VALIDEE'])
+            ->orderBy('dc.date_debut', 'ASC')
+            ->get()
+            ->getResult();
+
+        foreach ($conges as $conge) {
+            $resultat[(int) $conge->id_salarie][] = [
+                'source'  => 'conge',
+                'debut'   => (string) $conge->date_debut,
+                'fin'     => (string) $conge->date_fin,
+                'libelle' => (string) $conge->libelle,
+                'code'    => (string) $conge->code,
+            ];
+        }
+
+        $absences = $db->table('absence a')
+            ->select('a.id_salarie, a.date_debut, a.date_fin, ta.libelle, a.justifiee')
+            ->join('type_absence ta', 'ta.id_type_absence = a.id_type_absence')
+            ->whereIn('a.id_salarie', $idsSalaries)
+            ->where('a.date_debut <=', $fin)
+            ->where('a.date_fin >=', $debut)
+            ->orderBy('a.date_debut', 'ASC')
+            ->get()
+            ->getResult();
+
+        foreach ($absences as $absence) {
+            $justifiee = in_array($absence->justifiee, [true, 1, '1', 't', 'true'], true);
+
+            $resultat[(int) $absence->id_salarie][] = [
+                'source'    => 'absence',
+                'debut'     => (string) $absence->date_debut,
+                'fin'       => (string) $absence->date_fin,
+                'libelle'   => (string) $absence->libelle,
+                'code'      => $justifiee ? 'JUSTIFIEE' : 'NON_JUSTIFIEE',
+                'justifiee' => $justifiee,
+            ];
+        }
+
+        return $resultat;
     }
 
     // -- internals ---------------------------------------------------------
