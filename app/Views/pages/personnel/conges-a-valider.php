@@ -1,6 +1,8 @@
 <div id="heading" class="page-heading">
-    <h1>Validations des congés</h1>
-    <p class="subtitle">Demandes en attente de validation manager puis RH.</p>
+    <div>
+        <h1>Validations des congés</h1>
+        <p class="muted">Demandes en attente de validation manager puis RH.</p>
+    </div>
 </div>
 
 <section id="a-valider" class="card">

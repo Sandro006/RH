@@ -45,11 +45,15 @@
     EN_ATTENTE_RH: 'En attente RH',
   };
 
+  function estVrai(valeur) {
+    return valeur === true || valeur === 1 || valeur === '1' || valeur === 't' || valeur === 'true';
+  }
+
   function infosLigne(d) {
     const pieces = [
       `${d.nom ?? ''} ${d.prenom ?? ''}`.trim() || `Salarié #${d.id_salarie ?? ''}`,
       d.matricule ? `(${d.matricule})` : '',
-      d.nom_service ? `· ${d.nom_service}` : '',
+      d.nom_service ? d.nom_service : '',
       `Du ${formaterDate(d.date_debut)} au ${formaterDate(d.date_fin)}`,
       `${formaterNombre(d.nb_jours)} j`,
       d.date_demande ? `demandée le ${formaterDate(d.date_demande)}` : '',
@@ -59,36 +63,43 @@
         : '',
     ].filter(Boolean);
 
-    if (d.justificatif_requis) {
-      pieces.push(d.justificatif_present ? 'justificatif joint' : 'justificatif manquant');
+    if (estVrai(d.justificatif_requis)) {
+      pieces.push(estVrai(d.justificatif_present) ? 'justificatif joint' : 'justificatif manquant');
     }
 
     return pieces.join(' · ');
   }
 
   async function charger() {
+    listEl.className = 'state';
     listEl.innerHTML = '<p class="muted">Chargement…</p>';
 
     try {
       const demandes = await appelApi(`${API_BASE}/a-valider`);
 
       if (!Array.isArray(demandes) || demandes.length === 0) {
+        consigneEl.textContent = '';
+        listEl.className = 'state';
         listEl.innerHTML = '<p class="muted">Aucune demande en attente.</p>';
         return;
       }
 
       consigneEl.textContent = `${demandes.length} demande(s) en attente.`;
 
+      listEl.className = 'demande-list';
       listEl.innerHTML = demandes.map((d) => `
         <article class="demande-row">
           <div class="demande-info">
             <strong>#${d.id_demande_conge} — ${escapeHtml(d.code_type_conge ?? 'Congé')} ${d.libelle_type_conge ? `(${escapeHtml(d.libelle_type_conge)})` : ''}</strong>
             <span>${escapeHtml(infosLigne(d))}</span>
-            <span class="badge statut-badge statut-en-cours">${escapeHtml(STATUT_LABELS[d.code_statut] ?? (d.code_statut ?? ''))}</span>
+            <span class="badge statut-badge statut-en-cours">${escapeHtml(STATUT_LABELS[d.code_statut] ?? 'En attente de validation')}</span>
           </div>
           <div class="demande-actions">
-            <button type="button" class="button-primary valider-btn" data-id="${d.id_demande_conge}">Valider</button>
-            <button type="button" class="button-secondary refuser-btn" data-id="${d.id_demande_conge}">Refuser</button>
+            <a class="button button-secondary detail-btn" href="/personnel/conges-demande?id=${d.id_demande_conge}">Détail</a>
+            ${d.peut_valider === false
+              ? '<span class="muted">Validation par un autre valideur (demande personnelle)</span>'
+              : `<button type="button" class="button-primary valider-btn" data-id="${d.id_demande_conge}">Valider</button>
+                 <button type="button" class="button-secondary refuser-btn" data-id="${d.id_demande_conge}">Refuser</button>`}
           </div>
         </article>
       `).join('');
@@ -106,6 +117,7 @@
             charger();
           } catch (err) {
             bouton.disabled = false;
+            listEl.className = 'state';
             listEl.innerHTML = `<p class="error">Validation impossible : ${escapeHtml(err.message)}</p>`;
           }
         });
@@ -116,6 +128,7 @@
           const motif = window.prompt('Motif du refus (obligatoire) :');
           if (motif === null) return;
           if (motif.trim() === '') {
+            listEl.className = 'state';
             listEl.innerHTML = '<p class="error">Le motif du refus est obligatoire.</p>';
             return;
           }
@@ -129,11 +142,13 @@
             charger();
           } catch (err) {
             bouton.disabled = false;
+            listEl.className = 'state';
             listEl.innerHTML = `<p class="error">Refus impossible : ${escapeHtml(err.message)}</p>`;
           }
         });
       });
     } catch (err) {
+      listEl.className = 'state';
       listEl.innerHTML = `<p class="error">Impossible de charger les validations : ${escapeHtml(err.message)}</p>`;
     }
   }
