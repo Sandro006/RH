@@ -10,7 +10,6 @@ use App\Libraries\Common\SessionUtilisateur;
 use App\Services\Auth\AuthService;
 use CodeIgniter\HTTP\ResponseInterface;
 
-
 class AuthController extends ApiController
 {
     private AuthService $service;
