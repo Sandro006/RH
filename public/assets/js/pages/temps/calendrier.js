@@ -11,10 +11,27 @@ const nomsRoles = {admin: 'Administrateur', rh: 'Ressources humaines', manager: 
 let salariesParRole = [];
 let selectionJour = '';
 let requeteCalendrier = 0;
+let detailDonnees = [];
+const detailJour = document.querySelector('#detail-jour');
+const detailContenu = document.querySelector('#detail-contenu');
 const maintenant = new Date();
 mois.value = `${maintenant.getFullYear()}-${String(maintenant.getMonth() + 1).padStart(2, '0')}`;
 function choisirJour(jour) {
     selectionJour = jour;
+    detailJour.hidden = false; document.querySelector('#detail-titre').textContent = 'Détail du ' + jour.split('-').reverse().join('/'); detailContenu.replaceChildren();
+    if (!detailDonnees.length) detailContenu.textContent = 'Aucun salarié pour cette sélection.';
+    for (const item of detailDonnees) {
+        const bloc = document.createElement('div'); const titre = document.createElement('strong'); titre.textContent = (item.salarie.prenom || '') + ' ' + (item.salarie.nom || '') + ' · ' + (item.salarie.matricule || ''); bloc.append(titre);
+        const ajouter = texte => { const p = document.createElement('p'); p.textContent = texte; bloc.append(p); };
+        const d = item.data.jours[jour];
+        if (d && d.planning) ajouter('Planning : ' + d.planning.debut.slice(0,5) + '–' + d.planning.fin.slice(0,5));
+        if (d && d.pointages.length) d.pointages.forEach(p => ajouter((p.type === 'entree' ? 'Entrée : ' : 'Sortie : ') + p.instant.slice(11,16)));
+        else ajouter('Aucun pointage enregistré.');
+        if (d) { if (d.pointages.length) ajouter('Temps travaillé : ' + Math.floor(d.minutes_travaillees / 60) + ' h ' + String(d.minutes_travaillees % 60).padStart(2,'0')); d.anomalies.forEach(a => ajouter('À vérifier : ' + a)); }
+        if (!item.data.absences_disponibles) ajouter('Données d’absence indisponibles.');
+        else { const abs = item.data.absences.filter(a => a.date_debut <= jour && a.date_fin >= jour); ajouter(abs.length ? 'Absence enregistrée (' + abs.length + ').' : 'Aucune absence enregistrée.'); }
+        detailContenu.append(bloc);
+    }
     planning.elements.jour.value = jour; heuresForm.elements.jour.value = jour;
     calendrier.querySelectorAll('button[data-jour]').forEach(el => {
         const actif = el.dataset.jour === jour;
@@ -24,13 +41,14 @@ function choisirJour(jour) {
 }
 async function charger() {
     const requete = ++requeteCalendrier;
-    calendrier.replaceChildren(); message.textContent = '';
+    calendrier.replaceChildren(); message.textContent = ''; detailJour.hidden = true; detailDonnees = [];
     if (!role.value || !mois.value) return;
     const salaries = salariesParRole.filter(row => row.role === role.value && (!filtreSalarie.value || String(row.id_salarie) === filtreSalarie.value));
     const moisSelectionne = mois.value;
     try {
         const resultats = await Promise.all(salaries.map(s => api.get(`/api/temps/calendrier?salarie=${encodeURIComponent(s.id_salarie)}&mois=${encodeURIComponent(moisSelectionne)}`)));
         if (requete !== requeteCalendrier) return;
+        detailDonnees = resultats.map((data, i) => ({data, salarie: salaries[i]}));
         for (const nom of ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']) { const el = document.createElement('div'); el.className = 'entete'; el.textContent = nom; calendrier.append(el); }
         const [annee, m] = moisSelectionne.split('-').map(Number);
         const decalage = (new Date(annee, m - 1, 1).getDay() + 6) % 7;

@@ -93,7 +93,11 @@ final class TempsController extends ApiController
                 $jours[$j]['heures_saisies_minutes'] = (int) $saisie['minutes'];
             }
             ksort($jours);
-            return ['jours' => $jours];
+            $absences = []; $absencesDisponibles = $db->tableExists('absence');
+            if ($absencesDisponibles) {
+                $absences = $db->table('absence')->select('date_debut, date_fin, justifiee')->where('id_salarie', $id)->where('date_debut <', $fin)->where('date_fin >=', $debut)->get()->getResultArray();
+            }
+            return ['jours' => $jours, 'absences' => $absences, 'absences_disponibles' => $absencesDisponibles];
         });
     }
     public function taux()
