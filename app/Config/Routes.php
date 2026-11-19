@@ -298,15 +298,16 @@ $routes->group('api/referentiels', ['namespace' => 'App\Controllers\Admin', 'fil
     $routes->get('natures-revendication', 'ReferentielController::naturesRevendication');
 });
 
-$routes->get('api/referentiels/types-document', 'Personnel\DocumentController::listerTypes', ['filter' => 'auth']);
-
-// supprimer
 
 $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel'], static function ($routes) {
     $routes->delete('(:num)', 'DocumentController::supprimer/$1');
 });
 
 $routes->group('api/documents', ['namespace' => 'App\Controllers\Personnel', 'filter' => 'auth'], static function ($routes) {
+    // Types de document complets (designation, obligatoire, duree_validite_mois,
+    // niveau_confidentialite) — distinct de /api/referentiels/types-document
+    // qui ne retourne que id/libelle et est servi par Admin\ReferentielController.
+    $routes->get('types', 'DocumentController::listerTypes', ['filter' => 'role:rh,admin']);
     $routes->get('expirant', 'DocumentController::expirant', ['filter' => 'role:rh,admin']);
     $routes->post('(:num)/remplacer', 'DocumentController::remplacer/$1', ['filter' => 'role:rh,admin']);
     $routes->get('(:num)/telecharger', 'DocumentController::telecharger/$1', ['filter' => 'role:rh,admin']);

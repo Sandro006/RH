@@ -10,6 +10,12 @@ const CONFIDENTIALITE_LABELS = {
     restreint: 'Restreint',
 };
 
+// PostgreSQL renvoie les booleens sous forme de "t" / "f" : (bool) et la
+// verite JavaScript sont donc faux ici.
+function estVrai(valeur) {
+    return valeur === true || valeur === 1 || valeur === '1' || valeur === 't' || valeur === 'true';
+}
+
 if (documentForm && documentSalaryId) documentForm.dataset.salaryId = documentSalaryId;
 
 function ajouterMois(dateIso, mois) {
@@ -59,7 +65,7 @@ function appliquerTypeDocument() {
     }
 
     const informations = [];
-    if (type.obligatoire) informations.push('Pièce obligatoire');
+    if (estVrai(type.obligatoire)) informations.push('Pièce obligatoire');
     if (type.duree_validite_mois) informations.push(`Validité : ${type.duree_validite_mois} mois`);
     if (type.niveau_confidentialite) {
         informations.push(`Confidentialité par défaut : ${CONFIDENTIALITE_LABELS[type.niveau_confidentialite] || type.niveau_confidentialite}`);
@@ -75,14 +81,20 @@ async function loadDocumentTypes() {
     if (!documentForm) return;
 
     try {
-        const result = await api.get('/api/referentiels/types-document');
-        const rows = Array.isArray(result) ? result : (result?.data || []);
+        const result = await api.get('/api/documents/types');
+        const rows = Array.isArray(result)
+            ? result
+            : (result?.donnees || result?.data || []);
 
         documentTypes.clear();
         rows.forEach(row => documentTypes.set(String(row.id), row));
 
         documentForm.typeDocument.innerHTML = '<option value="">Choisir…</option>'
-            + rows.map(row => `<option value="${row.id}">${ui.escape(row.designation)}</option>`).join('');
+            + rows.map(row => `<option value="${row.id}">${ui.escape(row.designation || row.libelle || '')}</option>`).join('');
+
+        if (rows.length === 0 && documentHint) {
+            documentHint.textContent = 'Aucun type de document actif.';
+        }
     } catch (error) {
         ui.error(error);
     }
